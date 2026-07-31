@@ -2,14 +2,10 @@ package mcp
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/hektyc/unraid-mcp-server/internal/client"
 	"github.com/hektyc/unraid-mcp-server/internal/config"
-	"github.com/hektyc/unraid-mcp-server/internal/guards"
-	"github.com/hektyc/unraid-mcp-server/internal/logger"
 )
 
 type ToolHandler func(ctx context.Context, arguments map[string]interface{}) (string, error)
