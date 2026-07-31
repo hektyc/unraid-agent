@@ -52,11 +52,11 @@ jobs:
           go build -o bin/unraid-mcp ./cmd/unraid-mcp
           ls -lh bin/unraid-mcp
 
-      - name: Package .plg
+      - name: Package plugin
         run: |
           chmod +x build.sh
           ./build.sh
-          ls -lh unraid-mcp.plg unraid-mcp-*.tar.gz
+          ls -lh unraid-mcp.tar.gz
 
       - name: Commit and push version bump
         run: |
@@ -73,5 +73,5 @@ jobs:
           name: v${{ steps.version.outputs.new_version }}
           generate_release_notes: true
           files: |
-            unraid-mcp.plg
-            unraid-mcp-*.tar.gz
+            plugin/unraid-mcp.plg
+            unraid-mcp.tar.gz

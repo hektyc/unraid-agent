@@ -4,22 +4,22 @@ Private, safety-first MCP server for Unraid. Runs as a native Unraid plugin (`.p
 
 ## Quick Install
 
-### Option A: GitHub Actions Build (Recommended)
+### Option A: Install from GitHub Releases (Recommended)
+
+1. Go to **Releases** page in GitHub: `https://github.com/hektyc/unraid-mcp-server/releases/latest`
+2. Download `unraid-mcp.plg`
+3. In Unraid WebUI: **Settings > Plugins > Install Plugin**
+4. Upload the downloaded `.plg` file
+5. Unraid downloads the package (`unraid-mcp.tar.gz`) from Releases and installs it
+
+### Option B: GitHub Actions Build
 
 1. Push code to the `dev` branch
 2. Go to **Actions** tab in GitHub
 3. Select **Build Unraid MCP Plugin** workflow
-4. Click **Run workflow** → select `dev` branch → **Run**
-5. When complete, download `unraid-mcp-plugin` artifact
-6. In Unraid WebUI: **Settings > Plugins > Install Plugin**
-7. Upload the downloaded `.plg` file
-
-### Option B: Direct Download from GitHub Releases
-
-1. Go to **Releases** page in GitHub
-2. Download the latest `unraid-mcp.plg` asset
-3. In Unraid WebUI: **Settings > Plugins > Install Plugin**
-4. Paste the direct download URL or upload the file
+4. Download the `unraid-mcp-plg` and `unraid-mcp-package` artifacts
+5. In Unraid WebUI: **Settings > Plugins > Install Plugin**
+6. Upload the `.plg` file, and manually install the package
 
 ### Option C: Build Locally
 
@@ -30,24 +30,10 @@ cd unraid-mcp-server
 git checkout dev
 chmod +x build.sh
 ./build.sh
-# → creates: unraid-mcp.plg
+# → creates: unraid-mcp.plg + unraid-mcp.tar.gz
 ```
 
-Then upload the `.plg` via Unraid WebUI.
-
-### Option D: Manual File Copy
-
-If you cannot use the UI:
-
-```bash
-# Copy .plg to Unraid server
-scp unraid-mcp.plg root@tower.local:/root/
-
-# SSH into Unraid and install
-ssh root@tower.local
-cd /root
-tar -xf unraid-mcp.plg -C /
-```
+Upload the `.plg` via Unraid WebUI.
 
 ## Configuration
 

@@ -30,19 +30,24 @@ jobs:
           go build -o bin/unraid-mcp ./cmd/unraid-mcp
           ls -lh bin/unraid-mcp
 
-      - name: Package .plg
+      - name: Package plugin
         run: |
           chmod +x build.sh
           ./build.sh
-          ls -lh *.plg
+          ls -lh unraid-mcp.tar.gz
 
-      - name: Upload .plg artifact
+      - name: Upload .plg manifest artifact
         uses: actions/upload-artifact@v4
         with:
-          name: unraid-mcp-plugin
-          path: |
-            unraid-mcp.plg
-            unraid-mcp-*.tar.gz
+          name: unraid-mcp-plg
+          path: plugin/unraid-mcp.plg
+          retention-days: 90
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unraid-mcp-package
+          path: unraid-mcp.tar.gz
           retention-days: 90
 
       - name: Upload Go binary artifact
