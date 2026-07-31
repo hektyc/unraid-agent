@@ -11,16 +11,13 @@
 ]>
 
 <PLUGIN name="&name;"
-        launch="settings"
-        support="https://github.com/hektyc/unraid-mcp-server/issues"
-        project="https://github.com/hektyc/unraid-mcp-server"
 		author="&author;"
 		version="&version;"
 		pluginURL="&pluginURL;"
 		icon="fa-robot"
 		launch="Settings/Unraid MCP Server"
 		min="6.12.0"
-		support="https://forums.unraid.net/forum/77-plugin-support/"
+		support="https://github.com/hektyc/unraid-mcp-server/issues"
 		project="https://github.com/hektyc/unraid-mcp-server">
 
 <DESCRIPTION>Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
@@ -73,7 +70,7 @@ fi
 echo "Extracting package ..."
 echo "File size: $(stat -c%s "$TMP_FILE" 2>/dev/null || stat -f%z "$TMP_FILE" 2>/dev/null) bytes"
 echo "File type: $(file "$TMP_FILE" 2>/dev/null || echo 'unknown')"
-echo "tar version: $(tar --version 2>&1 | head -1 || echo 'unknown')"
+echo "tar version: $(tar --version 2>&amp;1 | head -1 || echo 'unknown')"
 echo "---"
 
 # Method 1: standard tar extraction
@@ -86,7 +83,7 @@ if [ $? -eq 0 ]; then
 fi
 
 # Method 2: cd to root first
-echo "Method 1 failed, trying method 2 (cd / && tar -xf)..."
+echo "Method 1 failed, trying method 2 (cd / &amp;&amp; tar -xf)..."
 cd /
 tar -xf "$TMP_FILE"
 if [ $? -eq 0 ]; then
