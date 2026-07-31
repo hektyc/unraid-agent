@@ -2,13 +2,15 @@
 <plugin Settings>
   <name>Unraid MCP Server</name>
   <authors>hektyc</authors>
-  <version>0.0.8</version>
+  <version>0.0.10</version>
   <url>https://github.com/hektyc/unraid-mcp-server</url>
   <description>Feature-rich MCP server for Unraid with safety controls and AI agent integration</description>
 
   <page id="Settings.unraid-mcp" title="Unraid MCP Server" icon="fa-robot">
     <section title="Connection">
-        <field label="Unraid API URL" type="text" id="unraid_api_url" required="1" />
+        <field label="Unraid API URL" type="text" id="unraid_api_url" required="0">
+<description>Leave blank to auto-detect from Unraid var.ini</description>
+</field>
         <field label="API Key" type="password" id="unraid_api_key" required="1" />
         <field label="Transport" type="select" id="transport" required="1">
           <option value="stdio">stdio</option>

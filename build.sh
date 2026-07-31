@@ -41,7 +41,7 @@ chmod +x "$INSTALL_DIR/scripts/"*.sh
 
 echo "==> Creating config.cfg..."
 cat > "$CONFIG_DIR/config.cfg" << 'ENVEOF'
-UNRAID_API_URL="http://127.0.0.1/graphql"
+UNRAID_API_URL=""
 UNRAID_API_KEY=""
 TRANSPORT="stdio"
 UNRAID_MCP_HOST="127.0.0.1"
