@@ -1,36 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?>
-<plugin name="Unraid MCP Server" version="0.0.1" url="https://github.com/hektyc/unraid-mcp-server">
-  <description>Feature-rich MCP server for Unraid with safety controls, WebSocket telemetry, and AI agent integration</description>
-  <author>hektyc</author>
-  <arch>amd64</arch>
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+<!ENTITY name		"unraid-mcp">
+<!ENTITY author		"hektyc">
+<!ENTITY version	"0.0.3">
+<!ENTITY gitURL		"https://raw.githubusercontent.com/hektyc/unraid-mcp-server/main">
+<!ENTITY pluginURL	"&gitURL;/plugin/unraid-mcp.plg">
+<!ENTITY releaseURL	"https://github.com/hektyc/unraid-mcp-server/releases/latest/download">
+]>
 
-  <minUnraidVersion>6.12.0</minUnraidVersion>
-  <maxUnraidVersion>7.99.99</maxUnraidVersion>
+<PLUGIN name="&name;"
+		author="&author;"
+		version="&version;"
+		pluginURL="&pluginURL;"
+		icon="fa-robot"
+		min="6.12.0">
 
-  <configdir>/boot/config/plugins/unraid-mcp</configdir>
+<CHANGES>
+###2026.07.31
+- Initial release of the Go-based Unraid MCP Server plugin.
+- Default read-only mode with per-function toggles.
+- Supports stdio and streamable-http transport modes.
+- WebGUI settings page for configuration.
+</CHANGES>
 
-  <scripts>
-    <install type="shell">scripts/install.sh</install>
-    <upgrade type="shell">scripts/upgrade.sh</upgrade>
-    <remove type="shell">scripts/remove.sh</remove>
-    <start type="shell">scripts/start.sh</start>
-    <stop type="shell">scripts/stop.sh</stop>
-    <status type="shell">scripts/status.sh</status>
-  </scripts>
+<!-- Pre-install: create directories and clean old files -->
+<FILE Run="/bin/bash">
+<INLINE>
+PLUGIN_NAME="&name;"
+INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
+CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
-  <webgui>
-    <page Settings.page />
-  </webgui>
+mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/webgui" "$INSTALL_DIR/memory"
+rm -rf /usr/local/emhttp/plugins/${PLUGIN_NAME}/* 2>/dev/null
+echo "Pre-install complete for ${PLUGIN_NAME}"
+</INLINE>
+</FILE>
 
-  <notes>
-    <![CDATA[
-    <div style="padding: 10px; color: #333;">
-      <h3>Unraid MCP Server v0.0.1</h3>
-      <p><strong>Safety:</strong> Default read-only. Enable actions via Settings > Unraid MCP Server.</p>
-      <p><strong>Transport:</strong> stdio (default) or streamable-http</p>
-      <p><strong>Memory:</strong> AGENT-SKILLS.md and AGENT-MEMORY.md are stored in config dir</p>
-      <p style="color: #c00;"><strong>Warning:</strong> Disabling read-only allows destructive operations. Enable only what you need.</p>
-    </div>
-    ]]>
-  </notes>
-</plugin>
+<!-- Download and extract plugin package -->
+<FILE Name="/tmp/&name;.tar.gz" Run="/bin/tar -xzf /tmp/&name;.tar.gz -C / --no-same-owner --no-same-permissions">
+<URL>"&releaseURL;/&name;.tar.gz"</URL>
+</FILE>
+
+<!-- Post-install: set permissions -->
+<FILE Run="/bin/bash">
+<INLINE>
+PLUGIN_NAME="&name;"
+INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
+CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
+
+chmod +x "$INSTALL_DIR/bin/unraid-mcp" "$INSTALL_DIR/scripts/"*.sh 2>/dev/null
+chmod 600 "$CONFIG_DIR/config.cfg" 2>/dev/null
+
+echo "-----------------------------------------------------------"
+echo " &name; v&version; installed successfully."
+echo " Configure at: Settings > Plugins > Unraid MCP Server"
+echo " Set UNRAID_API_KEY in: $CONFIG_DIR/config.cfg"
+echo " Start the daemon: $INSTALL_DIR/scripts/start.sh"
+echo "-----------------------------------------------------------"
+</INLINE>
+</FILE>
+
+<!-- Remove plugin -->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+PLUGIN_NAME="&name;"
+INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
+CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
+PIDFILE="$CONFIG_DIR/server.pid"
+
+if [ -f "$PIDFILE" ]; then
+    PID=$(cat "$PIDFILE")
+    kill "$PID" 2>/dev/null
+    sleep 1
+    kill -9 "$PID" 2>/dev/null
+    rm -f "$PIDFILE"
+fi
+
+rm -rf "$INSTALL_DIR"
+rm -rf "$CONFIG_DIR"
+
+echo ""
+echo "-----------------------------------------------------------"
+echo " &name; has been uninstalled."
+echo "-----------------------------------------------------------"
+</INLINE>
+</FILE>
+
+</PLUGIN>
