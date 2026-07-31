@@ -2,7 +2,7 @@
 <plugin Settings>
   <name>Unraid MCP Server</name>
   <authors>hektyc</authors>
-  <version>0.0.1</version>
+  <version>0.0.7</version>
   <url>https://github.com/hektyc/unraid-mcp-server</url>
   <description>Feature-rich MCP server for Unraid with safety controls and AI agent integration</description>
 
