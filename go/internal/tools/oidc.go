@@ -1,4 +1,4 @@
-package oidc
+package tools
 
 import (
 	"context"
