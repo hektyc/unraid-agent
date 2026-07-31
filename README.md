@@ -6,11 +6,11 @@ Private, safety-first MCP server for Unraid. Runs as a native Unraid plugin (`.p
 
 ### Option A: Install from GitHub Releases (Recommended)
 
-1. Go to **Releases** page in GitHub: `https://github.com/hektyc/unraid-mcp-server/releases/latest`
-2. Download `unraid-mcp.plg`
-3. In Unraid WebUI: **Settings > Plugins > Install Plugin**
-4. Upload the downloaded `.plg` file
-5. Unraid downloads the package (`unraid-mcp.tar.gz`) from Releases and installs it
+1. Go to **Releases** page: `https://github.com/hektyc/unraid-mcp-server/releases/latest`
+2. Download `unraid-mcp.plg` (right-click → "Save Link As", or click the file then download)
+3. In Unraid WebUI: **Settings > Plugins > Install Plugin > Choose File**
+4. Select the downloaded `.plg` file and click **Install**
+5. Unraid downloads the package (`unraid-mcp.tar`) from Releases and installs it
 
 ### Option B: GitHub Actions Build
 
