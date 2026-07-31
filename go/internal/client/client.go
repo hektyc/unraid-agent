@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hektyc/unraid-mcp-server/go/internal/config"
-	"github.com/hektyc/unraid-mcp-server/go/internal/logger"
+	"github.com/hektyc/unraid-mcp-server/internal/config"
+	"github.com/hektyc/unraid-mcp-server/internal/logger"
 )
 
 type Client struct {

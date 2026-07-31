@@ -9,9 +9,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hektyc/unraid-mcp-server/go/internal/config"
-	"github.com/hektyc/unraid-mcp-server/go/internal/logger"
-	"github.com/hektyc/unraid-mcp-server/go/internal/mcp"
+	"github.com/hektyc/unraid-mcp-server/internal/config"
+	"github.com/hektyc/unraid-mcp-server/internal/logger"
+	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
 const version = "0.0.1"

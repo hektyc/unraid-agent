@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hektyc/unraid-mcp-server/go/internal/client"
-	"github.com/hektyc/unraid-mcp-server/go/internal/config"
-	"github.com/hektyc/unraid-mcp-server/go/internal/guards"
-	"github.com/hektyc/unraid-mcp-server/go/internal/logger"
+	"github.com/hektyc/unraid-mcp-server/internal/client"
+	"github.com/hektyc/unraid-mcp-server/internal/config"
+	"github.com/hektyc/unraid-mcp-server/internal/guards"
+	"github.com/hektyc/unraid-mcp-server/internal/logger"
 )
 
 type ToolHandler func(ctx context.Context, arguments map[string]interface{}) (string, error)

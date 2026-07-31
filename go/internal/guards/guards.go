@@ -3,7 +3,7 @@ package guards
 import (
 	"fmt"
 
-	"github.com/hektyc/unraid-mcp-server/go/internal/config"
+	"github.com/hektyc/unraid-mcp-server/internal/config"
 )
 
 type SafetyError struct {
