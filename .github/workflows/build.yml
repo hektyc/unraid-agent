@@ -26,6 +26,7 @@ jobs:
       - name: Build Go binary
         run: |
           cd go
+          go mod download
           go build -o bin/unraid-mcp ./cmd/unraid-mcp
           ls -lh bin/unraid-mcp
 
