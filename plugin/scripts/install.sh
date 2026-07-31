@@ -11,12 +11,6 @@ mkdir -p "$INSTALL_DIR/bin"
 
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 
-if ! command -v go >/dev/null 2>&1; then
-    echo "Go not found. WebUI will still work but MCP binary must be built manually."
-fi
-
-go build -o "$INSTALL_DIR/bin/unraid-mcp" "$INSTALL_DIR/go/cmd/unraid-mcp" 2>/dev/null || true
-
 cat > "$CONFIG_DIR/config.cfg" << 'ENVEOF'
 UNRAID_API_URL="http://localhost/graphql"
 UNRAID_API_KEY=""
