@@ -31,13 +31,13 @@
       </section>
 
       <section title="HTTP Auth (streamable-http only)">
-        <field label="Bearer Token" type="password" id="bearer_token" required="0" />
-        <field label="Disable HTTP Auth" type="checkbox" id="disable_http_auth" required="0" />
+        <field label="Bearer Token" type="password" id="unraid_mcp_bearer_token" required="0" />
+        <field label="Disable HTTP Auth" type="checkbox" id="unraid_mcp_disable_http_auth" required="0" />
       </section>
 
       <section title="TLS">
-        <field label="Verify SSL" type="checkbox" id="verify_ssl" checked="1" />
-        <field label="Allow Insecure TLS" type="checkbox" id="allow_insecure_tls" required="0" />
+        <field label="Verify SSL" type="checkbox" id="unraid_verify_ssl" checked="1" />
+        <field label="Allow Insecure TLS" type="checkbox" id="unraid_allow_insecure_tls" required="0" />
       </section>
 
       <section title="Danger Zone">
