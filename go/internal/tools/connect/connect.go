@@ -1,15 +1,12 @@
-package tools
+package connect
 
 import (
-	"context"
-	"fmt"
 
 	"github.com/hektyc/unraid-mcp-server/internal/config"
-	"github.com/hektyc/unraid-mcp-server/internal/guards"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterconnectTools(s *mcp.Server, cfg *config.Config) {
+func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_status",
 		Description: "Get connection status. Read-only.",

@@ -1,15 +1,12 @@
-package tools
+package notification
 
 import (
-	"context"
-	"fmt"
 
 	"github.com/hektyc/unraid-mcp-server/internal/config"
-	"github.com/hektyc/unraid-mcp-server/internal/guards"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisternotificationTools(s *mcp.Server, cfg *config.Config) {
+func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "notification_overview",
 		Description: "Get notification counts. Read-only.",

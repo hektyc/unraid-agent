@@ -1,15 +1,12 @@
-package tools
+package setting
 
 import (
-	"context"
-	"fmt"
 
 	"github.com/hektyc/unraid-mcp-server/internal/config"
-	"github.com/hektyc/unraid-mcp-server/internal/guards"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegistersettingTools(s *mcp.Server, cfg *config.Config) {
+func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "setting_list",
 		Description: "Get all settings. Read-only.",

@@ -1,15 +1,12 @@
-package tools
+package rclone
 
 import (
-	"context"
-	"fmt"
 
 	"github.com/hektyc/unraid-mcp-server/internal/config"
-	"github.com/hektyc/unraid-mcp-server/internal/guards"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterrcloneTools(s *mcp.Server, cfg *config.Config) {
+func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "rclone_list_remotes",
 		Description: "Get configured remotes. Read-only.",

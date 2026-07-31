@@ -1,15 +1,12 @@
-package tools
+package key
 
 import (
-	"context"
-	"fmt"
 
 	"github.com/hektyc/unraid-mcp-server/internal/config"
-	"github.com/hektyc/unraid-mcp-server/internal/guards"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterkeyTools(s *mcp.Server, cfg *config.Config) {
+func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "key_list",
 		Description: "Get all API keys. Read-only.",

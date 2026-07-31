@@ -12,7 +12,23 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/logger"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
-	"github.com/hektyc/unraid-mcp-server/internal/tools"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/array"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/connect"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/customization"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/docker"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/health"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/help"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/key"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/live"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/notification"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/oidc"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/onboarding"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/plugin"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/rclone"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/setting"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/system"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/user"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/vm"
 )
 
 const version = "0.0.1"
@@ -48,23 +64,23 @@ func main() {
 	logger.Get().Infof("Transport: %s, Read-only: %v", cfg.Transport, cfg.ReadOnly)
 
 	server := mcp.NewServer(cfg)
-	tools.RegisterarrayTools(server, cfg)
-	tools.RegisterconnectTools(server, cfg)
-	tools.RegistercustomizationTools(server, cfg)
-	tools.RegisterdockerTools(server, cfg)
-	tools.RegisterhealthTools(server, cfg)
-	tools.RegisterhelpTools(server, cfg)
-	tools.RegisterkeyTools(server, cfg)
-	tools.RegisterliveTools(server, cfg)
-	tools.RegisternotificationTools(server, cfg)
-	tools.RegisteroidcTools(server, cfg)
-	tools.RegisteronboardingTools(server, cfg)
-	tools.RegisterpluginTools(server, cfg)
-	tools.RegisterrcloneTools(server, cfg)
-	tools.RegistersettingTools(server, cfg)
-	tools.RegistersystemTools(server, cfg)
-	tools.RegisteruserTools(server, cfg)
-	tools.RegistervmTools(server, cfg)
+	array.RegisterTools(server, cfg)
+	connect.RegisterTools(server, cfg)
+	customization.RegisterTools(server, cfg)
+	docker.RegisterTools(server, cfg)
+	health.RegisterTools(server, cfg)
+	help.RegisterTools(server, cfg)
+	key.RegisterTools(server, cfg)
+	live.RegisterTools(server, cfg)
+	notification.RegisterTools(server, cfg)
+	oidc.RegisterTools(server, cfg)
+	onboarding.RegisterTools(server, cfg)
+	plugin.RegisterTools(server, cfg)
+	rclone.RegisterTools(server, cfg)
+	setting.RegisterTools(server, cfg)
+	system.RegisterTools(server, cfg)
+	user.RegisterTools(server, cfg)
+	vm.RegisterTools(server, cfg)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
