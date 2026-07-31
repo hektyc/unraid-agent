@@ -85,7 +85,7 @@ chmod 600 "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
 
 echo "==> Creating package tarball..."
 cd "$BUILD_DIR"
-tar -cf "$SCRIPT_DIR/$PACKAGE_FILE" .
+tar --owner=0 --group=0 --no-same-owner -cf "$SCRIPT_DIR/$PACKAGE_FILE" .
 cd "$SCRIPT_DIR"
 
 rm -rf "$BUILD_DIR"
