@@ -41,6 +41,7 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 <FILE Run="/bin/bash">
 <INLINE>
 set -e
+set -o pipefail
 PKG_URL="&releaseURL;/&name;.tar.gz"
 TMP_FILE="/tmp/&name;.tar.gz"
 echo "Downloading package from $PKG_URL ..."
@@ -51,7 +52,11 @@ if [ ! -s "$TMP_FILE" ]; then
   exit 1
 fi
 echo "Extracting package ..."
-/bin/tar -xzf "$TMP_FILE" -C / || { echo "ERROR: Extraction failed"; ls -la "$TMP_FILE"; rm -f "$TMP_FILE"; exit 1; }
+cd /
+gzip -dc "$TMP_FILE" | tar -xf - || {
+  echo "ERROR: Extraction failed, trying tar -xzf fallback..."
+  tar -xzf "$TMP_FILE" || { echo "ERROR: All extraction methods failed"; ls -la "$TMP_FILE"; rm -f "$TMP_FILE"; exit 1; }
+}
 rm -f "$TMP_FILE"
 echo "Package extracted successfully."
 </INLINE>
