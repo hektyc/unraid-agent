@@ -37,7 +37,7 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 </FILE>
 
 <!-- Download and extract plugin package -->
-<FILE Name="/tmp/&name;.tar.gz" Run="/bin/tar -xzf /tmp/&name;.tar.gz -C / --no-same-owner --no-same-permissions">
+<FILE Name="/tmp/&name;.tar.gz" Run="/bin/tar -xzf /tmp/&name;.tar.gz -C / && /bin/rm -f /tmp/&name;.tar.gz">
 <URL>"&releaseURL;/&name;.tar.gz"</URL>
 </FILE>
 
