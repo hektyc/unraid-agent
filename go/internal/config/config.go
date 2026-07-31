@@ -14,6 +14,7 @@ type Config struct {
 	Host                  string
 	Port                  int
 	ReadOnly              bool
+	VerifySSL             bool
 	AllowArrayStop        bool
 	AllowArrayStart       bool
 	AllowArrayAddDisk     bool
@@ -51,6 +52,7 @@ func Load() (*Config, error) {
 		Host:      getEnv("UNRAID_MCP_HOST", "127.0.0.1"),
 		Port:      getEnvInt("UNRAID_MCP_PORT", 6970),
 		ReadOnly:  getEnvBool("READ_ONLY", false),
+		VerifySSL: getEnvBool("UNRAID_VERIFY_SSL", true),
 	}
 
 	cfg.AllowArrayStop = getEnvBool("ALLOW_ARRAY_STOP", false)
