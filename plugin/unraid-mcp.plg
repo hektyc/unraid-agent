@@ -40,10 +40,8 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 <!-- Download and extract plugin package -->
 <FILE Run="/bin/bash">
 <INLINE>
-set -e
-set -o pipefail
-PKG_URL="&releaseURL;/&name;.tar.gz"
-TMP_FILE="/tmp/&name;.tar.gz"
+PKG_URL="&releaseURL;/&name;.tar"
+TMP_FILE="/tmp/&name;.tar"
 echo "Downloading package from $PKG_URL ..."
 curl -fsSL "$PKG_URL" -o "$TMP_FILE" || { echo "ERROR: Download failed"; rm -f "$TMP_FILE"; exit 1; }
 if [ ! -s "$TMP_FILE" ]; then
@@ -53,9 +51,18 @@ if [ ! -s "$TMP_FILE" ]; then
 fi
 echo "Extracting package ..."
 cd /
-gzip -dc "$TMP_FILE" | tar -xf - || {
-  echo "ERROR: Extraction failed, trying tar -xzf fallback..."
-  tar -xzf "$TMP_FILE" || { echo "ERROR: All extraction methods failed"; ls -la "$TMP_FILE"; rm -f "$TMP_FILE"; exit 1; }
+tar -xf "$TMP_FILE" 2>&1 || {
+  echo "ERROR: tar -xf failed, trying fallback..."
+  tar -xf "$TMP_FILE" -C / 2>&1 || {
+    echo "ERROR: Extraction failed"
+    echo "File details:"
+    ls -la "$TMP_FILE"
+    file "$TMP_FILE" 2>/dev/null || echo "(file command not available)"
+    echo "--- tar version ---"
+    tar --version 2>&1 | head -3 || echo "(tar --version not available)"
+    rm -f "$TMP_FILE"
+    exit 1
+  }
 }
 rm -f "$TMP_FILE"
 echo "Package extracted successfully."

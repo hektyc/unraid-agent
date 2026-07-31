@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 VERSION="$(cat VERSION)"
 PLUGIN_NAME="unraid-mcp"
-PACKAGE_FILE="${PLUGIN_NAME}.tar.gz"
+PACKAGE_FILE="${PLUGIN_NAME}.tar"
 BUILD_DIR="/tmp/${PLUGIN_NAME}-build"
 INSTALL_DIR="${BUILD_DIR}/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="${BUILD_DIR}/boot/config/plugins/${PLUGIN_NAME}"
@@ -84,10 +84,9 @@ chmod 600 "$CONFIG_DIR/config.cfg"
 
 echo "==> Creating package tarball..."
 cd "$BUILD_DIR"
-tar -czf "$SCRIPT_DIR/$PACKAGE_FILE" .
+tar -cf "$SCRIPT_DIR/$PACKAGE_FILE" .
 cd "$SCRIPT_DIR"
 
 rm -rf "$BUILD_DIR"
 
 echo "==> Done: $PACKAGE_FILE ($(du -h "$PACKAGE_FILE" | cut -f1))"
-echo "==> Manifest: plugin/unraid-mcp.plg"

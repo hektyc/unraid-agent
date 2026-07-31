@@ -61,7 +61,7 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh
-          ls -lh unraid-mcp.tar.gz
+          ls -lh unraid-mcp.tar
 
       - name: Commit and push version bump
         run: |
@@ -79,4 +79,4 @@ jobs:
           generate_release_notes: true
           files: |
             plugin/unraid-mcp.plg
-            unraid-mcp.tar.gz
+            unraid-mcp.tar
