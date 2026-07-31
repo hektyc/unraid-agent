@@ -3,19 +3,8 @@ PLUGIN_NAME="unraid-mcp"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
-LOGFILE="/var/log/unraid-mcp.log"
 
-mkdir -p "$CONFIG_DIR"
-
-if [ -f "$PIDFILE" ]; then
-    OLDPID=$(cat "$PIDFILE")
-    if kill -0 "$OLDPID" 2>/dev/null; then
-        echo "Server already running (PID $OLDPID)"
-        exit 0
-    else
-        rm -f "$PIDFILE"
-    fi
-fi
+source "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
 
 set -a
 source "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
@@ -52,9 +41,17 @@ if [ -z "${UNRAID_API_URL:-}" ]; then
 fi
 export UNRAID_API_URL
 
-mkdir -p "$(dirname "$LOGFILE")"
+if [ -f "$PIDFILE" ]; then
+    OLDPID=$(cat "$PIDFILE")
+    if kill -0 "$OLDPID" 2>/dev/null; then
+        kill "$OLDPID" 2>/dev/null
+        sleep 1
+        kill -9 "$OLDPID" 2>/dev/null
+        rm -f "$PIDFILE"
+    fi
+fi
 
-nohup "$INSTALL_DIR/bin/unraid-mcp" >> "$LOGFILE" 2>&1 &
+nohup "$INSTALL_DIR/bin/unraid-mcp" >> /var/log/unraid-mcp.log 2>&1 &
 PID=$!
 echo $PID > "$PIDFILE"
-echo "Server started (PID $PID)"
+echo "Server restarted (PID $PID)"

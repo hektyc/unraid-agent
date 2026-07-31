@@ -31,16 +31,17 @@ cp plugin/scripts/start.sh "$INSTALL_DIR/scripts/start.sh"
 cp plugin/scripts/stop.sh "$INSTALL_DIR/scripts/stop.sh"
 cp plugin/scripts/status.sh "$INSTALL_DIR/scripts/status.sh"
 cp plugin/scripts/upgrade.sh "$INSTALL_DIR/scripts/upgrade.sh"
+cp plugin/scripts/apply.sh "$INSTALL_DIR/scripts/apply.sh"
 cp plugin/scripts/remove.sh "$INSTALL_DIR/scripts/remove.sh"
 cp plugin/webgui/Settings.page "$INSTALL_DIR/webgui/Settings.page"
-sed -i.bak "s/<version>[^<]*<\/version>/<version>${VERSION}<\/version>/" "$INSTALL_DIR/webgui/Settings.page" && rm -f "$INSTALL_DIR/webgui/Settings.page.bak"
+cp plugin/webgui/default.cfg "$INSTALL_DIR/default.cfg"
 cp memory/AGENT-SKILLS.md "$INSTALL_DIR/memory/AGENT-SKILLS.md"
 cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
 cp plugin/unraid-mcp.plg "$INSTALL_DIR/unraid-mcp.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 
-echo "==> Creating config.cfg..."
-cat > "$CONFIG_DIR/config.cfg" << 'ENVEOF'
+echo "==> Creating config..."
+cat > "$CONFIG_DIR/${PLUGIN_NAME}.cfg" << 'ENVEOF'
 UNRAID_API_URL=""
 UNRAID_API_KEY=""
 TRANSPORT="stdio"
@@ -80,7 +81,7 @@ UNRAID_ALLOW_INSECURE_TLS="false"
 UNRAID_MCP_BEARER_TOKEN=""
 UNRAID_MCP_DISABLE_HTTP_AUTH="false"
 ENVEOF
-chmod 600 "$CONFIG_DIR/config.cfg"
+chmod 600 "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
 
 echo "==> Creating package tarball..."
 cd "$BUILD_DIR"

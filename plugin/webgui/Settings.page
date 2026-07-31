@@ -1,49 +1,140 @@
-<?xml version="1.0" encoding="utf-8"?>
-<plugin Settings>
-  <name>Unraid MCP Server</name>
-  <authors>hektyc</authors>
-  <version>0.0.10</version>
-  <url>https://github.com/hektyc/unraid-mcp-server</url>
-  <description>Feature-rich MCP server for Unraid with safety controls and AI agent integration</description>
+Menu="Settings"
+Title="Unraid MCP Server"
+Icon="fa-robot"
+---
+<?php
+$plugin = "unraid-mcp";
+$cfg = parse_plugin_cfg($plugin);
+?>
 
-  <page id="Settings.unraid-mcp" title="Unraid MCP Server" icon="fa-robot">
-    <section title="Connection">
-        <field label="Unraid API URL" type="text" id="unraid_api_url" required="0">
-<description>Leave blank to auto-detect from Unraid var.ini</description>
-</field>
-        <field label="API Key" type="password" id="unraid_api_key" required="1" />
-        <field label="Transport" type="select" id="transport" required="1">
-          <option value="stdio">stdio</option>
-          <option value="streamable-http">streamable-http</option>
-        </field>
-        <field label="Bind Host" type="text" id="unraid_mcp_host" />
-        <field label="Port" type="number" id="unraid_mcp_port" />
-      </section>
+<form markdown="1" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#file" value="<?=$plugin?>/<?=$plugin?>.cfg">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/apply.sh">
 
-      <section title="Security">
-        <field label="Read Only (Recommended)" type="checkbox" id="read_only" checked="1" />
-        <field label="Allow Array Stop/Start" type="checkbox" id="allow_array_actions" />
-        <field label="Allow Array Stop" type="checkbox" id="allow_array_stop" required="0" />
-        <field label="Allow Array Start" type="checkbox" id="allow_array_start" required="0" />
-        <field label="Allow Container Stop" type="checkbox" id="allow_container_stop" required="0" />
-        <field label="Allow Container Remove" type="checkbox" id="allow_container_remove" required="0" />
-        <field label="Allow VM Stop" type="checkbox" id="allow_vm_stop" required="0" />
-        <field label="Allow Plugin Install" type="checkbox" id="allow_plugin_install" required="0" />
-        <field label="Allow Destructive (All)" type="checkbox" id="allow_destructive" required="0" />
-      </section>
+<div id="title"><span class="left">Unraid MCP Server Settings</span></div>
 
-      <section title="HTTP Auth (streamable-http only)">
-        <field label="Bearer Token" type="password" id="unraid_mcp_bearer_token" required="0" />
-        <field label="Disable HTTP Auth" type="checkbox" id="unraid_mcp_disable_http_auth" required="0" />
-      </section>
+_(Unraid API URL)_:
+: <input type="text" name="UNRAID_API_URL" value="<?=$cfg['UNRAID_API_URL']?>">
+<blockquote class="inline_help">
+Leave blank to auto-detect from Unraid var.ini.
+</blockquote>
 
-      <section title="TLS">
-        <field label="Verify SSL" type="checkbox" id="unraid_verify_ssl" checked="1" />
-        <field label="Allow Insecure TLS" type="checkbox" id="unraid_allow_insecure_tls" required="0" />
-      </section>
+_(API Key)_:
+: <input type="password" name="UNRAID_API_KEY" value="<?=$cfg['UNRAID_API_KEY']?>">
 
-      <section title="Danger Zone">
-        <field label="WARNING: Disabling read-only allows destructive operations." type="info" />
-      </section>
-    </page>
-</plugin>
+_(Transport Mode)_:
+: <select name="TRANSPORT">
+  <?=mk_option($cfg['TRANSPORT'], "stdio", "stdio")?>
+  <?=mk_option($cfg['TRANSPORT'], "streamable-http", "streamable-http")?>
+  </select>
+<blockquote class="inline_help">
+stdio: MCP server runs as a local binary. streamable-http: MCP server runs as an HTTP server.
+</blockquote>
+
+_(Bind Host)_:
+: <input type="text" name="UNRAID_MCP_HOST" value="<?=$cfg['UNRAID_MCP_HOST']?>">
+
+_(Port)_:
+: <input type="number" name="UNRAID_MCP_PORT" value="<?=$cfg['UNRAID_MCP_PORT']?>">
+
+<div id="title"><span class="left">Security</span></div>
+
+_(Read Only (Recommended))_:
+: <select name="READ_ONLY">
+  <?=mk_option($cfg['READ_ONLY'], "true", "Yes")?>
+  <?=mk_option($cfg['READ_ONLY'], "false", "No")?>
+  </select>
+
+_(Allow Array Stop/Start)_:
+: <select name="ALLOW_ARRAY_ACTIONS">
+  <?=mk_option($cfg['ALLOW_ARRAY_ACTIONS'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_ARRAY_ACTIONS'], "false", "No")?>
+  </select>
+
+_(Allow Array Stop)_:
+: <select name="ALLOW_ARRAY_STOP">
+  <?=mk_option($cfg['ALLOW_ARRAY_STOP'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_ARRAY_STOP'], "false", "No")?>
+  </select>
+
+_(Allow Array Start)_:
+: <select name="ALLOW_ARRAY_START">
+  <?=mk_option($cfg['ALLOW_ARRAY_START'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_ARRAY_START'], "false", "No")?>
+  </select>
+
+_(Allow Container Stop)_:
+: <select name="ALLOW_CONTAINER_STOP">
+  <?=mk_option($cfg['ALLOW_CONTAINER_STOP'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_CONTAINER_STOP'], "false", "No")?>
+  </select>
+
+_(Allow Container Remove)_:
+: <select name="ALLOW_CONTAINER_REMOVE">
+  <?=mk_option($cfg['ALLOW_CONTAINER_REMOVE'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_CONTAINER_REMOVE'], "false", "No")?>
+  </select>
+
+_(Allow VM Stop)_:
+: <select name="ALLOW_VM_STOP">
+  <?=mk_option($cfg['ALLOW_VM_STOP'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_VM_STOP'], "false", "No")?>
+  </select>
+
+_(Allow Plugin Install)_:
+: <select name="ALLOW_PLUGIN_INSTALL">
+  <?=mk_option($cfg['ALLOW_PLUGIN_INSTALL'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_PLUGIN_INSTALL'], "false", "No")?>
+  </select>
+
+<div id="title"><span class="left">HTTP Auth (streamable-http only)</span></div>
+
+_(Bearer Token)_:
+: <input type="password" name="UNRAID_MCP_BEARER_TOKEN" value="<?=$cfg['UNRAID_MCP_BEARER_TOKEN']?>">
+
+_(Disable HTTP Auth)_:
+: <select name="UNRAID_MCP_DISABLE_HTTP_AUTH">
+  <?=mk_option($cfg['UNRAID_MCP_DISABLE_HTTP_AUTH'], "true", "Yes")?>
+  <?=mk_option($cfg['UNRAID_MCP_DISABLE_HTTP_AUTH'], "false", "No")?>
+  </select>
+
+<div id="title"><span class="left">TLS</span></div>
+
+_(Verify SSL)_:
+: <select name="UNRAID_VERIFY_SSL">
+  <?=mk_option($cfg['UNRAID_VERIFY_SSL'], "true", "Yes")?>
+  <?=mk_option($cfg['UNRAID_VERIFY_SSL'], "false", "No")?>
+  </select>
+
+_(Allow Insecure TLS)_:
+: <select name="UNRAID_ALLOW_INSECURE_TLS">
+  <?=mk_option($cfg['UNRAID_ALLOW_INSECURE_TLS'], "true", "Yes")?>
+  <?=mk_option($cfg['UNRAID_ALLOW_INSECURE_TLS'], "false", "No")?>
+  </select>
+
+<div id="title"><span class="left">Logging</span></div>
+
+_(Log Level)_:
+: <select name="UNRAID_MCP_LOG_LEVEL">
+  <?=mk_option($cfg['UNRAID_MCP_LOG_LEVEL'], "info", "Info")?>
+  <?=mk_option($cfg['UNRAID_MCP_LOG_LEVEL'], "debug", "Debug")?>
+  <?=mk_option($cfg['UNRAID_MCP_LOG_LEVEL'], "warn", "Warn")?>
+  <?=mk_option($cfg['UNRAID_MCP_LOG_LEVEL'], "error", "Error")?>
+  </select>
+
+<div id="title"><span class="left">Danger Zone</span></div>
+
+<blockquote class="inline_help">
+WARNING: Disabling read-only mode allows destructive operations.
+</blockquote>
+
+_(Allow Destructive (All))_:
+: <select name="ALLOW_DESTRUCTIVE">
+  <?=mk_option($cfg['ALLOW_DESTRUCTIVE'], "true", "Yes")?>
+  <?=mk_option($cfg['ALLOW_DESTRUCTIVE'], "false", "No")?>
+  </select>
+
+<input type="submit" name="#default" value="_(Default)_">
+: <input type="submit" name="#apply" value="_(Apply)_"><input type="button" value="_(Done)_" onclick="done()">
+</form>
