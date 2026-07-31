@@ -68,43 +68,63 @@ else
 fi
 
 echo "Extracting package ..."
-echo "File size: $(stat -c%s "$TMP_FILE" 2>/dev/null || stat -f%z "$TMP_FILE" 2>/dev/null) bytes"
-echo "File type: $(file "$TMP_FILE" 2>/dev/null || echo 'unknown')"
+echo "File size: $(stat -c%s "$TMP_FILE" 2>&1 || stat -f%z "$TMP_FILE" 2>&1) bytes"
+echo "File type: $(file "$TMP_FILE" 2>&1 || echo 'unknown')"
 echo "tar version: $(tar --version 2>&amp;1 | head -1 || echo 'unknown')"
+echo "Disk space on /: $(df -h / | tail -1)"
+echo "Disk space on /boot: $(df -h /boot | tail -1)"
+echo "Temp file path: $TMP_FILE"
 echo "---"
 
-# Method 1: standard tar extraction
-tar -xf "$TMP_FILE" -C /
-if [ $? -eq 0 ]; then
+# Method 1: standard tar extraction with verbose error capture
+echo "Method 1: tar -xf \"$TMP_FILE\" -C /"
+TAR_ERR=$(tar -xf "$TMP_FILE" -C / 2>&1)
+TAR_EXIT=$?
+if [ $TAR_EXIT -eq 0 ]; then
   echo "Extraction method 1 (tar -xf -C) succeeded"
   rm -f "$TMP_FILE"
   echo "Package extracted successfully."
   exit 0
 fi
+echo "Method 1 exit code: $TAR_EXIT"
+echo "Method 1 stderr stdout: $TAR_ERR"
 
 # Method 2: cd to root first
-echo "Method 1 failed, trying method 2 (cd / &amp;&amp; tar -xf)..."
+echo "Method 2: cd / &amp;&amp; tar -xf \"$TMP_FILE\""
 cd /
-tar -xf "$TMP_FILE"
-if [ $? -eq 0 ]; then
+TAR_ERR=$(tar -xf "$TMP_FILE" 2>&1)
+TAR_EXIT=$?
+if [ $TAR_EXIT -eq 0 ]; then
   echo "Extraction method 2 succeeded"
   rm -f "$TMP_FILE"
   echo "Package extracted successfully."
   exit 0
 fi
+echo "Method 2 exit code: $TAR_EXIT"
+echo "Method 2 stderr stdout: $TAR_ERR"
 
 # Method 3: extract via stdin
-echo "Method 2 failed, trying method 3 (cat | tar -xf -)..."
+echo "Method 3: cat \"$TMP_FILE\" | tar -xf -"
 cd /
-cat "$TMP_FILE" | tar -xf -
-if [ $? -eq 0 ]; then
+TAR_ERR=$(cat "$TMP_FILE" | tar -xf - 2>&1)
+TAR_EXIT=$?
+if [ $TAR_EXIT -eq 0 ]; then
   echo "Extraction method 3 succeeded"
   rm -f "$TMP_FILE"
   echo "Package extracted successfully."
   exit 0
 fi
+echo "Method 3 exit code: $TAR_EXIT"
+echo "Method 3 stderr stdout: $TAR_ERR"
 
 echo "ERROR: All extraction methods failed"
+echo "---"
+echo "Diagnostic information:"
+echo "File: $(ls -la "$TMP_FILE" 2>&1)"
+echo "File content start: $(head -c 50 "$TMP_FILE" | xxd | head -1 2>&1)"
+echo "Writable targets:"
+echo "  /usr/local/emhttp/plugins/ : $(test -w /usr/local/emhttp/plugins/ && echo 'YES' || echo 'NO')"
+echo "  /boot/config/plugins/ : $(test -w /boot/config/plugins/ && echo 'YES' || echo 'NO')"
 rm -f "$TMP_FILE"
 exit 1
 </INLINE>
