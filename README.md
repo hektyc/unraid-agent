@@ -2,51 +2,71 @@
 
 Private, safety-first MCP server for Unraid. Runs as a native Unraid plugin (`.plg`) with WebGUI settings, GraphQL-only delegation, and `nobody:nobody` daemon isolation.
 
-## Architecture
+## Quick Install
 
+### Option A: GitHub Actions Build (Recommended)
+
+1. Push code to the `dev` branch
+2. Go to **Actions** tab in GitHub
+3. Select **Build Unraid MCP Plugin** workflow
+4. Click **Run workflow** → select `dev` branch → **Run**
+5. When complete, download `unraid-mcp-plugin` artifact
+6. In Unraid WebUI: **Settings > Plugins > Install Plugin**
+7. Upload the downloaded `.plg` file
+
+### Option B: Build Locally
+
+```bash
+# Requires Go 1.24+
+git clone https://github.com/hektyc/unraid-mcp-server.git
+cd unraid-mcp-server
+git checkout dev
+chmod +x build.sh
+./build.sh
+# → creates: unraid-mcp-0.0.1.plg
 ```
-Unraid WebUI (Settings > Plugins > Unraid MCP Server)
-         |
-    plugin.xml + Settings.page
-         |
-    scripts/*.sh (start/stop/install/remove)
-         |
-    /usr/local/emhttp/plugins/unraid-mcp/bin/unraid-mcp  (Go binary, nobody:nobody)
-         |
-    GraphQL only -> https://<unraid>:/graphql (X-API-Key)
+
+Then upload the `.plg` via Unraid WebUI.
+
+### Option C: Manual File Copy
+
+If you cannot use the UI:
+
+```bash
+# Copy .plg to Unraid server
+scp unraid-mcp-0.0.1.plg root@tower.local:/root/
+
+# SSH into Unraid and install
+ssh root@tower.local
+cd /root
+tar -xf unraid-mcp-0.0.1.plg -C /
 ```
 
-- **Transport:** `stdio` (default) or `streamable-http` (opt-in)
-- **Auth:** Bearer token for HTTP mode (manual entry, never auto-generated)
-- **Safety:** `READ_ONLY=true` by default; per-action `ALLOW_*` toggles; explicit warnings when read-only is disabled
-- **Memory:** `AGENT-SKILLS.md` + `AGENT-MEMORY.md` stored in plugin config dir
+## Configuration
 
-## Install
+After install, go to **Settings > Unraid MCP Server**:
 
-1. Build the plugin:
-   ```bash
-   ./build.sh
-   ```
-   This creates `unraid-mcp-0.0.1.plg`.
+| Setting | Default | Description |
+|---|---|---|
+| Unraid API URL | `http://localhost/graphql` | GraphQL endpoint |
+| API Key | *(empty)* | Unraid API key |
+| Transport | `stdio` | `stdio` or `streamable-http` |
+| Bind Host | `127.0.0.1` | HTTP bind address |
+| Port | `6970` | HTTP port |
+| Read Only | `true` | **Keep enabled unless needed** |
+| Allow Array Actions | `false` | Array start/stop |
+| Allow Container Actions | `false` | Container stop/remove |
+| Allow VM Actions | `false` | VM stop/force-stop |
+| Allow Destructive | `false` | Shortcut for all destructive |
+| Bearer Token | *(empty)* | Manual entry for HTTP auth |
+| Verify SSL | `true` | TLS verification |
 
-2. Upload via Unraid WebUI:
-   - Go to **Settings > Plugins > Install Plugin**
-   - Enter the raw URL of the `.plg` file:
-     ```
-     https://raw.githubusercontent.com/hektyc/unraid-mcp-server/dev/unraid-mcp-0.0.1.plg
-     ```
-   - Click **Install**
+## Safety
 
-3. Configure:
-   - Go to **Settings > Unraid MCP Server**
-   - Enter your Unraid API URL and API Key
-   - Keep **Read Only** enabled unless you need write access
-   - Adjust action toggles as needed
-
-4. Start:
-   - Go to **Settings > Plugins**
-   - Find **Unraid MCP Server** and click **Start**
-   - Logs are at `/var/log/unraid-mcp.log`
+- **Default is read-only.** All write/mutation operations are blocked unless explicitly enabled.
+- Per-action toggles in the WebGUI control exactly which operations are allowed.
+- Destructive actions show explicit warnings in tool descriptions.
+- MCP server runs as `nobody:nobody` with GraphQL-only access.
 
 ## Client Integration
 
@@ -76,33 +96,33 @@ Unraid WebUI (Settings > Plugins > Unraid MCP Server)
 }
 ```
 
-## AGENT-SKILLS.md
+## Files
 
-Stored at `/boot/config/plugins/unraid-mcp/AGENT-SKILLS.md`. Edit to teach the agent how to carry out tasks on your system.
+| Path | Purpose |
+|---|---|
+| `/usr/local/emhttp/plugins/unraid-mcp/` | Plugin install dir |
+| `/boot/config/plugins/unraid-mcp/config.cfg` | Persistent settings |
+| `/boot/config/plugins/unraid-mcp/AGENT-SKILLS.md` | Agent skills (editable) |
+| `/boot/config/plugins/unraid-mcp/AGENT-MEMORY.md` | Agent memory (editable) |
+| `/var/log/unraid-mcp.log` | Plugin logs |
+| `/usr/local/emhttp/plugins/unraid-mcp/bin/unraid-mcp` | Go binary |
 
-## AGENT-MEMORY.md
+## AGENT-SKILLS.md and AGENT-MEMORY.md
 
-Stored at `/boot/config/plugins/unraid-mcp/AGENT-MEMORY.md`. Edit to add rules and remembered state.
+These files live in `/boot/config/plugins/unraid-mcp/` and can be edited by you or by the AI agent through the MCP tools. They provide:
 
-## Build from Source
-
-```bash
-# Requires Go 1.24+
-go build -o go/bin/unraid-mcp ./go/cmd/unraid-mcp
-./build.sh
-```
+- **AGENT-SKILLS.md** — How-to guides for carrying out tasks
+- **AGENT-MEMORY.md** — Rules, constraints, and remembered state
 
 ## Branching
 
 - `dev` — active development
-- `main` — stable releases
-
-Version bump on merge to `main` creates a new `.plg` tagged release.
+- `main` — stable releases, auto-tagged `.plg` builds
 
 ## Security
 
-- MCP server runs as `nobody:nobody`
-- All admin actions go through GraphQL only
-- No shell execution
+- `nobody:nobody` process isolation
+- GraphQL-only delegation (no shell execution)
 - Default `READ_ONLY=true`
 - Sensitive values redacted in logs
+- Manual bearer token entry (never auto-generated)

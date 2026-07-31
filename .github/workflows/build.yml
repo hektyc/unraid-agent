@@ -1,0 +1,60 @@
+name: Build Unraid MCP Plugin
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: Build Go binary
+        run: |
+          cd go
+          go build -o bin/unraid-mcp ./cmd/unraid-mcp
+          ls -lh bin/unraid-mcp
+
+      - name: Package .plg
+        run: |
+          chmod +x build.sh
+          ./build.sh
+          ls -lh *.plg
+
+      - name: Upload .plg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unraid-mcp-plugin
+          path: unraid-mcp-*.plg
+          retention-days: 90
+
+      - name: Upload Go binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unraid-mcp-binary
+          path: go/bin/unraid-mcp
+          retention-days: 90
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            go/*.log
+            *.log
+          retention-days: 7
