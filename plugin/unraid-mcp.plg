@@ -45,23 +45,35 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 <!-- Download and extract plugin package -->
 <FILE Run="/bin/bash">
 <INLINE>
+PLUGIN_NAME="&name;"
+CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PKG_URL="&releaseURL;/&name;.tar"
 TMP_FILE="/tmp/&name;.tar"
-echo "Downloading package from $PKG_URL ..."
-curl -fsSL "$PKG_URL" -o "$TMP_FILE"
-CURL_EXIT=$?
-if [ $CURL_EXIT -ne 0 ] || [ ! -s "$TMP_FILE" ]; then
-  echo "ERROR: Download failed (curl exit: $CURL_EXIT)"
-  rm -f "$TMP_FILE"
-  exit 1
+
+# Check for local package first (manual install support)
+if [ -f "$CONFIG_DIR/${PLUGIN_NAME}.tar" ]; then
+  echo "Using local package file"
+  TMP_FILE="$CONFIG_DIR/${PLUGIN_NAME}.tar"
+else
+  echo "Downloading package from $PKG_URL ..."
+  curl -fsSL "$PKG_URL" -o "$TMP_FILE"
+  CURL_EXIT=$?
+  if [ $CURL_EXIT -ne 0 ] || [ ! -s "$TMP_FILE" ]; then
+    echo "ERROR: Download failed (curl exit: $CURL_EXIT)"
+    echo "If the repo is private, download unraid-mcp.plg and unraid-mcp.tar manually"
+    echo "from the release page and SCP them to this server."
+    rm -f "$TMP_FILE"
+    exit 1
+  fi
 fi
+
 echo "Extracting package ..."
 echo "File size: $(stat -c%s "$TMP_FILE" 2>/dev/null || stat -f%z "$TMP_FILE" 2>/dev/null) bytes"
 echo "File type: $(file "$TMP_FILE" 2>/dev/null || echo 'unknown')"
 echo "tar version: $(tar --version 2>&1 | head -1 || echo 'unknown')"
 echo "---"
 
-# Method 1: standard tar extraction with -C
+# Method 1: standard tar extraction
 tar -xf "$TMP_FILE" -C /
 if [ $? -eq 0 ]; then
   echo "Extraction method 1 (tar -xf -C) succeeded"
@@ -70,12 +82,12 @@ if [ $? -eq 0 ]; then
   exit 0
 fi
 
-# Method 2: cd to root first, then extract
+# Method 2: cd to root first
 echo "Method 1 failed, trying method 2 (cd / && tar -xf)..."
 cd /
 tar -xf "$TMP_FILE"
 if [ $? -eq 0 ]; then
-  echo "Extraction method 2 (cd / && tar -xf) succeeded"
+  echo "Extraction method 2 succeeded"
   rm -f "$TMP_FILE"
   echo "Package extracted successfully."
   exit 0
@@ -86,17 +98,13 @@ echo "Method 2 failed, trying method 3 (cat | tar -xf -)..."
 cd /
 cat "$TMP_FILE" | tar -xf -
 if [ $? -eq 0 ]; then
-  echo "Extraction method 3 (cat | tar -xf -) succeeded"
+  echo "Extraction method 3 succeeded"
   rm -f "$TMP_FILE"
   echo "Package extracted successfully."
   exit 0
 fi
 
 echo "ERROR: All extraction methods failed"
-ls -la "$TMP_FILE"
-echo "---"
-echo "Tar error output:"
-tar -xf "$TMP_FILE" -C /tmp/test_extract 2>&1 || true
 rm -f "$TMP_FILE"
 exit 1
 </INLINE>
