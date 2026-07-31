@@ -12,6 +12,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/logger"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
+	"github.com/hektyc/unraid-mcp-server/internal/tools"
 )
 
 const version = "0.0.1"
@@ -47,6 +48,23 @@ func main() {
 	logger.Get().Infof("Transport: %s, Read-only: %v", cfg.Transport, cfg.ReadOnly)
 
 	server := mcp.NewServer(cfg)
+	tools.RegisterarrayTools(server, cfg)
+	tools.RegisterconnectTools(server, cfg)
+	tools.RegistercustomizationTools(server, cfg)
+	tools.RegisterdockerTools(server, cfg)
+	tools.RegisterhealthTools(server, cfg)
+	tools.RegisterhelpTools(server, cfg)
+	tools.RegisterkeyTools(server, cfg)
+	tools.RegisterliveTools(server, cfg)
+	tools.RegisternotificationTools(server, cfg)
+	tools.RegisteroidcTools(server, cfg)
+	tools.RegisteronboardingTools(server, cfg)
+	tools.RegisterpluginTools(server, cfg)
+	tools.RegisterrcloneTools(server, cfg)
+	tools.RegistersettingTools(server, cfg)
+	tools.RegistersystemTools(server, cfg)
+	tools.RegisteruserTools(server, cfg)
+	tools.RegistervmTools(server, cfg)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
