@@ -12,7 +12,7 @@ chmod +x "$INSTALL_DIR/scripts/"*.sh
 
 if [ ! -f "$CONFIG_DIR/config.cfg" ]; then
     cat > "$CONFIG_DIR/config.cfg" << 'ENVEOF'
-UNRAID_API_URL="http://localhost/graphql"
+UNRAID_API_URL="http://127.0.0.1/graphql"
 UNRAID_API_KEY=""
 TRANSPORT="stdio"
 UNRAID_MCP_HOST="127.0.0.1"
