@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin Settings>
+  <name>Unraid MCP Server</name>
+  <authors>hektyc</authors>
+  <version>0.0.1</version>
+  <url>https://github.com/hektyc/unraid-mcp-server</url>
+  <description>Feature-rich MCP server for Unraid with safety controls and AI agent integration</description>
+
+  <apphooks>
+    <page id="Settings.unraid-mcp" title="Unraid MCP Server" icon="fa-robot">
+      <section title="Connection">
+        <field label="Unraid API URL" type="text" id="api_url" required="1" />
+        <field label="API Key" type="password" id="api_key" required="1" />
+        <field label="Transport" type="select" id="transport" required="1">
+          <option value="stdio">stdio</option>
+          <option value="streamable-http">streamable-http</option>
+        </field>
+        <field label="Bind Host" type="text" id="mcp_host" />
+        <field label="Port" type="number" id="mcp_port" />
+      </section>
+
+      <section title="Security">
+        <field label="Read Only (Recommended)" type="checkbox" id="read_only" checked="1" />
+        <field label="Allow Array Stop/Start" type="checkbox" id="allow_array_actions" />
+        <field label="Allow Array Stop" type="checkbox" id="allow_array_stop" required="0" />
+        <field label="Allow Array Start" type="checkbox" id="allow_array_start" required="0" />
+        <field label="Allow Container Stop" type="checkbox" id="allow_container_stop" required="0" />
+        <field label="Allow Container Remove" type="checkbox" id="allow_container_remove" required="0" />
+        <field label="Allow VM Stop" type="checkbox" id="allow_vm_stop" required="0" />
+        <field label="Allow Plugin Install" type="checkbox" id="allow_plugin_install" required="0" />
+        <field label="Allow Destructive (All)" type="checkbox" id="allow_destructive" required="0" />
+      </section>
+
+      <section title="HTTP Auth (streamable-http only)">
+        <field label="Bearer Token" type="password" id="bearer_token" required="0" />
+        <field label="Disable HTTP Auth" type="checkbox" id="disable_http_auth" required="0" />
+      </section>
+
+      <section title="TLS">
+        <field label="Verify SSL" type="checkbox" id="verify_ssl" checked="1" />
+        <field label="Allow Insecure TLS" type="checkbox" id="allow_insecure_tls" required="0" />
+      </section>
+
+      <section title="Danger Zone">
+        <field label="WARNING: Disabling read-only allows destructive operations." type="info" />
+      </section>
+    </page>
+  </apphooks>
+</plugin>
