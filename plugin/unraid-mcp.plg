@@ -3,7 +3,7 @@
 <!ENTITY name		"unraid-mcp">
 <!ENTITY author		"hektyc">
 <!ENTITY version	"0.0.15">
-<!ENTITY gitURL		"https://raw.githubusercontent.com/hektyc/unraid-mcp-server/main">
+<!ENTITY gitURL		"https://cdn.jsdelivr.net/gh/hektyc/unraid-mcp-server@main">
 <!ENTITY pluginURL	"&gitURL;/plugin/unraid-mcp.plg">
 <!ENTITY releaseURL	"https://github.com/hektyc/unraid-mcp-server/releases/latest/download">
 <!ENTITY pluginLOC	"/boot/config/plugins/&name;">
