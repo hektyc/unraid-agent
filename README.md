@@ -14,7 +14,14 @@ Private, safety-first MCP server for Unraid. Runs as a native Unraid plugin (`.p
 6. In Unraid WebUI: **Settings > Plugins > Install Plugin**
 7. Upload the downloaded `.plg` file
 
-### Option B: Build Locally
+### Option B: Direct Download from GitHub Releases
+
+1. Go to **Releases** page in GitHub
+2. Download the latest `unraid-mcp-*.plg` asset
+3. In Unraid WebUI: **Settings > Plugins > Install Plugin**
+4. Paste the direct download URL or upload the file
+
+### Option C: Build Locally
 
 ```bash
 # Requires Go 1.24+
@@ -28,7 +35,7 @@ chmod +x build.sh
 
 Then upload the `.plg` via Unraid WebUI.
 
-### Option C: Manual File Copy
+### Option D: Manual File Copy
 
 If you cannot use the UI:
 
@@ -116,8 +123,8 @@ These files live in `/boot/config/plugins/unraid-mcp/` and can be edited by you 
 
 ## Branching
 
-- `dev` — active development
-- `main` — stable releases, auto-tagged `.plg` builds
+- `dev` — active development, CI builds `.plg` artifacts
+- `main` — stable releases, auto-tagged `.plg` builds with GitHub Release assets
 
 ## Security
 
