@@ -37,8 +37,20 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 </FILE>
 
 <!-- Download and extract plugin package -->
-<FILE Name="/tmp/&name;.tar.gz" Run="/bin/tar -xzf /tmp/&name;.tar.gz -C / && /bin/rm -f /tmp/&name;.tar.gz">
-<URL>"&releaseURL;/&name;.tar.gz"</URL>
+<FILE Run="/bin/bash">
+<INLINE>
+PKG_URL="&releaseURL;/&name;.tar.gz"
+TMP_FILE="/tmp/&name;.tar.gz"
+curl -fsSL "$PKG_URL" -o "$TMP_FILE"
+if [ ! -s "$TMP_FILE" ]; then
+  echo "ERROR: Failed to download package from $PKG_URL"
+  echo "The repo may be private or the release URL may be inaccessible."
+  exit 1
+fi
+/bin/tar -xzf "$TMP_FILE" -C /
+rm -f "$TMP_FILE"
+echo "Package extracted successfully."
+</INLINE>
 </FILE>
 
 <!-- Post-install: set permissions -->
