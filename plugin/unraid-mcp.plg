@@ -11,6 +11,9 @@
 ]>
 
 <PLUGIN name="&name;"
+        launch="settings"
+        support="https://github.com/hektyc/unraid-mcp-server/issues"
+        project="https://github.com/hektyc/unraid-mcp-server"
 		author="&author;"
 		version="&version;"
 		pluginURL="&pluginURL;"
