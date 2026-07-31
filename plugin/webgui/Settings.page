@@ -2,21 +2,20 @@
 <plugin Settings>
   <name>Unraid MCP Server</name>
   <authors>hektyc</authors>
-  <version>0.0.7</version>
+  <version>0.0.8</version>
   <url>https://github.com/hektyc/unraid-mcp-server</url>
   <description>Feature-rich MCP server for Unraid with safety controls and AI agent integration</description>
 
-  <apphooks>
-    <page id="Settings.unraid-mcp" title="Unraid MCP Server" icon="fa-robot">
-      <section title="Connection">
-        <field label="Unraid API URL" type="text" id="api_url" required="1" />
-        <field label="API Key" type="password" id="api_key" required="1" />
+  <page id="Settings.unraid-mcp" title="Unraid MCP Server" icon="fa-robot">
+    <section title="Connection">
+        <field label="Unraid API URL" type="text" id="unraid_api_url" required="1" />
+        <field label="API Key" type="password" id="unraid_api_key" required="1" />
         <field label="Transport" type="select" id="transport" required="1">
           <option value="stdio">stdio</option>
           <option value="streamable-http">streamable-http</option>
         </field>
-        <field label="Bind Host" type="text" id="mcp_host" />
-        <field label="Port" type="number" id="mcp_port" />
+        <field label="Bind Host" type="text" id="unraid_mcp_host" />
+        <field label="Port" type="number" id="unraid_mcp_port" />
       </section>
 
       <section title="Security">
@@ -45,5 +44,4 @@
         <field label="WARNING: Disabling read-only allows destructive operations." type="info" />
       </section>
     </page>
-  </apphooks>
 </plugin>
