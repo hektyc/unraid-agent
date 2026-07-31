@@ -35,10 +35,13 @@ cp plugin/scripts/apply.sh "$INSTALL_DIR/scripts/apply.sh"
 cp plugin/scripts/remove.sh "$INSTALL_DIR/scripts/remove.sh"
 cp plugin/webgui/Settings.page "$INSTALL_DIR/webgui/Settings.page"
 cp plugin/webgui/default.cfg "$INSTALL_DIR/default.cfg"
+cp plugin/webgui/default.cfg "$CONFIG_DIR/default.cfg"
 cp memory/AGENT-SKILLS.md "$INSTALL_DIR/memory/AGENT-SKILLS.md"
 cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
 cp plugin/unraid-mcp.plg "$INSTALL_DIR/unraid-mcp.plg"
+cp plugin/unraid-mcp.plg "$CONFIG_DIR/unraid-mcp.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
+chmod 644 "$CONFIG_DIR/unraid-mcp.plg" "$CONFIG_DIR/default.cfg"
 
 echo "==> Creating config..."
 cat > "$CONFIG_DIR/${PLUGIN_NAME}.cfg" << 'ENVEOF'
