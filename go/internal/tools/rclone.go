@@ -9,7 +9,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterTools(s *mcp.Server, cfg *config.Config) {
+func RegisterrcloneTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "rclone_list_remotes",
 		Description: "Get configured remotes. Read-only.",

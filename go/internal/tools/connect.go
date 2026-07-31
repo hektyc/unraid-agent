@@ -9,7 +9,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterTools(s *mcp.Server, cfg *config.Config) {
+func RegisterconnectTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_status",
 		Description: "Get connection status. Read-only.",

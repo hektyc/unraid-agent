@@ -9,7 +9,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterTools(s *mcp.Server, cfg *config.Config) {
+func RegisterhelpTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "help_full",
 		Description: "Get comprehensive tool reference.",

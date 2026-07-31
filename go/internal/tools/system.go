@@ -9,7 +9,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
 
-func RegisterTools(s *mcp.Server, cfg *config.Config) {
+func RegistersystemTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "system_overview",
 		Description: "Get OS, CPU, memory, versions, machine ID. Read-only.",

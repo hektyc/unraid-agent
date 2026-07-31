@@ -6,6 +6,7 @@ import (
 
 	"github.com/hektyc/unraid-mcp-server/internal/client"
 	"github.com/hektyc/unraid-mcp-server/internal/config"
+	"github.com/hektyc/unraid-mcp-server/internal/tools"
 )
 
 type ToolHandler func(ctx context.Context, arguments map[string]interface{}) (string, error)
@@ -48,5 +49,29 @@ func (s *Server) GraphQLQuery(ctx context.Context, query string, variables map[s
 }
 
 func (s *Server) registerTools() {
-	// Tool registration is done via init() functions in subpackages
+	tools.RegisterarrayTools(s, s.config)
+	tools.RegisterconnectTools(s, s.config)
+	tools.RegistercustomizationTools(s, s.config)
+	tools.RegisterdockerTools(s, s.config)
+	tools.RegisterhealthTools(s, s.config)
+	tools.RegisterhelpTools(s, s.config)
+	tools.RegisterkeyTools(s, s.config)
+	tools.RegisterliveTools(s, s.config)
+	tools.RegisternotificationTools(s, s.config)
+	tools.RegisteroidcTools(s, s.config)
+	tools.RegisteronboardingTools(s, s.config)
+	tools.RegisterpluginTools(s, s.config)
+	tools.RegisterrcloneTools(s, s.config)
+	tools.RegistersettingTools(s, s.config)
+	tools.RegistersystemTools(s, s.config)
+	tools.RegisteruserTools(s, s.config)
+	tools.RegistervmTools(s, s.config)
+}
+
+func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
+	return nil
+}
+
+func (s *Server) ServeStdio(ctx context.Context) error {
+	return nil
 }
