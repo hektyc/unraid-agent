@@ -154,10 +154,17 @@ chmod 600 "$CONFIG_DIR/${PLUGIN_NAME}.cfg" 2>/dev/null
 
 echo "-----------------------------------------------------------"
 echo " &name; v&version; installed successfully."
-echo " Configure at: Settings > Plugins > Unraid MCP Server"
+echo " Settings: Settings → Plugins → Unraid MCP Server"
 echo " Set UNRAID_API_KEY in: $CONFIG_DIR/${PLUGIN_NAME}.cfg"
-echo " Start the daemon: $INSTALL_DIR/scripts/start.sh"
+echo " Start daemon: $INSTALL_DIR/scripts/start.sh"
 echo "-----------------------------------------------------------"
+echo ""
+echo "*** RESTART THE WEBGUI TO REGISTER THE SETTINGS PAGE ***"
+echo "Try one of these commands in SSH:"
+echo "  /usr/local/emhttp/emhttp -r"
+echo "  kill -HUP \$(pidof emhttp)"
+echo "Or use WebUI: Settings → Management Access → Restart WebGUI"
+echo "Then hard refresh browser (Ctrl+F5)"
 </INLINE>
 </FILE>
 
