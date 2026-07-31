@@ -38,6 +38,8 @@ CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
 mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/webgui" "$INSTALL_DIR/memory"
 rm -rf "$INSTALL_DIR"/* 2>/dev/null
+rm -f "$CONFIG_DIR/webgui/Settings.page" 2>/dev/null
+rm -f "$INSTALL_DIR/webgui/Settings.page" 2>/dev/null
 echo "Pre-install complete for ${PLUGIN_NAME}"
 </INLINE>
 </FILE>
