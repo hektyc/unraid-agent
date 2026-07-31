@@ -31,10 +31,7 @@ NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
 echo "$NEW_VERSION" > VERSION
 
-sed -i "s/^VERSION=\".*\"/VERSION=\"$NEW_VERSION\"/" build.sh
-sed -i "s/unraid-mcp-.*\.plg/unraid-mcp-$NEW_VERSION.plg/g" README.md
-
-git add VERSION build.sh README.md
+git add VERSION
 git commit -m "chore(release): v${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 git push origin HEAD --follow-tags

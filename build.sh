@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 VERSION="$(cat VERSION)"
 PLUGIN_NAME="unraid-mcp"
-PLG_FILE="${PLUGIN_NAME}-${VERSION}.plg"
+PLG_FILE="${PLUGIN_NAME}.plg"
 BUILD_DIR="/tmp/${PLUGIN_NAME}-build"
 INSTALL_DIR="${BUILD_DIR}/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="${BUILD_DIR}/boot/config/plugins/${PLUGIN_NAME}"

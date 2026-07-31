@@ -55,13 +55,9 @@ jobs:
           ./build.sh
           ls -lh *.plg
 
-      - name: Update version in build.sh
+      - name: Update VERSION file
         run: |
-          sed -i "s/^VERSION=\".*\"/VERSION=\"${{ steps.version.outputs.new_version }}\"/" build.sh
-
-      - name: Update version in README.md
-        run: |
-          sed -i "s/unraid-mcp-.*\.plg/unraid-mcp-${{ steps.version.outputs.new_version }}.plg/g" README.md
+          echo "${{ steps.version.outputs.new_version }}" > VERSION
 
       - name: Commit and push version bump
         run: |
@@ -77,4 +73,4 @@ jobs:
           tag_name: v${{ steps.version.outputs.new_version }}
           name: v${{ steps.version.outputs.new_version }}
           generate_release_notes: true
-          files: unraid-mcp-*.plg
+          files: unraid-mcp.plg
