@@ -123,9 +123,69 @@ echo "Diagnostic information:"
 echo "File: $(ls -la "$TMP_FILE" 2>&amp;1)"
 echo "File content start: $(head -c 50 "$TMP_FILE" | xxd | head -1 2>&amp;1)"
 echo "Writable targets:"
-echo "  /usr/local/emhttp/plugins/ : $(test -w /usr/local/emhttp/plugins/ &amp;&amp; echo 'YES' || echo 'NO')"
-echo "  /boot/config/plugins/ : $(test -w /boot/config/plugins/ &amp;&amp; echo 'YES' || echo 'NO')"
+echo "  /usr/local/emhttp/plugins/ : $(test -w /usr/local/emhttp/plugins/ &amp;&amp; echo "YES" || echo "NO")"
+echo "  /boot/config/plugins/ : $(test -w /boot/config/plugins/ &amp;&amp; echo "YES" || echo "NO")"
+
+# Method 4: Extract to temp dir, then copy individually
+echo "---"
+echo "Method 4: Extract to temp dir &amp;&amp; copy files individually"
+EXTRACT_DIR="/tmp/${PLUGIN_NAME}-extract"
+rm -rf "$EXTRACT_DIR"
+mkdir -p "$EXTRACT_DIR"
+TAR_ERR=$(tar -xf "$TMP_FILE" -C "$EXTRACT_DIR" 2>&amp;1)
+TAR_EXIT=$?
+if [ $TAR_EXIT -ne 0 ]; then
+  echo "Method 4 tar extract to temp failed: $TAR_ERR"
+  echo "Trying with --keep-going..."
+  TAR_ERR=$(tar --keep-going -xf "$TMP_FILE" -C "$EXTRACT_DIR" 2>&amp;1)
+  TAR_EXIT=$?
+  if [ $TAR_EXIT -ne 0 ]; then
+    echo "Method 4 with --keep-going also failed"
+  fi
+fi
+
+if [ -d "$EXTRACT_DIR" ]; then
+  echo "Extracting files from temp dir..."
+  INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
+  CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
+  mkdir -p "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/webgui" "$INSTALL_DIR/memory" "$CONFIG_DIR"
+  
+  copy_ok=0
+  copy_fail=0
+  
+  # Copy all files, continuing despite errors
+  cd "$EXTRACT_DIR"
+  for f in $(find . -type f 2>&amp;1); do
+    src="$EXTRACT_DIR/$f"
+    dst="/$f"
+    dst_dir=$(dirname "$dst")
+    mkdir -p "$dst_dir" 2>/dev/null
+    cp -f "$src" "$dst" 2>/dev/null
+    if [ $? -eq 0 ]; then
+      copy_ok=$((copy_ok + 1))
+    else
+      echo "  Failed to copy: $f"
+      copy_fail=$((copy_fail + 1))
+    fi
+  done
+  
+  echo "Copied: $copy_ok files OK, $copy_fail failed"
+  
+  # Verify critical file
+  if [ -f "$INSTALL_DIR/bin/unraid-mcp" ]; then
+    echo "Binary OK at $INSTALL_DIR/bin/unraid-mcp"
+    chmod +x "$INSTALL_DIR/bin/unraid-mcp"
+    rm -f "$TMP_FILE"
+    rm -rf "$EXTRACT_DIR"
+    echo "Package extracted successfully (partial extraction)."
+    echo "WARNING: $copy_fail files failed to copy - check /boot/ filesystem health."
+    exit 0
+  fi
+fi
+
+echo "ERROR: All extraction methods failed including fallback"
 rm -f "$TMP_FILE"
+rm -rf "$EXTRACT_DIR"
 exit 1
 </INLINE>
 </FILE>
