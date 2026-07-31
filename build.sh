@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-VERSION="0.0.1"
+VERSION="$(cat VERSION)"
 PLUGIN_NAME="unraid-mcp"
 PLG_FILE="${PLUGIN_NAME}-${VERSION}.plg"
 BUILD_DIR="/tmp/${PLUGIN_NAME}-build"

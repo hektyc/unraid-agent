@@ -18,7 +18,7 @@ fi
 
 cd "$REPO_ROOT" || exit 1
 
-CURRENT=$(node -p "require('./package.json').version")
+CURRENT=$(cat VERSION)
 IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
 case "$LEVEL" in
@@ -29,9 +29,12 @@ esac
 
 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
-node scripts/bump-version.js "$NEW_VERSION"
+echo "$NEW_VERSION" > VERSION
 
-git add package.json CHANGELOG.md
+sed -i "s/^VERSION=\".*\"/VERSION=\"$NEW_VERSION\"/" build.sh
+sed -i "s/unraid-mcp-.*\.plg/unraid-mcp-$NEW_VERSION.plg/g" README.md
+
+git add VERSION build.sh README.md
 git commit -m "chore(release): v${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 git push origin HEAD --follow-tags
