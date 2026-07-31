@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+      - run: cd go && go mod tidy
+      - run: cd go && go vet ./...
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+      - run: cd go && go mod tidy
+      - run: cd go && go build -o bin/unraid-mcp ./cmd/unraid-mcp
+      - run: ls -lh go/bin/unraid-mcp

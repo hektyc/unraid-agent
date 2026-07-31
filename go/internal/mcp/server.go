@@ -1,0 +1,55 @@
+package mcp
+
+import (
+	"context"
+	"sync"
+
+	"github.com/hektyc/unraid-mcp-server/internal/client"
+	"github.com/hektyc/unraid-mcp-server/internal/config"
+)
+
+type ToolHandler func(ctx context.Context, arguments map[string]interface{}) (string, error)
+
+type ToolDef struct {
+	Name        string
+	Description string
+	Query       string
+	Params      map[string]string
+	Handler     ToolHandler
+}
+
+type Server struct {
+	config   *config.Config
+	gql      *client.Client
+	tools    map[string]*ToolDef
+	handlers map[string]ToolHandler
+	mu       sync.RWMutex
+}
+
+func NewServer(cfg *config.Config) *Server {
+	s := &Server{
+		config:   cfg,
+		tools:    make(map[string]*ToolDef),
+		handlers: make(map[string]ToolHandler),
+	}
+	s.gql = client.New(cfg)
+	return s
+}
+
+func (s *Server) RegisterTool(t *ToolDef) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.tools[t.Name] = t
+}
+
+func (s *Server) GraphQLQuery(ctx context.Context, query string, variables map[string]interface{}) (map[string]interface{}, error) {
+	return s.gql.Query(ctx, query, variables)
+}
+
+func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
+	return nil
+}
+
+func (s *Server) ServeStdio(ctx context.Context) error {
+	return nil
+}

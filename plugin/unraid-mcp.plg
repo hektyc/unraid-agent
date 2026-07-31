@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin name="Unraid MCP Server" version="0.0.1" url="https://github.com/hektyc/unraid-mcp-server">
+  <description>Feature-rich MCP server for Unraid with safety controls, WebSocket telemetry, and AI agent integration</description>
+  <author>hektyc</author>
+  <arch>amd64</arch>
+
+  <minUnraidVersion>6.12.0</minUnraidVersion>
+  <maxUnraidVersion>7.99.99</maxUnraidVersion>
+
+  <configdir>/boot/config/plugins/unraid-mcp</configdir>
+
+  <scripts>
+    <install type="shell">scripts/install.sh</install>
+    <upgrade type="shell">scripts/upgrade.sh</upgrade>
+    <remove type="shell">scripts/remove.sh</remove>
+    <start type="shell">scripts/start.sh</start>
+    <stop type="shell">scripts/stop.sh</stop>
+    <status type="shell">scripts/status.sh</status>
+  </scripts>
+
+  <webgui>
+    <page Settings.page />
+  </webgui>
+
+  <notes>
+    <![CDATA[
+    <div style="padding: 10px; color: #333;">
+      <h3>Unraid MCP Server v0.0.1</h3>
+      <p><strong>Safety:</strong> Default read-only. Enable actions via Settings > Unraid MCP Server.</p>
+      <p><strong>Transport:</strong> stdio (default) or streamable-http</p>
+      <p><strong>Memory:</strong> AGENT-SKILLS.md and AGENT-MEMORY.md are stored in config dir</p>
+      <p style="color: #c00;"><strong>Warning:</strong> Disabling read-only allows destructive operations. Enable only what you need.</p>
+    </div>
+    ]]>
+  </notes>
+</plugin>
