@@ -14,8 +14,8 @@
 		author="&author;"
 		version="&version;"
 		pluginURL="&pluginURL;"
-		icon="fa-robot"
-		launch="Settings/Unraid MCP Server"
+		icon="robot"
+		launch="Settings/&name;"
 		min="6.12.0"
 		support="https://github.com/hektyc/unraid-mcp-server/issues"
 		project="https://github.com/hektyc/unraid-mcp-server">
