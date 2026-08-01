@@ -14,7 +14,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "notification_list",
 		Description: "Get paginated notifications. Read-only.",
-		Query:       `query($offset: Int, $limit: Int, $type: NotificationType, $importance: NotificationImportance) { notifications { list(filter: {offset: $offset, limit: $limit, type: $type, importance: $importance}) { id title subject description importance type timestamp link } } }`,
+		Query:       `query($offset: Int! = 0, $limit: Int! = 25, $list_type: NotificationType, $importance: NotificationImportance) { notifications { list(filter: {offset: $offset, limit: $limit, type: $list_type, importance: $importance}) { id title subject description importance type timestamp link } } }`,
 		Params: map[string]string{
 			"offset":     "number",
 			"limit":      "number",

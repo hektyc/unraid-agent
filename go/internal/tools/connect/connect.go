@@ -9,7 +9,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_status",
 		Description: "Get connection status. Read-only.",
-		Query:       `query { connect { dynamicRemoteAccess settings { values } } }`,
+		Query:       `query { connect { dynamicRemoteAccess { enabledType runningType error } settings { values } } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_sign_in",
