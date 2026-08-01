@@ -1,7 +1,6 @@
-Menu="Settings"
+Menu="Utilities"
 Title="Unraid MCP Server"
 Icon="robot"
-Type="php"
 ---
 <?php
 $plugin = "unraid-mcp";

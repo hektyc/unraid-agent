@@ -14,6 +14,10 @@
 
 <DESCRIPTION>Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
 <CHANGES>
+### 0.0.33
+- Fixed: settings page now appears in User Utilities (not intermixed with System Settings)
+- Changed Menu from "Settings" to "Utilities" and removed Type="php" (matching reference plugin)
+
 ### 0.0.31
 - Fixed: settings page now appears in WebGUI after install/reboot
 - Fixed: .page file moved to plugin root (not webgui/ subdirectory)
