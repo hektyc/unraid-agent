@@ -91,9 +91,69 @@ func Load() (*Config, error) {
 	cfg.AllowInsecureTLS = getEnvBool("UNRAID_ALLOW_INSECURE_TLS", false)
 	cfg.EnableStdio = getEnvBool("UNRAID_MCP_ENABLE_STDIO", false)
 
-	if cfg.APIURL == "" || cfg.APIKey == "" {
-		return nil, fmt.Errorf("UNRAID_API_URL and UNRAID_API_KEY must be set")
+	return cfg, nil
+}
+
+// permissionValue reports whether a named ALLOW_* toggle is enabled.
+func (c *Config) permissionValue(name string) bool {
+	switch name {
+	case "ALLOW_ARRAY_ACTIONS":
+		return c.AllowArrayActions
+	case "ALLOW_ARRAY_STOP":
+		return c.AllowArrayStop
+	case "ALLOW_ARRAY_START":
+		return c.AllowArrayStart
+	case "ALLOW_ARRAY_ADD_DISK":
+		return c.AllowArrayAddDisk
+	case "ALLOW_ARRAY_REMOVE_DISK":
+		return c.AllowArrayRemoveDisk
+	case "ALLOW_ARRAY_CLEAR_STATS":
+		return c.AllowArrayClearStats
+	case "ALLOW_CONTAINER_STOP":
+		return c.AllowContainerStop
+	case "ALLOW_CONTAINER_REMOVE":
+		return c.AllowContainerRemove
+	case "ALLOW_CONTAINER_RESTART":
+		return c.AllowContainerRestart
+	case "ALLOW_VM_FORCE_STOP":
+		return c.AllowVMForceStop
+	case "ALLOW_VM_RESET":
+		return c.AllowVMReset
+	case "ALLOW_VM_STOP":
+		return c.AllowVMStop
+	case "ALLOW_PLUGIN_INSTALL":
+		return c.AllowPluginInstall
+	case "ALLOW_PLUGIN_REMOVE":
+		return c.AllowPluginRemove
+	case "ALLOW_SETTING_UPDATES":
+		return c.AllowSettingUpdates
+	case "ALLOW_SSH_UPDATE":
+		return c.AllowSSHUpdate
+	case "ALLOW_TIME_UPDATE":
+		return c.AllowTimeUpdate
+	case "ALLOW_NOTIFICATION_DELETE":
+		return c.AllowNotificationDelete
+	case "ALLOW_API_KEY_CREATE":
+		return c.AllowAPIKeyCreate
+	case "ALLOW_API_KEY_DELETE":
+		return c.AllowAPIKeyDelete
+	case "ALLOW_FLASH_BACKUP":
+		return c.AllowFlashBackup
+	case "ALLOW_RCLONE_OPERATIONS":
+		return c.AllowRcloneOperations
+	case "ALLOW_CONNECT_ACTIONS":
+		return c.AllowConnectActions
+	case "ALLOW_ONBOARDING_ACTIONS":
+		return c.AllowOnboardingActions
+	case "ALLOW_DOCKER_ACTIONS":
+		return c.AllowDockerActions
+	case "ALLOW_VM_ACTIONS":
+		return c.AllowVMActions
+	case "ALLOW_DESTRUCTIVE":
+		return c.AllowDestructive
 	}
+	return false
+}
 	return cfg, nil
 }
 

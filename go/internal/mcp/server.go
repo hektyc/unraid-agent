@@ -137,6 +137,11 @@ func (s *Server) callTool(ctx context.Context, req *JSONRPCRequest) *JSONRPCResp
 		return NewErrorResponse(req.ID, -32602, fmt.Sprintf("unknown tool: %s", name))
 	}
 
+	// Enforce the permission model before any state-changing execution.
+	if err := s.checkPermission(tool); err != nil {
+		return toolErrorResult(req.ID, err)
+	}
+
 	args, _ := req.Params["arguments"].(map[string]interface{})
 
 	var text string
