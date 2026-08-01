@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -52,10 +51,10 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		APIURL:    getEnv("UNRAID_API_URL", ""),
 		APIKey:    getEnv("UNRAID_API_KEY", ""),
-		Transport: getEnv("TRANSPORT", "stdio"),
+		Transport: getEnv("TRANSPORT", "streamable-http"),
 		Host:      getEnv("UNRAID_MCP_HOST", "127.0.0.1"),
 		Port:      getEnvInt("UNRAID_MCP_PORT", 6970),
-		ReadOnly:  getEnvBool("READ_ONLY", false),
+		ReadOnly:  getEnvBool("READ_ONLY", true),
 		VerifySSL: getEnvBool("UNRAID_VERIFY_SSL", true),
 	}
 
@@ -116,11 +115,11 @@ func (c *Config) permissionValue(name string) bool {
 	case "ALLOW_CONTAINER_RESTART":
 		return c.AllowContainerRestart
 	case "ALLOW_VM_FORCE_STOP":
-		return c.AllowVMForceStop
+		return c.AllowVmForceStop
 	case "ALLOW_VM_RESET":
-		return c.AllowVMReset
+		return c.AllowVmReset
 	case "ALLOW_VM_STOP":
-		return c.AllowVMStop
+		return c.AllowVmStop
 	case "ALLOW_PLUGIN_INSTALL":
 		return c.AllowPluginInstall
 	case "ALLOW_PLUGIN_REMOVE":
@@ -128,15 +127,15 @@ func (c *Config) permissionValue(name string) bool {
 	case "ALLOW_SETTING_UPDATES":
 		return c.AllowSettingUpdates
 	case "ALLOW_SSH_UPDATE":
-		return c.AllowSSHUpdate
+		return c.AllowSshUpdate
 	case "ALLOW_TIME_UPDATE":
 		return c.AllowTimeUpdate
 	case "ALLOW_NOTIFICATION_DELETE":
 		return c.AllowNotificationDelete
 	case "ALLOW_API_KEY_CREATE":
-		return c.AllowAPIKeyCreate
+		return c.AllowApiKeyCreate
 	case "ALLOW_API_KEY_DELETE":
-		return c.AllowAPIKeyDelete
+		return c.AllowApiKeyDelete
 	case "ALLOW_FLASH_BACKUP":
 		return c.AllowFlashBackup
 	case "ALLOW_RCLONE_OPERATIONS":
@@ -148,7 +147,7 @@ func (c *Config) permissionValue(name string) bool {
 	case "ALLOW_DOCKER_ACTIONS":
 		return c.AllowDockerActions
 	case "ALLOW_VM_ACTIONS":
-		return c.AllowVMActions
+		return c.AllowVmActions
 	case "ALLOW_DESTRUCTIVE":
 		return c.AllowDestructive
 	}
