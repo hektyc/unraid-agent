@@ -46,6 +46,8 @@ cp plugin/webgui/config.cfg "$INSTALL_DIR/default.cfg"
 cp plugin/images/unraid-agent-48.png "$INSTALL_DIR/images/unraid-agent-48.png"
 cp plugin/images/unraid-agent-128.png "$INSTALL_DIR/images/unraid-agent-128.png"
 cp plugin/images/unraid-agent.png "$INSTALL_DIR/images/unraid-agent.png"
+# Plugins-page icon: plgman looks for <name>.png at the plugin root
+cp plugin/images/unraid-agent.png "$INSTALL_DIR/unraid-agent.png"
 
 cp memory/AGENT-SKILLS.md "$INSTALL_DIR/memory/AGENT-SKILLS.md"
 cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
@@ -53,7 +55,7 @@ cp plugin/unraid-agent.plg "$INSTALL_DIR/unraid-agent.plg"
 cp plugin/unraid-agent.plg "$CONFIG_DIR/unraid-agent.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 chmod 644 "$CONFIG_DIR/unraid-agent.plg"
-chmod 644 "$INSTALL_DIR/images/"*.png
+chmod 644 "$INSTALL_DIR/images/"*.png "$INSTALL_DIR/unraid-agent.png"
 
 echo "==> Creating package tarball..."
 cd "$BUILD_DIR"
