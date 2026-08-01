@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name        "unraid-agent">
     <!ENTITY author      "hektyc">
-    <!ENTITY version     "0.0.42">
+    <!ENTITY version     "0.0.43">
     <!ENTITY gitURL      "https://raw.githubusercontent.com/hektyc/unraid-agent/main">
     <!ENTITY pluginURL   "&gitURL;/plugin/unraid-agent.plg">
     <!ENTITY releaseURL  "https://github.com/hektyc/unraid-agent/releases/latest/download">
