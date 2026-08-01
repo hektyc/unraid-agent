@@ -6,17 +6,19 @@ Icon="unraid-agent.png"
 $plugin = "unraid-agent";
 $config_file = "/boot/config/plugins/$plugin/config.cfg";
 
-// Handle Start/Stop actions directly (Post-Redirect-Get) — avoids the
-// /update.php progressFrame overlay that can hang the page load.
+// Handle Start/Stop actions directly in-page. We must NOT use
+// header('Location:...') here — the Unraid chrome output is already sent
+// before this PHP runs, so a redirect header triggers "headers already
+// sent" and a blank page. Instead: run the script, give the daemon a
+// moment to update the pid file, then fall through and render normally —
+// the status check below picks up the fresh state.
 if (isset($_POST['agent_action'])) {
     $action = $_POST['agent_action'];
     $script = "/usr/local/emhttp/plugins/$plugin/scripts/$action.sh";
     if (($action === 'start' || $action === 'stop') && is_executable($script)) {
         exec("$script >/dev/null 2>&1 &");
-        usleep(500000); // give the daemon a moment to create/remove the pid file
+        usleep(500000);
     }
-    header('Location: ' . $_SERVER['REQUEST_URI']);
-    exit;
 }
 
 $config = [];
