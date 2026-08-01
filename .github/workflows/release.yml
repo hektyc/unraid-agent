@@ -72,7 +72,11 @@ jobs:
       - name: Commit and push version bump
         run: |
           git add VERSION plugin/unraid-agent.plg
-          git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
+          if git diff --cached --quiet; then
+            echo "Version files already up to date — skipping commit"
+          else
+            git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
+          fi
           git tag v${{ steps.version.outputs.new_version }}
           git push origin main --follow-tags
 
