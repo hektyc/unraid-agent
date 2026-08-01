@@ -150,7 +150,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     for size, name in [(128, "unraid-agent-128.png"),
                        (48, "unraid-agent-48.png"),
-                       (128, "unraid-agent.png")]:
+                       (256, "unraid-agent.png")]:  # root plugins-page icon at 2x retina
         out = img.resize((size, size), Image.LANCZOS)
         out.save(os.path.join(OUT, name), optimize=True)
         print(f"wrote {name} ({size}x{size})")
