@@ -16,7 +16,6 @@ if (isset($_POST['agent_action'])) {
     if (($action === 'start' || $action === 'stop') && is_executable($script)) {
         exec("$script >/dev/null 2>&1 &");
         usleep(500000);
-        // Re-check status after action
         if (file_exists($pidfile)) {
             $pid = trim(file_get_contents($pidfile));
             if ($pid !== '') {
@@ -28,9 +27,65 @@ if (isset($_POST['agent_action'])) {
         }
     }
 }
+
+$transport   = $cfg('TRANSPORT', 'streamable-http');
+$stdioMode   = ($transport === 'stdio');
+$stdioEnable = ($cfg('UNRAID_MCP_ENABLE_STDIO', 'false') === 'true');
+$mcpPort     = $cfg('UNRAID_MCP_PORT', '6970');
+
+// Best-guess reachable address for client configs: the host this WebGUI is
+// being browsed on (the IDE can reach the server the same way).
+$serverHost = '';
+if (!empty($_SERVER['HTTP_HOST'])) {
+    $serverHost = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']);
+}
+if ($serverHost === '') {
+    $serverHost = 'HPS.lan';
+}
+
+// Build the paste-ready client configuration snippet.
+if ($stdioMode) {
+    $clientConfig = json_encode([
+        "mcp" => [
+            "unraid-agent" => [
+                "type"    => "local",
+                "command" => [
+                    "ssh", "-T", "-o", "BatchMode=yes",
+                    "root@$serverHost",
+                    "/usr/local/emhttp/plugins/unraid-agent/bin/unraid-agent",
+                    "-config", "/boot/config/plugins/unraid-agent/config.cfg",
+                    "-transport", "stdio"
+                ],
+                "enabled" => true
+            ]
+        ]
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+} else {
+    $bearer = $cfg('UNRAID_MCP_BEARER_TOKEN');
+    $authDisabled = ($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH', 'false') === 'true');
+    $server = [
+        "type"    => "remote",
+        "url"     => "http://$serverHost:$mcpPort/mcp",
+        "enabled" => true
+    ];
+    if ($bearer !== '' && !$authDisabled) {
+        $server["headers"] = ["Authorization" => "Bearer YOUR_BEARER_TOKEN"];
+    }
+    $clientConfig = json_encode([
+        "mcp" => ["unraid-agent" => $server]
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+}
 ?>
 <div class="title"><span class="left"><i class="title fa fa-plug"></i>Service Status</span></div>
 
+<?php if ($stdioMode): ?>
+<span style="font-weight:bold; color:#e6a23c;">CLIENT-SPAWNED (stdio)</span>
+<blockquote class="inline_help">
+stdio transport does not run as a background daemon — your MCP client (IDE) spawns the
+process per-session, typically over SSH. There is no service to start or stop here.
+Use the client configuration snippet below.
+</blockquote>
+<?php else: ?>
 <?php if ($running): ?>
 <span style="font-weight:bold; color:green;">RUNNING</span>
 <?php else: ?>
@@ -48,6 +103,7 @@ if (isset($_POST['agent_action'])) {
 <input type="hidden" name="agent_action" value="stop">
 <input type="submit" value="Stop MCP Server">
 </form>
+<?php endif; ?>
 
 <form markdown="1" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
@@ -71,20 +127,65 @@ Get your API key from Unraid webUI: My Server → API Keys → Create API Key
 
 _(Transport Mode)_:
 : <select name="TRANSPORT">
-  <option value="stdio" <?=($cfg('TRANSPORT') === 'stdio') ? 'selected' : ''?>>stdio</option>
-  <option value="streamable-http" <?=($cfg('TRANSPORT') === 'streamable-http') ? 'selected' : ''?>>streamable-http</option>
+  <option value="streamable-http" <?=($transport === 'streamable-http') ? 'selected' : ''?>>streamable-http</option>
+  <option value="stdio" <?=($transport === 'stdio') ? 'selected' : ''?>>stdio</option>
   </select>
 
 <blockquote class="inline_help">
-stdio: MCP server runs as a local binary. streamable-http: MCP server runs as an HTTP server on the configured port.
+streamable-http: MCP server runs as an HTTP daemon on the configured port (recommended).
+stdio: client-spawned transport for SSH-based clients (advanced).
 </blockquote>
 
+_(Enable stdio Transport)_:
+: <select name="UNRAID_MCP_ENABLE_STDIO">
+  <option value="false" <?=(!$stdioEnable) ? 'selected' : ''?>>No (default)</option>
+  <option value="true" <?=($stdioEnable) ? 'selected' : ''?>>Yes</option>
+  </select>
+<blockquote class="inline_help">
+Master gate for stdio. When No, the binary refuses to serve stdio entirely —
+even if launched manually or via SSH. Enable only while you need it.
+</blockquote>
+
+<?php if (!$stdioMode): ?>
 _(Bind Host)_:
 : <input type="text" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '127.0.0.1'))?>">
 
 _(Port)_:
-: <input type="number" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($cfg('UNRAID_MCP_PORT', '6970'))?>" min="1024" max="65535">
+: <input type="number" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>" min="1024" max="65535">
+<?php else: ?>
+<input type="hidden" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '127.0.0.1'))?>">
+<input type="hidden" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>">
+<?php endif; ?>
 
 <input type="submit" name="#default" value="Default">
 : <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
 </form>
+
+<div class="title"><span class="left"><i class="title fa fa-file-code-o"></i>Client Configuration</span></div>
+
+<?php if ($stdioMode && !$stdioEnable): ?>
+<blockquote class="inline_help">
+stdio is currently disabled. Set <b>Enable stdio Transport</b> to Yes and Apply to
+generate the client configuration snippet.
+</blockquote>
+<?php else: ?>
+<blockquote class="inline_help">
+Paste this into your MCP client's configuration (Kilo Code: <code>~/.config/kilo/kilo.jsonc</code>,
+or your IDE's MCP settings):
+</blockquote>
+<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;overflow-x:auto;font-size:12px;line-height:1.5;"><?=htmlspecialchars($clientConfig)?></pre>
+<?php endif; ?>
+
+<?php if ($stdioMode && $stdioEnable): ?>
+<div class="title"><span class="left"><i class="title fa fa-terminal"></i>SSH Setup for stdio</span></div>
+<blockquote class="inline_help">
+stdio over SSH requires key-based authentication from your client machine:<br><br>
+1. On your client: <code>ssh-keygen -t ed25519</code> (skip if you already have a key)<br>
+2. Install the public key on this server: append <code>~/.ssh/id_ed25519.pub</code> (client) to <code>/root/.ssh/authorized_keys</code> (server)<br>
+3. Enable SSH: Unraid Settings → Management Access → SSH<br>
+4. Test: <code>ssh -T -o BatchMode=yes root@<?=htmlspecialchars($serverHost)?> true</code><br><br>
+<b>Security note:</b> SSH-stdio grants root shell access to anyone holding the key.
+streamable-http with a bearer token is the smaller attack surface — prefer it for
+always-on use, and set Enable stdio Transport back to No when you're done.
+</blockquote>
+<?php endif; ?>

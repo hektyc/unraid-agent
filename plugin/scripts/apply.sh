@@ -51,6 +51,13 @@ if [ -f "$PIDFILE" ]; then
     fi
 fi
 
+# stdio does not run as a background daemon — stop here after killing
+# any previously running daemon (so switching to stdio stops the HTTP server).
+if [ "${TRANSPORT:-streamable-http}" = "stdio" ]; then
+    echo "stdio transport: daemon not started (client-spawned transport)."
+    exit 0
+fi
+
 nohup "$INSTALL_DIR/bin/unraid-agent" -config "$CONFIG_DIR/config.cfg" >> /var/log/unraid-agent.log 2>&1 &
 PID=$!
 echo $PID > "$PIDFILE"

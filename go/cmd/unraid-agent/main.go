@@ -36,6 +36,7 @@ var version = "dev"
 
 func main() {
 	configPath := flag.String("config", "/boot/config/plugins/unraid-agent/config.cfg", "Path to config file")
+	transportOverride := flag.String("transport", "", "Transport override (stdio|streamable-http)")
 	showVersion := flag.Bool("version", false, "Show version")
 	flag.Parse()
 
@@ -55,6 +56,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Effective transport: -transport flag overrides config
+	transport := cfg.Transport
+	if *transportOverride != "" {
+		transport = *transportOverride
+	}
+
+	// stdio is gated: the binary refuses to serve it unless explicitly
+	// enabled in the plugin configuration (default: disabled).
+	if transport == "stdio" && !cfg.EnableStdio {
+		fmt.Fprintln(os.Stderr, "Configuration error: stdio transport is disabled in plugin configuration (UNRAID_MCP_ENABLE_STDIO=\"false\")")
+		fmt.Fprintln(os.Stderr, "Enable it in Settings → unRAID Agent → Enable stdio Transport.")
+		os.Exit(1)
+	}
+
 	logLevel := os.Getenv("UNRAID_MCP_LOG_LEVEL")
 	if logLevel == "" {
 		logLevel = "info"
@@ -62,7 +77,7 @@ func main() {
 	logger.Init(logLevel, "json")
 
 	logger.Get().Infof("Starting unraid-agent %s (Go)", version)
-	logger.Get().Infof("Transport: %s, Read-only: %v", cfg.Transport, cfg.ReadOnly)
+	logger.Get().Infof("Transport: %s, Read-only: %v", transport, cfg.ReadOnly)
 
 	server := mcp.NewServer(cfg)
 	array.RegisterTools(server, cfg)
@@ -94,7 +109,7 @@ func main() {
 		cancel()
 	}()
 
-	switch cfg.Transport {
+	switch transport {
 	case "streamable-http", "http":
 		if err := server.ServeHTTP(ctx, cfg.Host, cfg.Port); err != nil {
 			logger.Get().Fatal(err)

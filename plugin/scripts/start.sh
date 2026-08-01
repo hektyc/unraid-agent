@@ -21,6 +21,14 @@ set -a
 source "$CONFIG_DIR/config.cfg"
 set +a
 
+# stdio does not run as a background daemon — the MCP client spawns the
+# process per-session (typically via SSH). Refuse to start a daemon.
+if [ "${TRANSPORT:-streamable-http}" = "stdio" ]; then
+    echo "stdio transport does not run as a daemon."
+    echo "Configure your MCP client to spawn the binary (see Settings → unRAID Agent)."
+    exit 0
+fi
+
 if [ -z "${UNRAID_API_URL:-}" ]; then
     INI_FILE="/var/local/emhttp/var.ini"
     if [ -f "$INI_FILE" ]; then
