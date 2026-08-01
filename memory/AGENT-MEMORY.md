@@ -1,7 +1,7 @@
 # Unraid MCP Server - Agent Memory
 
 ## Server State
-- MCP Server Version: 0.0.1
+- MCP Server Version: calver (YYYY.MM.DD)
 - Transport: stdio (default) or streamable-http
 - Read-only mode: true by default
 - Process runs as: nobody:nobody

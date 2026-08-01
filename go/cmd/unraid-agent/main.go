@@ -31,7 +31,8 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/tools/vm"
 )
 
-const version = "0.0.1"
+// version is injected at build time via -ldflags "-X main.version=$VERSION"
+var version = "dev"
 
 func main() {
 	configPath := flag.String("config", "/boot/config/plugins/unraid-agent/config.cfg", "Path to config file")
@@ -39,7 +40,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("unraid-mcp-server v%s\n", version)
+		fmt.Printf("unraid-agent %s\n", version)
 		os.Exit(0)
 	}
 
@@ -60,7 +61,7 @@ func main() {
 	}
 	logger.Init(logLevel, "json")
 
-	logger.Get().Infof("Starting unraid-mcp-server v%s (Go)", version)
+	logger.Get().Infof("Starting unraid-agent %s (Go)", version)
 	logger.Get().Infof("Transport: %s, Read-only: %v", cfg.Transport, cfg.ReadOnly)
 
 	server := mcp.NewServer(cfg)

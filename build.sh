@@ -13,7 +13,7 @@ CONFIG_DIR="${BUILD_DIR}/boot/config/plugins/${PLUGIN_NAME}"
 
 echo "==> Building Go binary..."
 cd "$SCRIPT_DIR/go"
-go build -o bin/unraid-agent cmd/unraid-agent/main.go
+go build -ldflags "-X main.version=$VERSION -X github.com/hektyc/unraid-mcp-server/internal/mcp.ServerVersion=$VERSION" -o bin/unraid-agent cmd/unraid-agent/main.go
 cd "$SCRIPT_DIR"
 
 echo "==> Creating build directory..."
@@ -38,7 +38,6 @@ cp plugin/scripts/remove.sh "$INSTALL_DIR/scripts/remove.sh"
 # Page file goes in plugin ROOT (not webgui/ subdirectory)
 # Settings pages (tab container + tab children) and shared PHP helpers
 cp plugin/unraid-agent.page "$INSTALL_DIR/unraid-agent.page"
-cp plugin/UnraidAgentService.page "$INSTALL_DIR/UnraidAgentService.page"
 cp plugin/UnraidAgentPermissions.page "$INSTALL_DIR/UnraidAgentPermissions.page"
 cp plugin/UnraidAgentAccess.page "$INSTALL_DIR/UnraidAgentAccess.page"
 cp plugin/UnraidAgentAdvanced.page "$INSTALL_DIR/UnraidAgentAdvanced.page"
