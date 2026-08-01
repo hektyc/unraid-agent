@@ -24,7 +24,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "docker_details",
 		Description: "Get single container details.",
-		Query:       `query($container_id: PrefixedID!) { docker { container(id: $container_id) { id names image imageId command created state status ports mounts labels autoStart autoStartOrder templatePath projectUrl registryUrl sizeRootFs sizeRw } } }`,
+		Query:       `query($container_id: PrefixedID!) { docker { container(id: $container_id) { id names image imageId command created state status ports { ip privatePort publicPort type } mounts labels autoStart autoStartOrder templatePath projectUrl registryUrl sizeRootFs sizeRw } } }`,
 		Params: map[string]string{
 			"container_id": "string",
 		},
