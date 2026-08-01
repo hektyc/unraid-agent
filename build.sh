@@ -36,7 +36,14 @@ cp plugin/scripts/apply.sh "$INSTALL_DIR/scripts/apply.sh"
 cp plugin/scripts/remove.sh "$INSTALL_DIR/scripts/remove.sh"
 
 # Page file goes in plugin ROOT (not webgui/ subdirectory)
+# Settings pages (tab container + tab children) and shared PHP helpers
 cp plugin/unraid-agent.page "$INSTALL_DIR/unraid-agent.page"
+cp plugin/UnraidAgentService.page "$INSTALL_DIR/UnraidAgentService.page"
+cp plugin/UnraidAgentPermissions.page "$INSTALL_DIR/UnraidAgentPermissions.page"
+cp plugin/UnraidAgentAccess.page "$INSTALL_DIR/UnraidAgentAccess.page"
+cp plugin/UnraidAgentAdvanced.page "$INSTALL_DIR/UnraidAgentAdvanced.page"
+mkdir -p "$INSTALL_DIR/php"
+cp plugin/php/common.php "$INSTALL_DIR/php/common.php"
 
 # default.cfg goes in plugin root as a fallback default
 # NOTE: config.cfg is intentionally NOT packaged — it is created on first
