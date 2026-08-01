@@ -7,9 +7,16 @@ if [ -f "$PIDFILE" ]; then
     PID=$(cat "$PIDFILE")
     if kill -0 "$PID" 2>/dev/null; then
         kill "$PID" 2>/dev/null
-        sleep 2
+        # Wait up to 5 seconds for graceful shutdown
+        for i in 1 2 3 4 5; do
+            if ! kill -0 "$PID" 2>/dev/null; then
+                break
+            fi
+            sleep 1
+        done
         if kill -0 "$PID" 2>/dev/null; then
             kill -9 "$PID" 2>/dev/null
+            sleep 1
         fi
         echo "Server stopped."
     else

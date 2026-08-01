@@ -40,13 +40,13 @@ if (file_exists($pidfile)) {
 <span style="font-weight:bold; color:red;">STOPPED</span>
 <?php endif; ?>
 
-<form method="POST" action="/update.php" target="progressFrame" style="display:inline;">
+<form method="POST" action="/update.php" target="progressFrame" style="display:inline;" onsubmit="setTimeout(function(){location.reload();},3000);">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
 <input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/start.sh">
 <input type="submit" name="#start" value="Start MCP Server">
 </form>
 
-<form method="POST" action="/update.php" target="progressFrame" style="display:inline;">
+<form method="POST" action="/update.php" target="progressFrame" style="display:inline;" onsubmit="setTimeout(function(){location.reload();},3000);">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
 <input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/stop.sh">
 <input type="submit" name="#stop" value="Stop MCP Server">
