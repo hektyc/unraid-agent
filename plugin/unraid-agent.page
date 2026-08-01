@@ -5,7 +5,86 @@ Icon="unraid-agent.png"
 Tabs="true"
 ---
 <?php
-// Tab container page — renders the tab bar only.
-// Tab content lives in UnraidAgentService.page, UnraidAgentPermissions.page,
-// UnraidAgentAccess.page, UnraidAgentAdvanced.page (Menu="unraid-agent:N").
+include "/usr/local/emhttp/plugins/unraid-agent/php/common.php";
+
+// Handle Start/Stop actions in-page (no header() redirect — Unraid chrome
+// output is already sent before this PHP runs). Run the script, let the
+// daemon update the pid file, then fall through and render fresh status.
+if (isset($_POST['agent_action'])) {
+    $action = $_POST['agent_action'];
+    $script = "/usr/local/emhttp/plugins/$plugin/scripts/$action.sh";
+    if (($action === 'start' || $action === 'stop') && is_executable($script)) {
+        exec("$script >/dev/null 2>&1 &");
+        usleep(500000);
+        // Re-check status after action
+        if (file_exists($pidfile)) {
+            $pid = trim(file_get_contents($pidfile));
+            if ($pid !== '') {
+                exec("kill -0 $pid 2>/dev/null", $output, $rc);
+                $running = ($rc === 0);
+            }
+        } else {
+            $running = false;
+        }
+    }
+}
 ?>
+<div class="title"><span class="left"><i class="title fa fa-plug"></i>Service Status</span></div>
+
+<?php if ($running): ?>
+<span style="font-weight:bold; color:green;">RUNNING</span>
+<?php else: ?>
+<span style="font-weight:bold; color:red;">STOPPED</span>
+<?php endif; ?>
+
+<form method="POST" style="display:inline;">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="agent_action" value="start">
+<input type="submit" value="Start MCP Server">
+</form>
+
+<form method="POST" style="display:inline;">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="agent_action" value="stop">
+<input type="submit" value="Stop MCP Server">
+</form>
+
+<form markdown="1" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#file" value="<?=$plugin?>/config.cfg">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/apply.sh">
+
+<div class="title"><span class="left"><i class="title fa fa-link"></i>Connection</span></div>
+
+_(Unraid API URL)_:
+: <input type="text" name="UNRAID_API_URL" value="<?=htmlspecialchars($cfg('UNRAID_API_URL'))?>">
+
+<blockquote class="inline_help">
+Leave blank to auto-detect from Unraid var.ini.
+</blockquote>
+
+_(API Key)_:
+: <input type="password" name="UNRAID_API_KEY" value="<?=htmlspecialchars($cfg('UNRAID_API_KEY'))?>">
+<blockquote class="inline_help">
+Get your API key from Unraid webUI: My Server → API Keys → Create API Key
+</blockquote>
+
+_(Transport Mode)_:
+: <select name="TRANSPORT">
+  <option value="stdio" <?=($cfg('TRANSPORT') === 'stdio') ? 'selected' : ''?>>stdio</option>
+  <option value="streamable-http" <?=($cfg('TRANSPORT') === 'streamable-http') ? 'selected' : ''?>>streamable-http</option>
+  </select>
+
+<blockquote class="inline_help">
+stdio: MCP server runs as a local binary. streamable-http: MCP server runs as an HTTP server on the configured port.
+</blockquote>
+
+_(Bind Host)_:
+: <input type="text" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '127.0.0.1'))?>">
+
+_(Port)_:
+: <input type="number" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($cfg('UNRAID_MCP_PORT', '6970'))?>" min="1024" max="65535">
+
+<input type="submit" name="#default" value="Default">
+: <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
+</form>

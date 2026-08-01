@@ -26,12 +26,18 @@ jobs:
       - name: Read current version
         id: version
         run: |
-          CURRENT=$(cat VERSION)
-          echo "current_version=$CURRENT" >> $GITHUB_OUTPUT
+          echo "current_version=$(cat VERSION)" >> $GITHUB_OUTPUT
 
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          # CalVer: YYYY.MM.DD, same-day re-releases get .HHMM suffix
+          # (numeric-only suffix stays monotonic under both string and
+          # PHP version_compare semantics — letter suffixes can compare
+          # as pre-release in PHP)
+          TODAY=$(date -u +%Y.%m.%d)
+          if git tag -l "v${TODAY}" | grep -q .; then
+            NEW_VERSION="${TODAY}.$(date -u +%H%M)"
+          else
+            NEW_VERSION="$TODAY"
+          fi
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Bump VERSION file
@@ -54,7 +60,7 @@ jobs:
         run: |
           cd go
           go mod tidy
-          go build -o bin/unraid-agent ./cmd/unraid-agent
+          go build -ldflags "-X main.version=${{ steps.version.outputs.new_version }} -X github.com/hektyc/unraid-mcp-server/internal/mcp.ServerVersion=${{ steps.version.outputs.new_version }}" -o bin/unraid-agent ./cmd/unraid-agent
           ls -lh bin/unraid-agent
 
       - name: Package plugin

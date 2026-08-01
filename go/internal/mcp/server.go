@@ -18,6 +18,10 @@ import (
 
 const protocolVersion = "2024-11-05"
 
+// ServerVersion is injected at build time via
+// -ldflags "-X github.com/hektyc/unraid-mcp-server/internal/mcp.ServerVersion=$VERSION"
+var ServerVersion = "dev"
+
 type ToolHandler func(ctx context.Context, arguments map[string]interface{}) (string, error)
 
 type ToolDef struct {
@@ -68,7 +72,7 @@ func (s *Server) dispatch(ctx context.Context, req *JSONRPCRequest) *JSONRPCResp
 			},
 			"serverInfo": map[string]interface{}{
 				"name":    "unraid-agent",
-				"version": "0.0.1",
+				"version": ServerVersion,
 			},
 		})
 
