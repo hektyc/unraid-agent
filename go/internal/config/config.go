@@ -42,6 +42,8 @@ type Config struct {
 	AllowVmActions        bool
 	AllowArrayActions     bool
 	AllowDestructive      bool
+	BearerToken           string
+	DisableHTTPAuth       bool
 }
 
 func Load() (*Config, error) {
@@ -82,6 +84,8 @@ func Load() (*Config, error) {
 	cfg.AllowVmActions = getEnvBool("ALLOW_VM_ACTIONS", false)
 	cfg.AllowArrayActions = getEnvBool("ALLOW_ARRAY_ACTIONS", false)
 	cfg.AllowDestructive = getEnvBool("ALLOW_DESTRUCTIVE", false)
+	cfg.BearerToken = getEnv("UNRAID_MCP_BEARER_TOKEN", "")
+	cfg.DisableHTTPAuth = getEnvBool("UNRAID_MCP_DISABLE_HTTP_AUTH", false)
 
 	if cfg.APIURL == "" || cfg.APIKey == "" {
 		return nil, fmt.Errorf("UNRAID_API_URL and UNRAID_API_KEY must be set")

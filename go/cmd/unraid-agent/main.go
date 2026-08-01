@@ -120,6 +120,7 @@ func loadDotEnv(path string) error {
 		if len(parts) == 2 {
 			key := strings.TrimSpace(parts[0])
 			value := strings.TrimSpace(parts[1])
+			value = strings.Trim(value, `"'`)
 			if os.Getenv(key) == "" {
 				os.Setenv(key, value)
 			}
