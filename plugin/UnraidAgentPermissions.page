@@ -11,120 +11,114 @@ $yesno = function($key, $default = 'false') use ($cfg) {
     $no  = ($val !== 'true') ? 'selected' : '';
     return "<select name=\"$key\"><option value=\"true\" $yes>Yes</option><option value=\"false\" $no>No</option></select>";
 };
-?>
-<form markdown="1" method="POST" action="/update.php" target="progressFrame">
-<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
-<input type="hidden" name="#file" value="<?=$plugin?>/config.cfg">
-<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/apply.sh">
 
-<div class="title"><span class="left"><i class="title fa fa-shield"></i>Master Switch</span></div>
-
-_(Read Only (Recommended))_:
-: <?=$yesno('READ_ONLY', 'true')?>
-<blockquote class="inline_help">
-Read-only mode blocks ALL state-changing operations regardless of any other toggle.
-Permission resolution: READ_ONLY → ALLOW_DESTRUCTIVE → category toggles
-(Array/Docker/VM Actions) → specific toggles. Enforced inside the MCP server before
-any operation reaches the Unraid API — independent of the API key's role.
-</blockquote>
-
-_(Allow Destructive (All))_:
-: <?=$yesno('ALLOW_DESTRUCTIVE')?>
-<blockquote class="inline_help">
-WARNING: Enabling this allows ALL destructive operations including array stop, disk remove, container delete, VM delete, plugin install/remove, system updates, and flash backup.
-</blockquote>
-
-<div class="title"><span class="left"><i class="title fa fa-hdd-o"></i>Array</span></div>
-
-_(Allow Array Stop/Start)_:
-: <?=$yesno('ALLOW_ARRAY_ACTIONS')?>
-
-_(Allow Array Stop)_:
-: <?=$yesno('ALLOW_ARRAY_STOP')?>
-
-_(Allow Array Start)_:
-: <?=$yesno('ALLOW_ARRAY_START')?>
-
-_(Allow Array Add Disk)_:
-: <?=$yesno('ALLOW_ARRAY_ADD_DISK')?>
-
-_(Allow Array Remove Disk)_:
-: <?=$yesno('ALLOW_ARRAY_REMOVE_DISK')?>
-
-_(Allow Array Clear Stats)_:
-: <?=$yesno('ALLOW_ARRAY_CLEAR_STATS')?>
-
-<div class="title"><span class="left"><i class="title fa fa-cubes"></i>Containers</span></div>
-
-_(Allow Docker Actions)_:
-: <?=$yesno('ALLOW_DOCKER_ACTIONS')?>
-
-_(Allow Container Stop)_:
-: <?=$yesno('ALLOW_CONTAINER_STOP')?>
-
-_(Allow Container Restart)_:
-: <?=$yesno('ALLOW_CONTAINER_RESTART')?>
-
-_(Allow Container Remove)_:
-: <?=$yesno('ALLOW_CONTAINER_REMOVE')?>
-
-<div class="title"><span class="left"><i class="title fa fa-desktop"></i>Virtual Machines</span></div>
-
-_(Allow VM Actions)_:
-: <?=$yesno('ALLOW_VM_ACTIONS')?>
-
-_(Allow VM Stop)_:
-: <?=$yesno('ALLOW_VM_STOP')?>
-
-_(Allow VM Force Stop)_:
-: <?=$yesno('ALLOW_VM_FORCE_STOP')?>
-
-_(Allow VM Reset)_:
-: <?=$yesno('ALLOW_VM_RESET')?>
-
-<div class="title"><span class="left"><i class="title fa fa-plug"></i>Plugins</span></div>
-
-_(Allow Plugin Install)_:
-: <?=$yesno('ALLOW_PLUGIN_INSTALL')?>
-
-_(Allow Plugin Remove)_:
-: <?=$yesno('ALLOW_PLUGIN_REMOVE')?>
-
-<div class="title"><span class="left"><i class="title fa fa-cog"></i>System</span></div>
-
-_(Allow Setting Updates)_:
-: <?=$yesno('ALLOW_SETTING_UPDATES')?>
-
-_(Allow SSH Update)_:
-: <?=$yesno('ALLOW_SSH_UPDATE')?>
-
-_(Allow Time Update)_:
-: <?=$yesno('ALLOW_TIME_UPDATE')?>
-
-_(Allow Flash Backup)_:
-: <?=$yesno('ALLOW_FLASH_BACKUP')?>
-
-_(Allow Notification Delete)_:
-: <?=$yesno('ALLOW_NOTIFICATION_DELETE')?>
-
-_(Allow API Key Create)_:
-: <?=$yesno('ALLOW_API_KEY_CREATE')?>
-
-_(Allow API Key Delete)_:
-: <?=$yesno('ALLOW_API_KEY_DELETE')?>
-
-_(Allow Rsync Operations)_:
-: <?=$yesno('ALLOW_RCLONE_OPERATIONS')?>
-
-_(Allow Connect Actions)_:
-: <?=$yesno('ALLOW_CONNECT_ACTIONS')?>
-
-_(Allow Onboarding Actions)_:
-: <?=$yesno('ALLOW_ONBOARDING_ACTIONS')?>
-
-<div style="text-align:center;margin-top:18px;">
-<input type="submit" name="#default" value="Default">
-<input type="submit" name="#apply" value="Apply">
-<input type="button" value="Done" onclick="done()">
+// Renders one sub-tab panel: a self-contained form posting only this
+// section's fields (core update.php merges into config.cfg).
+$panel = function($id, $active, $fieldsHtml) use ($plugin, $var) {
+    $cls = $active ? 'ua-pane active' : 'ua-pane';
+    return "<div class=\"$cls\" data-tab=\"$id\">
+<form markdown=\"1\" method=\"POST\" action=\"/update.php\" target=\"progressFrame\">
+<input type=\"hidden\" name=\"csrf_token\" value=\"{$var['csrf_token']}\">
+<input type=\"hidden\" name=\"#file\" value=\"$plugin/config.cfg\">
+<input type=\"hidden\" name=\"#command\" value=\"/usr/local/emhttp/plugins/$plugin/scripts/apply.sh\">
+$fieldsHtml
+<div style=\"text-align:center;margin-top:18px;\">
+<input type=\"submit\" name=\"#default\" value=\"Default\">
+<input type=\"submit\" name=\"#apply\" value=\"Apply\">
+<input type=\"button\" value=\"Done\" onclick=\"done()\">
 </div>
 </form>
+</div>";
+};
+
+$field = function($label, $selectHtml, $help = '') {
+    $h = $help ? "<blockquote class=\"inline_help\">$help</blockquote>" : '';
+    return "_($label)_:\n: $selectHtml\n$h\n";
+};
+?>
+<style>
+.ua-subtabs { display:flex; flex-wrap:wrap; border-bottom:1px solid #555; margin-bottom:16px; }
+.ua-subtab { padding:8px 18px; cursor:pointer; border-bottom:2px solid transparent; user-select:none; }
+.ua-subtab:hover { opacity:0.8; }
+.ua-subtab.active { border-bottom-color:#ff8c2f; font-weight:bold; }
+.ua-pane { display:none; }
+.ua-pane.active { display:block; }
+</style>
+
+<div class="ua-subtabs">
+  <div class="ua-subtab active" data-tab="master"><i class="fa fa-shield"></i> Master Switch</div>
+  <div class="ua-subtab" data-tab="array"><i class="fa fa-hdd-o"></i> Array</div>
+  <div class="ua-subtab" data-tab="containers"><i class="fa fa-cubes"></i> Containers</div>
+  <div class="ua-subtab" data-tab="vms"><i class="fa fa-desktop"></i> Virtual Machines</div>
+  <div class="ua-subtab" data-tab="plugins"><i class="fa fa-plug"></i> Plugins</div>
+  <div class="ua-subtab" data-tab="system"><i class="fa fa-cog"></i> System</div>
+</div>
+
+<?=$panel('master', true,
+  $field('Read Only (Recommended)', $yesno('READ_ONLY', 'true'),
+    'Read-only mode blocks ALL state-changing operations regardless of any other toggle. Resolution order: READ_ONLY → ALLOW_DESTRUCTIVE → category toggles → specific toggles. Enforced inside the MCP server before any operation reaches the Unraid API.')
+  .$field('Allow Destructive (All)', $yesno('ALLOW_DESTRUCTIVE'),
+    'WARNING: Enabling this allows ALL destructive operations including array stop, disk remove, container delete, VM delete, plugin install/remove, system updates, and flash backup.')
+)?>
+
+<?=$panel('array', false,
+  $field('Allow Array Stop/Start', $yesno('ALLOW_ARRAY_ACTIONS'), 'Category toggle: allows all array operations in this section.')
+  .$field('Allow Array Stop', $yesno('ALLOW_ARRAY_STOP'))
+  .$field('Allow Array Start', $yesno('ALLOW_ARRAY_START'))
+  .$field('Allow Array Add Disk', $yesno('ALLOW_ARRAY_ADD_DISK'))
+  .$field('Allow Array Remove Disk', $yesno('ALLOW_ARRAY_REMOVE_DISK'))
+  .$field('Allow Array Clear Stats', $yesno('ALLOW_ARRAY_CLEAR_STATS'))
+)?>
+
+<?=$panel('containers', false,
+  $field('Allow Docker Actions', $yesno('ALLOW_DOCKER_ACTIONS'), 'Category toggle: allows all container operations in this section.')
+  .$field('Allow Container Stop', $yesno('ALLOW_CONTAINER_STOP'))
+  .$field('Allow Container Restart', $yesno('ALLOW_CONTAINER_RESTART'))
+  .$field('Allow Container Remove', $yesno('ALLOW_CONTAINER_REMOVE'))
+)?>
+
+<?=$panel('vms', false,
+  $field('Allow VM Actions', $yesno('ALLOW_VM_ACTIONS'), 'Category toggle: allows all VM operations in this section.')
+  .$field('Allow VM Stop', $yesno('ALLOW_VM_STOP'))
+  .$field('Allow VM Force Stop', $yesno('ALLOW_VM_FORCE_STOP'))
+  .$field('Allow VM Reset', $yesno('ALLOW_VM_RESET'))
+)?>
+
+<?=$panel('plugins', false,
+  $field('Allow Plugin Install', $yesno('ALLOW_PLUGIN_INSTALL'))
+  .$field('Allow Plugin Remove', $yesno('ALLOW_PLUGIN_REMOVE'))
+)?>
+
+<?=$panel('system', false,
+  $field('Allow Setting Updates', $yesno('ALLOW_SETTING_UPDATES'))
+  .$field('Allow SSH Update', $yesno('ALLOW_SSH_UPDATE'))
+  .$field('Allow Time Update', $yesno('ALLOW_TIME_UPDATE'))
+  .$field('Allow Flash Backup', $yesno('ALLOW_FLASH_BACKUP'))
+  .$field('Allow Notification Delete', $yesno('ALLOW_NOTIFICATION_DELETE'))
+  .$field('Allow API Key Create', $yesno('ALLOW_API_KEY_CREATE'))
+  .$field('Allow API Key Delete', $yesno('ALLOW_API_KEY_DELETE'))
+  .$field('Allow Rsync Operations', $yesno('ALLOW_RCLONE_OPERATIONS'))
+  .$field('Allow Connect Actions', $yesno('ALLOW_CONNECT_ACTIONS'))
+  .$field('Allow Onboarding Actions', $yesno('ALLOW_ONBOARDING_ACTIONS'))
+)?>
+
+<script>
+$(function() {
+    var KEY = 'unraid-agent-perms-tab';
+    function activate(t) {
+        $('.ua-subtab').removeClass('active');
+        $('.ua-pane').removeClass('active');
+        $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
+        $('.ua-pane[data-tab="' + t + '"]').addClass('active');
+    }
+    var saved = localStorage.getItem(KEY);
+    if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) {
+        activate(saved);
+    }
+    $('.ua-subtab').on('click', function() {
+        var t = $(this).data('tab');
+        activate(t);
+        localStorage.setItem(KEY, t);
+    });
+});
+</script>
