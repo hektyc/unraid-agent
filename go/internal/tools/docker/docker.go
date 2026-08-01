@@ -19,7 +19,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "docker_ports",
 		Description: "Get host port bindings. Read-only.",
-		Query:       `query { docker { containers { names ports } } }`,
+		Query:       `query { docker { containers { names ports { ip privatePort publicPort type } } } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "docker_details",

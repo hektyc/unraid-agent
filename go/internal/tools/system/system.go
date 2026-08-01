@@ -39,7 +39,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "system_flash",
 		Description: "Get flash drive info. Read-only.",
-		Query:       `query { flash { guid vendor product } }`,
+		Query:       `query { vars { flashGuid flashProduct flashVendor } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "system_metrics",
@@ -104,7 +104,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "system_owner",
 		Description: "Get owner info. Read-only.",
-		Query:       `query { owner { username url avatar } }`,
+		Query:       `query { owner { username avatar } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "system_servers",
