@@ -22,7 +22,7 @@ type Client struct {
 
 func New(cfg *config.Config) *Client {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !cfg.VerifySSL},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !cfg.VerifySSL || cfg.AllowInsecureTLS},
 	}
 	httpClient := &http.Client{
 		Timeout: 30 * time.Second,

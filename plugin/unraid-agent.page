@@ -278,8 +278,8 @@ _(Verify SSL)_:
 
 _(Allow Insecure TLS)_:
 : <select name="UNRAID_ALLOW_INSECURE_TLS">
-  <option value="false" <?=($cfg('UNRAID_ALLOW_INSECURE_TLS') === 'false') ? 'selected' : ''?>>Yes</option>
-  <option value="true" <?=($cfg('UNRAID_ALLOW_INSECURE_TLS') === 'true') ? 'selected' : ''?>>No</option>
+  <option value="true" <?=($cfg('UNRAID_ALLOW_INSECURE_TLS') === 'true') ? 'selected' : ''?>>Yes</option>
+  <option value="false" <?=($cfg('UNRAID_ALLOW_INSECURE_TLS') === 'false') ? 'selected' : ''?>>No</option>
   </select>
 <blockquote class="inline_help">
 Allow insecure TLS connections (self-signed certs, etc.).
