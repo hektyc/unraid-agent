@@ -32,6 +32,26 @@ if (file_exists($pidfile)) {
 ?>
 <div class="title"><span class="left"><i class="title fa fa-plug"></i>Unraid MCP Server</span></div>
 
+<div class="title"><span class="left"><i class="title fa fa-plug"></i>Service Status</span></div>
+
+<?php if ($running): ?>
+<span style="font-weight:bold; color:green;">RUNNING</span>
+<?php else: ?>
+<span style="font-weight:bold; color:red;">STOPPED</span>
+<?php endif; ?>
+
+<form method="POST" action="/update.php" target="progressFrame" style="display:inline;">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/start.sh">
+<input type="submit" name="#start" value="Start MCP Server">
+</form>
+
+<form method="POST" action="/update.php" target="progressFrame" style="display:inline;">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/stop.sh">
+<input type="submit" name="#stop" value="Stop MCP Server">
+</form>
+
 <form markdown="1" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
 <input type="hidden" name="#file" value="<?=$plugin?>/config.cfg">
@@ -264,11 +284,6 @@ _(Allow Insecure TLS)_:
 <blockquote class="inline_help">
 Allow insecure TLS connections (self-signed certs, etc.).
 </blockquote>
-
-<div class="title"><span class="left"><i class="title fa fa-info-circle"></i>Service Status</span></div>
-<span style="font-weight:bold; color:<?=$running ? 'green' : 'red'?>;">
-  <?=$running ? 'RUNNING' : 'STOPPED'?>
-</span>
 
 <input type="submit" name="#default" value="Default">
 : <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
