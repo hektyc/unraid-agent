@@ -4,10 +4,10 @@ INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
 
-source "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
+source "$CONFIG_DIR/config.cfg"
 
 set -a
-source "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
+source "$CONFIG_DIR/config.cfg"
 set +a
 
 if [ -z "${UNRAID_API_URL:-}" ]; then

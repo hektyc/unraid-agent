@@ -10,8 +10,8 @@ mkdir -p "$INSTALL_DIR/bin"
 
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 
-if [ ! -f "$CONFIG_DIR/${PLUGIN_NAME}.cfg" ]; then
-    cat > "$CONFIG_DIR/${PLUGIN_NAME}.cfg" << 'ENVEOF'
+if [ ! -f "$CONFIG_DIR/config.cfg" ]; then
+    cat > "$CONFIG_DIR/config.cfg" << 'ENVEOF'
 UNRAID_API_URL=""
 UNRAID_API_KEY=""
 TRANSPORT="stdio"
@@ -51,7 +51,7 @@ UNRAID_ALLOW_INSECURE_TLS="false"
 UNRAID_MCP_BEARER_TOKEN=""
 UNRAID_MCP_DISABLE_HTTP_AUTH="false"
 ENVEOF
-    chmod 600 "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
+    chmod 600 "$CONFIG_DIR/config.cfg"
 fi
 
 echo "Install complete."

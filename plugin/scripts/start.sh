@@ -18,7 +18,7 @@ if [ -f "$PIDFILE" ]; then
 fi
 
 set -a
-source "$CONFIG_DIR/${PLUGIN_NAME}.cfg"
+source "$CONFIG_DIR/config.cfg"
 set +a
 
 if [ -z "${UNRAID_API_URL:-}" ]; then

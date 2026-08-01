@@ -41,7 +41,7 @@ jobs:
 
       - name: Bump version in .plg
         run: |
-          sed -i "s/<!ENTITY version\t\"[^\"]*\"/<!ENTITY version\t\"${{ steps.version.outputs.new_version }}\"/" plugin/unraid-mcp.plg
+          sed -i "s/<!ENTITY version[[:space:]]*\"[^\"]*\"/<!ENTITY version     \"${{ steps.version.outputs.new_version }}\"/" plugin/unraid-mcp.plg
           grep "ENTITY version" plugin/unraid-mcp.plg
 
       - name: Setup Go
