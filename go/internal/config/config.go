@@ -154,8 +154,6 @@ func (c *Config) permissionValue(name string) bool {
 	}
 	return false
 }
-	return cfg, nil
-}
 
 func getEnv(key, fallback string) string {
 	v := os.Getenv(key)
