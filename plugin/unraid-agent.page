@@ -8,3 +8,4 @@ Tabs="true"
 // Tab container page — renders the tab bar only.
 // Tab content lives in UnraidAgentService.page, UnraidAgentPermissions.page,
 // UnraidAgentAccess.page, UnraidAgentAdvanced.page (Menu="unraid-agent:N").
+?>
