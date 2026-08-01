@@ -34,7 +34,7 @@ import (
 const version = "0.0.1"
 
 func main() {
-	configPath := flag.String("config", "/boot/config/plugins/unraid-mcp/config.cfg", "Path to config file")
+	configPath := flag.String("config", "/boot/config/plugins/unraid-agent/config.cfg", "Path to config file")
 	showVersion := flag.Bool("version", false, "Show version")
 	flag.Parse()
 

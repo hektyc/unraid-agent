@@ -54,7 +54,7 @@ export UNRAID_API_URL
 
 mkdir -p "$(dirname "$LOGFILE")"
 
-nohup "$INSTALL_DIR/bin/unraid-mcp" >> "$LOGFILE" 2>&1 &
+nohup "$INSTALL_DIR/bin/unraid-mcp" -config "$CONFIG_DIR/config.cfg" >> "$LOGFILE" 2>&1 &
 PID=$!
 echo $PID > "$PIDFILE"
 echo "Server started (PID $PID)"
