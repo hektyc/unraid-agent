@@ -100,48 +100,23 @@ exit 1
 </INLINE>
 </FILE>
 
-<!-- Create default config.cfg if it does not exist -->
-<FILE Name="/boot/config/plugins/&name;/config.cfg">
+<!-- Create default config.cfg ONLY if it does not exist (survives updates) -->
+<FILE Run="/bin/bash">
 <INLINE>
 <![CDATA[
-UNRAID_API_URL=""
-UNRAID_API_KEY=""
-TRANSPORT="stdio"
-UNRAID_MCP_HOST="127.0.0.1"
-UNRAID_MCP_PORT="6970"
-READ_ONLY="true"
-ALLOW_ARRAY_STOP="false"
-ALLOW_ARRAY_START="false"
-ALLOW_ARRAY_ADD_DISK="false"
-ALLOW_ARRAY_REMOVE_DISK="false"
-ALLOW_ARRAY_CLEAR_STATS="false"
-ALLOW_CONTAINER_STOP="false"
-ALLOW_CONTAINER_REMOVE="false"
-ALLOW_CONTAINER_RESTART="false"
-ALLOW_VM_FORCE_STOP="false"
-ALLOW_VM_RESET="false"
-ALLOW_VM_STOP="false"
-ALLOW_PLUGIN_INSTALL="false"
-ALLOW_PLUGIN_REMOVE="false"
-ALLOW_SETTING_UPDATES="false"
-ALLOW_SSH_UPDATE="false"
-ALLOW_TIME_UPDATE="false"
-ALLOW_NOTIFICATION_DELETE="false"
-ALLOW_API_KEY_CREATE="false"
-ALLOW_API_KEY_DELETE="false"
-ALLOW_FLASH_BACKUP="false"
-ALLOW_RCLONE_OPERATIONS="false"
-ALLOW_CONNECT_ACTIONS="false"
-ALLOW_ONBOARDING_ACTIONS="false"
-ALLOW_DOCKER_ACTIONS="false"
-ALLOW_VM_ACTIONS="false"
-ALLOW_ARRAY_ACTIONS="false"
-ALLOW_DESTRUCTIVE="false"
-UNRAID_MCP_LOG_LEVEL="info"
-UNRAID_VERIFY_SSL="true"
-UNRAID_ALLOW_INSECURE_TLS="false"
-UNRAID_MCP_BEARER_TOKEN=""
-UNRAID_MCP_DISABLE_HTTP_AUTH="false"
+#!/bin/bash
+PLUGIN_NAME="unraid-agent"
+CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
+INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
+
+if [ ! -f "$CONFIG_DIR/config.cfg" ]; then
+  mkdir -p "$CONFIG_DIR"
+  cp "$INSTALL_DIR/default.cfg" "$CONFIG_DIR/config.cfg"
+  chmod 600 "$CONFIG_DIR/config.cfg"
+  echo "Created default config.cfg"
+else
+  echo "Existing config.cfg preserved"
+fi
 ]]>
 </INLINE>
 </FILE>

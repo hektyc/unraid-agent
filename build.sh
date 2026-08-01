@@ -38,10 +38,9 @@ cp plugin/scripts/remove.sh "$INSTALL_DIR/scripts/remove.sh"
 cp plugin/unraid-agent.page "$INSTALL_DIR/unraid-agent.page"
 
 # default.cfg goes in plugin root as a fallback default
+# NOTE: config.cfg is intentionally NOT packaged — it is created on first
+# install by the .plg copy-if-missing script and must survive updates.
 cp plugin/webgui/config.cfg "$INSTALL_DIR/default.cfg"
-
-# config.cfg is the user config on flash
-cp plugin/webgui/config.cfg "$CONFIG_DIR/config.cfg"
 
 # Icon images
 cp plugin/images/unraid-agent-48.png "$INSTALL_DIR/images/unraid-agent-48.png"
