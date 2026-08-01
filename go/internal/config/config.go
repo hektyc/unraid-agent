@@ -44,6 +44,7 @@ type Config struct {
 	AllowDestructive      bool
 	BearerToken           string
 	DisableHTTPAuth       bool
+	AllowInsecureTLS      bool
 }
 
 func Load() (*Config, error) {
@@ -86,6 +87,7 @@ func Load() (*Config, error) {
 	cfg.AllowDestructive = getEnvBool("ALLOW_DESTRUCTIVE", false)
 	cfg.BearerToken = getEnv("UNRAID_MCP_BEARER_TOKEN", "")
 	cfg.DisableHTTPAuth = getEnvBool("UNRAID_MCP_DISABLE_HTTP_AUTH", false)
+	cfg.AllowInsecureTLS = getEnvBool("UNRAID_ALLOW_INSECURE_TLS", false)
 
 	if cfg.APIURL == "" || cfg.APIKey == "" {
 		return nil, fmt.Errorf("UNRAID_API_URL and UNRAID_API_KEY must be set")
