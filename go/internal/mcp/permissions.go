@@ -129,9 +129,9 @@ func (s *Server) checkPermission(t *ToolDef) error {
 		t.Name, strings.Join(toggles, ", "))
 }
 
-func anyToggleEnabled(cfg interface{ permissionValue(string) bool }, toggles []string) bool {
+func anyToggleEnabled(cfg interface{ PermissionValue(string) bool }, toggles []string) bool {
 	for _, t := range toggles {
-		if cfg.permissionValue(t) {
+		if cfg.PermissionValue(t) {
 			return true
 		}
 	}

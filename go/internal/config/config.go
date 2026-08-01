@@ -93,8 +93,8 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-// permissionValue reports whether a named ALLOW_* toggle is enabled.
-func (c *Config) permissionValue(name string) bool {
+// PermissionValue reports whether a named ALLOW_* toggle is enabled.
+func (c *Config) PermissionValue(name string) bool {
 	switch name {
 	case "ALLOW_ARRAY_ACTIONS":
 		return c.AllowArrayActions
