@@ -155,6 +155,13 @@ def main():
         out.save(os.path.join(OUT, name), optimize=True)
         print(f"wrote {name} ({size}x{size})")
 
+    # 16px settings-menu icon: icons/<lowercase-title-no-spaces>.png
+    icons_dir = os.path.join(OUT, "..", "icons")
+    os.makedirs(icons_dir, exist_ok=True)
+    img.resize((16, 16), Image.LANCZOS).save(
+        os.path.join(icons_dir, "unraidagent.png"), optimize=True)
+    print("wrote icons/unraidagent.png (16x16)")
+
     # preview at 256 for inspection
     img.resize((256, 256), Image.LANCZOS).save("/tmp/unraid-agent-preview.png")
 

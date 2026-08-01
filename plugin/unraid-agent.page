@@ -1,10 +1,23 @@
 Menu="Utilities"
-Title="Unraid MCP Server"
-Icon="/plugins/unraid-agent/images/unraid-agent-48.png"
+Title="unRAID Agent"
+Icon="unraid-agent.png"
 ---
 <?php
 $plugin = "unraid-agent";
 $config_file = "/boot/config/plugins/$plugin/config.cfg";
+
+// Handle Start/Stop actions directly (Post-Redirect-Get) — avoids the
+// /update.php progressFrame overlay that can hang the page load.
+if (isset($_POST['agent_action'])) {
+    $action = $_POST['agent_action'];
+    $script = "/usr/local/emhttp/plugins/$plugin/scripts/$action.sh";
+    if (($action === 'start' || $action === 'stop') && is_executable($script)) {
+        exec("$script >/dev/null 2>&1 &");
+        usleep(500000); // give the daemon a moment to create/remove the pid file
+    }
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
+}
 
 $config = [];
 if (file_exists($config_file)) {
@@ -30,7 +43,7 @@ if (file_exists($pidfile)) {
     }
 }
 ?>
-<div class="title"><span class="left"><i class="title fa fa-plug"></i>Unraid MCP Server</span></div>
+<div class="title"><span class="left"><i class="title fa fa-plug"></i>unRAID Agent</span></div>
 
 <div class="title"><span class="left"><i class="title fa fa-plug"></i>Service Status</span></div>
 
@@ -40,16 +53,16 @@ if (file_exists($pidfile)) {
 <span style="font-weight:bold; color:red;">STOPPED</span>
 <?php endif; ?>
 
-<form method="POST" action="/update.php" target="progressFrame" style="display:inline;" onsubmit="setTimeout(function(){location.reload();},3000);">
+<form method="POST" style="display:inline;">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
-<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/start.sh">
-<input type="submit" name="#start" value="Start MCP Server">
+<input type="hidden" name="agent_action" value="start">
+<input type="submit" value="Start MCP Server">
 </form>
 
-<form method="POST" action="/update.php" target="progressFrame" style="display:inline;" onsubmit="setTimeout(function(){location.reload();},3000);">
+<form method="POST" style="display:inline;">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
-<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/stop.sh">
-<input type="submit" name="#stop" value="Stop MCP Server">
+<input type="hidden" name="agent_action" value="stop">
+<input type="submit" value="Stop MCP Server">
 </form>
 
 <form markdown="1" method="POST" action="/update.php" target="progressFrame">

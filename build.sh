@@ -21,6 +21,7 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$INSTALL_DIR/bin"
 mkdir -p "$INSTALL_DIR/scripts"
 mkdir -p "$INSTALL_DIR/images"
+mkdir -p "$INSTALL_DIR/icons"
 mkdir -p "$INSTALL_DIR/memory"
 mkdir -p "$CONFIG_DIR"
 
@@ -48,6 +49,8 @@ cp plugin/images/unraid-agent-128.png "$INSTALL_DIR/images/unraid-agent-128.png"
 cp plugin/images/unraid-agent.png "$INSTALL_DIR/images/unraid-agent.png"
 # Plugins-page icon: plgman looks for <name>.png at the plugin root
 cp plugin/images/unraid-agent.png "$INSTALL_DIR/unraid-agent.png"
+# Settings-menu 16px icon: icons/<lowercase-title-no-spaces>.png
+cp plugin/icons/unraidagent.png "$INSTALL_DIR/icons/unraidagent.png"
 
 cp memory/AGENT-SKILLS.md "$INSTALL_DIR/memory/AGENT-SKILLS.md"
 cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
@@ -55,7 +58,7 @@ cp plugin/unraid-agent.plg "$INSTALL_DIR/unraid-agent.plg"
 cp plugin/unraid-agent.plg "$CONFIG_DIR/unraid-agent.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
 chmod 644 "$CONFIG_DIR/unraid-agent.plg"
-chmod 644 "$INSTALL_DIR/images/"*.png "$INSTALL_DIR/unraid-agent.png"
+chmod 644 "$INSTALL_DIR/images/"*.png "$INSTALL_DIR/icons/"*.png "$INSTALL_DIR/unraid-agent.png"
 
 echo "==> Creating package tarball..."
 cd "$BUILD_DIR"
