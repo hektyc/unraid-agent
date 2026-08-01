@@ -19,7 +19,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "health_diagnose",
 		Description: "Run subscription diagnostics.",
-		Query:       `query { registration { type state expiration updateExpiration } connect { dynamicRemoteAccess } }`,
+		Query:       `query { registration { type state expiration updateExpiration } connect { dynamicRemoteAccess { enabledType runningType error } } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "health_setup",

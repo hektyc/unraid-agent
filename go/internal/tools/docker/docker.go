@@ -61,7 +61,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "docker_logs",
 		Description: "Get container logs (tail N lines).",
-		Query:       `query($container_id: PrefixedID!, $tail: Int) { docker { logs(id: $container_id, tail: $tail) { containerId lines cursor } } }`,
+		Query:       `query($container_id: PrefixedID!, $tail: Int) { docker { logs(id: $container_id, tail: $tail) { containerId cursor lines { timestamp message } } } }`,
 		Params: map[string]string{
 			"container_id": "string",
 			"tail":         "number",
