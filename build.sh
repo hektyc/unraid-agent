@@ -13,7 +13,7 @@ CONFIG_DIR="${BUILD_DIR}/boot/config/plugins/${PLUGIN_NAME}"
 
 echo "==> Building Go binary..."
 cd "$SCRIPT_DIR/go"
-go build -o bin/unraid-mcp cmd/unraid-mcp/main.go
+go build -o bin/unraid-agent cmd/unraid-agent/main.go
 cd "$SCRIPT_DIR"
 
 echo "==> Creating build directory..."
@@ -25,7 +25,7 @@ mkdir -p "$INSTALL_DIR/memory"
 mkdir -p "$CONFIG_DIR"
 
 echo "==> Assembling package files..."
-cp go/bin/unraid-mcp "$INSTALL_DIR/bin/unraid-mcp"
+cp go/bin/unraid-agent "$INSTALL_DIR/bin/unraid-agent"
 cp plugin/scripts/install.sh "$INSTALL_DIR/scripts/install.sh"
 cp plugin/scripts/start.sh "$INSTALL_DIR/scripts/start.sh"
 cp plugin/scripts/stop.sh "$INSTALL_DIR/scripts/stop.sh"

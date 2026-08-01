@@ -15,13 +15,18 @@
 
 <DESCRIPTION>Unraid MCP Server (named 'unraid-agent' to avoid conflicts) - Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
 <CHANGES>
+### 0.0.38
+- Renamed binary from unraid-mcp to unraid-agent for consistency with plugin name
+- Added Start MCP Server and Stop MCP Server buttons to WebGUI
+- Removed symlink workaround — binary built with correct config path
+
 ### 0.0.37
 - Added Start MCP Server and Stop MCP Server buttons to the WebGUI settings page
 - Added Service Status section with RUNNING/STOPPED display and interactive buttons
 - Removed symlink workaround — binary now rebuilt with correct config path
 
 ### 0.0.36
-- Fix: create symlink for legacy config path so binary can find config at /boot/config/plugins/unraid-mcp/config.cfg
+- Fix: create symlink for legacy config path so binary can find config at /boot/config/plugins/unraid-agent/config.cfg
 </CHANGES>
 
 <!-- Pre-install: create directories, copy icons, and clean old files -->
@@ -36,10 +41,10 @@ CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/memory" "$INSTALL_DIR/images"
 rm -rf "$INSTALL_DIR"/* 2>/dev/null
 mkdir -p "$INSTALL_DIR/images"
-# Clean up old plugin (unraid-mcp) files
-rm -f "$CONFIG_DIR/webgui/unraid-mcp.settings.page" 2>/dev/null
-rm -f "$INSTALL_DIR/webgui/unraid-mcp.settings.page" 2>/dev/null
-rm -f "$CONFIG_DIR/unraid-mcp.cfg" 2>/dev/null
+# Clean up old plugin (unraid-agent) files
+rm -f "$CONFIG_DIR/webgui/unraid-agent.settings.page" 2>/dev/null
+rm -f "$INSTALL_DIR/webgui/unraid-agent.settings.page" 2>/dev/null
+rm -f "$CONFIG_DIR/unraid-agent.cfg" 2>/dev/null
 echo "Pre-install complete for ${PLUGIN_NAME}"
 ]]>
 </INLINE>
@@ -144,7 +149,7 @@ PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
-chmod +x "$INSTALL_DIR/bin/unraid-mcp" "$INSTALL_DIR/scripts/"*.sh 2>/dev/null
+chmod +x "$INSTALL_DIR/bin/unraid-agent" "$INSTALL_DIR/scripts/"*.sh 2>/dev/null
 chmod 644 "$INSTALL_DIR/images/"*.png 2>/dev/null
 chmod 600 "$CONFIG_DIR/config.cfg" 2>/dev/null
 

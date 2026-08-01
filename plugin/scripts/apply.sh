@@ -51,7 +51,7 @@ if [ -f "$PIDFILE" ]; then
     fi
 fi
 
-nohup "$INSTALL_DIR/bin/unraid-mcp" -config "$CONFIG_DIR/config.cfg" >> /var/log/unraid-agent.log 2>&1 &
+nohup "$INSTALL_DIR/bin/unraid-agent" -config "$CONFIG_DIR/config.cfg" >> /var/log/unraid-agent.log 2>&1 &
 PID=$!
 echo $PID > "$PIDFILE"
 echo "Server restarted (PID $PID)"

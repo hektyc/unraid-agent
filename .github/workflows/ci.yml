@@ -31,5 +31,5 @@ jobs:
           go-version: "1.24"
           cache: true
       - run: cd go && go mod tidy
-      - run: cd go && go build -o bin/unraid-mcp ./cmd/unraid-mcp
-      - run: ls -lh go/bin/unraid-mcp
+      - run: cd go && go build -o bin/unraid-agent ./cmd/unraid-agent
+      - run: ls -lh go/bin/unraid-agent
