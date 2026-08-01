@@ -22,7 +22,10 @@ $yesno = function($key, $default = 'false') use ($cfg) {
 _(Read Only (Recommended))_:
 : <?=$yesno('READ_ONLY', 'true')?>
 <blockquote class="inline_help">
-Read-only mode blocks all state-changing operations (container/VM/array management, updates, file downloads, etc.)
+Read-only mode blocks ALL state-changing operations regardless of any other toggle.
+Permission resolution: READ_ONLY → ALLOW_DESTRUCTIVE → category toggles
+(Array/Docker/VM Actions) → specific toggles. Enforced inside the MCP server before
+any operation reaches the Unraid API — independent of the API key's role.
 </blockquote>
 
 _(Allow Destructive (All))_:
@@ -119,6 +122,9 @@ _(Allow Connect Actions)_:
 _(Allow Onboarding Actions)_:
 : <?=$yesno('ALLOW_ONBOARDING_ACTIONS')?>
 
+<div style="text-align:center;margin-top:18px;">
 <input type="submit" name="#default" value="Default">
-: <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
+<input type="submit" name="#apply" value="Apply">
+<input type="button" value="Done" onclick="done()">
+</div>
 </form>
