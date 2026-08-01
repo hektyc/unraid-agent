@@ -1,9 +1,9 @@
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
-LOGFILE="/var/log/unraid-mcp.log"
+LOGFILE="/var/log/unraid-agent.log"
 
 mkdir -p "$CONFIG_DIR"
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
 

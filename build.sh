@@ -5,8 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 VERSION="$(cat VERSION)"
-PLUGIN_NAME="unraid-mcp"
-PACKAGE_FILE="${PLUGIN_NAME}.tar"
+PLUGIN_NAME="unraid-agent"
+PACKAGE_FILE="unraid-agent.tar"
 BUILD_DIR="/tmp/${PLUGIN_NAME}-build"
 INSTALL_DIR="${BUILD_DIR}/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="${BUILD_DIR}/boot/config/plugins/${PLUGIN_NAME}"
@@ -20,6 +20,7 @@ echo "==> Creating build directory..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$INSTALL_DIR/bin"
 mkdir -p "$INSTALL_DIR/scripts"
+mkdir -p "$INSTALL_DIR/images"
 mkdir -p "$INSTALL_DIR/memory"
 mkdir -p "$CONFIG_DIR"
 
@@ -34,20 +35,26 @@ cp plugin/scripts/apply.sh "$INSTALL_DIR/scripts/apply.sh"
 cp plugin/scripts/remove.sh "$INSTALL_DIR/scripts/remove.sh"
 
 # Page file goes in plugin ROOT (not webgui/ subdirectory)
-cp plugin/unraid-mcp.page "$INSTALL_DIR/unraid-mcp.page"
+cp plugin/unraid-agent.page "$INSTALL_DIR/unraid-agent.page"
 
 # default.cfg goes in plugin root as a fallback default
 cp plugin/webgui/config.cfg "$INSTALL_DIR/default.cfg"
 
-# config.cfg is the user config on flash — create from defaults
+# config.cfg is the user config on flash
 cp plugin/webgui/config.cfg "$CONFIG_DIR/config.cfg"
+
+# Icon images
+cp plugin/images/unraid-agent-48.png "$INSTALL_DIR/images/unraid-agent-48.png"
+cp plugin/images/unraid-agent-128.png "$INSTALL_DIR/images/unraid-agent-128.png"
+cp plugin/images/unraid-agent.png "$INSTALL_DIR/images/unraid-agent.png"
 
 cp memory/AGENT-SKILLS.md "$INSTALL_DIR/memory/AGENT-SKILLS.md"
 cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
-cp plugin/unraid-mcp.plg "$INSTALL_DIR/unraid-mcp.plg"
-cp plugin/unraid-mcp.plg "$CONFIG_DIR/unraid-mcp.plg"
+cp plugin/unraid-agent.plg "$INSTALL_DIR/unraid-agent.plg"
+cp plugin/unraid-agent.plg "$CONFIG_DIR/unraid-agent.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
-chmod 644 "$CONFIG_DIR/unraid-mcp.plg" "$CONFIG_DIR/config.cfg"
+chmod 644 "$CONFIG_DIR/unraid-agent.plg" "$CONFIG_DIR/config.cfg"
+chmod 644 "$INSTALL_DIR/images/"*.png
 
 echo "==> Creating package tarball..."
 cd "$BUILD_DIR"

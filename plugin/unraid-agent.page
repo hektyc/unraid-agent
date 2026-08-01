@@ -1,14 +1,17 @@
 Menu="Utilities"
 Title="Unraid MCP Server"
-Icon="robot"
+Icon="/plugins/unraid-agent/images/unraid-agent-48.png"
 ---
 <?php
-$plugin = "unraid-mcp";
+$plugin = "unraid-agent";
 $config_file = "/boot/config/plugins/$plugin/config.cfg";
 
 $config = [];
 if (file_exists($config_file)) {
-    $config = parse_ini_file($config_file, false, INI_SCANNER_RAW);
+    $parsed = parse_ini_file($config_file, false, INI_SCANNER_RAW);
+    if ($parsed !== false) {
+        $config = $parsed;
+    }
 }
 
 $cfg = function($key, $default = '') use ($config) {
@@ -16,9 +19,15 @@ $cfg = function($key, $default = '') use ($config) {
 };
 
 $running = false;
-exec("pidof $plugin 2>/dev/null", $pids, $rc);
-if ($rc === 0 && !empty($pids)) {
-    $running = true;
+$pidfile = "/boot/config/plugins/$plugin/server.pid";
+if (file_exists($pidfile)) {
+    $pid = trim(file_get_contents($pidfile));
+    if ($pid !== '') {
+        exec("kill -0 $pid 2>/dev/null", $output, $rc);
+        if ($rc === 0) {
+            $running = true;
+        }
+    }
 }
 ?>
 <div class="title"><span class="left"><i class="title fa fa-plug"></i>Unraid MCP Server</span></div>
@@ -37,6 +46,9 @@ Leave blank to auto-detect from Unraid var.ini.
 
 _(API Key)_:
 : <input type="password" name="UNRAID_API_KEY" value="<?=htmlspecialchars($cfg('UNRAID_API_KEY'))?>">
+<blockquote class="inline_help">
+Get your API key from Unraid webUI: My Server → API Keys → Create API Key
+</blockquote>
 
 _(Transport Mode)_:
 : <select name="TRANSPORT">
@@ -61,6 +73,9 @@ _(Read Only (Recommended))_:
   <option value="true" <?=($cfg('READ_ONLY') === 'true') ? 'selected' : ''?>>Yes</option>
   <option value="false" <?=($cfg('READ_ONLY') === 'false') ? 'selected' : ''?>>No</option>
   </select>
+<blockquote class="inline_help">
+Read-only mode blocks all state-changing operations (container/VM/array management, updates, file downloads, etc.)
+</blockquote>
 
 _(Allow Array Stop/Start)_:
 : <select name="ALLOW_ARRAY_ACTIONS">
@@ -205,20 +220,23 @@ _(Allow Destructive (All))_:
   <option value="true" <?=($cfg('ALLOW_DESTRUCTIVE') === 'true') ? 'selected' : ''?>>Yes</option>
   <option value="false" <?=($cfg('ALLOW_DESTRUCTIVE') === 'false') ? 'selected' : ''?>>No</option>
   </select>
+<blockquote class="inline_help">
+WARNING: Enabling this allows ALL destructive operations including array stop, disk remove, container delete, VM delete, plugin install/remove, system updates, and flash backup.
+</blockquote>
 
 <div class="title"><span class="left"><i class="title fa fa-comments"></i>MCP Access</span></div>
 
 _(Bearer Token)_:
 : <input type="password" name="UNRAID_MCP_BEARER_TOKEN" value="<?=htmlspecialchars($cfg('UNRAID_MCP_BEARER_TOKEN'))?>" autocomplete="off">
+<blockquote class="inline_help">
+Bearer token for authenticating MCP streamable-http connections. Required if HTTP auth is disabled.
+</blockquote>
 
 _(Disable HTTP Auth)_:
 : <select name="UNRAID_MCP_DISABLE_HTTP_AUTH">
-  <option value="false" <?=($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH') === 'false') ? 'selected' : ''?>>Yes</option>
-  <option value="true" <?=($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH') === 'true') ? 'selected' : ''?>>No</option>
+  <option value="false" <?=($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH') === 'false') ? 'selected' : ''?>>Yes (recommended)</option>
+  <option value="true" <?=($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH') === 'true') ? 'selected' : ''?>>No (disable auth)</option>
   </select>
-<blockquote class="inline_help">
-Disable HTTP auth for MCP endpoint (not recommended for exposed servers).
-</blockquote>
 
 <div class="title"><span class="left"><i class="title fa fa-cog"></i>Logging</span></div>
 

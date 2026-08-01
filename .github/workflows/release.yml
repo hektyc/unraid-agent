@@ -41,8 +41,8 @@ jobs:
 
       - name: Bump version in .plg
         run: |
-          sed -i "s/<!ENTITY version[[:space:]]*\"[^\"]*\"/<!ENTITY version     \"${{ steps.version.outputs.new_version }}\"/" plugin/unraid-mcp.plg
-          grep "ENTITY version" plugin/unraid-mcp.plg
+          sed -i "s/<!ENTITY version[[:space:]]*\"[^\"]*\"/<!ENTITY version     \"${{ steps.version.outputs.new_version }}\"/" plugin/unraid-agent.plg
+          grep "ENTITY version" plugin/unraid-agent.plg
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -61,11 +61,11 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh
-          ls -lh unraid-mcp.tar
+          ls -lh unraid-agent.tar
 
       - name: Commit and push version bump
         run: |
-          git add VERSION plugin/unraid-mcp.plg
+          git add VERSION plugin/unraid-agent.plg
           git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
           git tag v${{ steps.version.outputs.new_version }}
           git push origin main --follow-tags
@@ -78,5 +78,5 @@ jobs:
           name: v${{ steps.version.outputs.new_version }}
           generate_release_notes: true
           files: |
-            plugin/unraid-mcp.plg
-            unraid-mcp.tar
+            plugin/unraid-agent.plg
+            unraid-agent.tar

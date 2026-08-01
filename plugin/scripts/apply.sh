@@ -1,5 +1,5 @@
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
@@ -51,7 +51,7 @@ if [ -f "$PIDFILE" ]; then
     fi
 fi
 
-nohup "$INSTALL_DIR/bin/unraid-mcp" >> /var/log/unraid-mcp.log 2>&1 &
+nohup "$INSTALL_DIR/bin/unraid-mcp" >> /var/log/unraid-agent.log 2>&1 &
 PID=$!
 echo $PID > "$PIDFILE"
 echo "Server restarted (PID $PID)"

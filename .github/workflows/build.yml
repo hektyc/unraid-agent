@@ -1,4 +1,4 @@
-name: Build Unraid MCP Plugin
+name: Build Unraid Agent Plugin
 
 on:
   push:
@@ -34,20 +34,20 @@ jobs:
         run: |
           chmod +x build.sh
           ./build.sh
-          ls -lh unraid-mcp.tar
+          ls -lh unraid-agent.tar
 
       - name: Upload .plg manifest artifact
         uses: actions/upload-artifact@v4
         with:
-          name: unraid-mcp-plg
-          path: plugin/unraid-mcp.plg
+          name: unraid-agent-plg
+          path: plugin/unraid-agent.plg
           retention-days: 90
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
         with:
-           name: unraid-mcp-package
-           path: unraid-mcp.tar
+           name: unraid-agent-package
+           path: unraid-agent.tar
            retention-days: 90
 
 

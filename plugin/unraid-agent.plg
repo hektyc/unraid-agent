@@ -1,22 +1,25 @@
 <?xml version='1.0' standalone='yes'?>
 <!DOCTYPE PLUGIN [
-    <!ENTITY name        "unraid-mcp">
+    <!ENTITY name        "unraid-agent">
     <!ENTITY author      "hektyc">
     <!ENTITY version     "0.0.33">
     <!ENTITY gitURL      "https://raw.githubusercontent.com/hektyc/unraid-mcp-server/main">
-    <!ENTITY pluginURL   "&gitURL;/plugin/unraid-mcp.plg">
+    <!ENTITY pluginURL   "&gitURL;/plugin/unraid-agent.plg">
     <!ENTITY releaseURL  "https://github.com/hektyc/unraid-mcp-server/releases/latest/download">
     <!ENTITY pluginLOC    "/boot/config/plugins/&name;">
     <!ENTITY emhttpLOC    "/usr/local/emhttp/plugins/&name;">
+    <!ENTITY iconPath     "&emhttpLOC;/images/unraid-agent-48.png">
 ]>
 
-<PLUGIN name="&name;" author="&author;" version="&version;" launch="Settings/&name;" icon="robot" min="6.12.0" pluginURL="&pluginURL;" support="https://github.com/hektyc/unraid-mcp-server/issues" project="https://github.com/hektyc/unraid-mcp-server">
+<PLUGIN name="&name;" author="&author;" version="&version;" launch="Settings/&name;" icon="&iconPath;" min="6.12.0" pluginURL="&pluginURL;" support="https://github.com/hektyc/unraid-mcp-server/issues" project="https://github.com/hektyc/unraid-mcp-server">
 
-<DESCRIPTION>Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
+<DESCRIPTION>Unraid MCP Server (named 'unraid-agent' to avoid conflicts) - Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
 <CHANGES>
-### 0.0.33
-- Fixed: settings page now appears in User Utilities (not intermixed with System Settings)
-- Changed Menu from "Settings" to "Utilities" and removed Type="php" (matching reference plugin)
+### 0.0.34
+- Renamed plugin from 'unraid-mcp' to 'unraid-agent' to avoid conflicts
+- Added PNG icon images (48x48, 128x128) for proper display in Plugins page
+- Page file Icon now references PNG image path
+- Fixed parse_ini_file fallback for missing config
 
 ### 0.0.31
 - Fixed: settings page now appears in WebGUI after install/reboot
@@ -28,17 +31,19 @@
 - Fixed: gitURL entity uses raw.githubusercontent.com
 </CHANGES>
 
-<!-- Pre-install: create directories and clean old files -->
+<!-- Pre-install: create directories, copy icons, and clean old files -->
 <FILE Run="/bin/bash">
 <INLINE>
 <![CDATA[
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
-mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/memory"
+mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/memory" "$INSTALL_DIR/images"
 rm -rf "$INSTALL_DIR"/* 2>/dev/null
+mkdir -p "$INSTALL_DIR/images"
+# Clean up old plugin (unraid-mcp) files
 rm -f "$CONFIG_DIR/webgui/unraid-mcp.settings.page" 2>/dev/null
 rm -f "$INSTALL_DIR/webgui/unraid-mcp.settings.page" 2>/dev/null
 rm -f "$CONFIG_DIR/unraid-mcp.cfg" 2>/dev/null
@@ -52,14 +57,14 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 <INLINE>
 <![CDATA[
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
-PKG_URL="https://github.com/hektyc/unraid-mcp-server/releases/latest/download/unraid-mcp.tar"
-TMP_FILE="/tmp/unraid-mcp.tar"
+PKG_URL="https://github.com/hektyc/unraid-mcp-server/releases/latest/download/unraid-agent.tar"
+TMP_FILE="/tmp/unraid-agent.tar"
 
-if [ -f "$CONFIG_DIR/unraid-mcp.tar" ]; then
+if [ -f "$CONFIG_DIR/unraid-agent.tar" ]; then
   echo "Using local package file"
-  TMP_FILE="$CONFIG_DIR/unraid-mcp.tar"
+  TMP_FILE="$CONFIG_DIR/unraid-agent.tar"
 else
   echo "Downloading package from $PKG_URL ..."
   curl -fsSL "$PKG_URL" -o "$TMP_FILE"
@@ -73,7 +78,6 @@ fi
 
 echo "Extracting package ..."
 echo "File size: $(stat -c%s "$TMP_FILE" 2>&1 || stat -f%z "$TMP_FILE" 2>&1) bytes"
-echo "File type: $(file "$TMP_FILE" 2>&1 || echo 'unknown')"
 echo "---"
 
 echo "Extracting with tar --no-same-owner -xf ..."
@@ -143,16 +147,17 @@ UNRAID_MCP_DISABLE_HTTP_AUTH="false"
 <INLINE>
 <![CDATA[
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
 chmod +x "$INSTALL_DIR/bin/unraid-mcp" "$INSTALL_DIR/scripts/"*.sh 2>/dev/null
+chmod 644 "$INSTALL_DIR/images/"*.png 2>/dev/null
 chmod 600 "$CONFIG_DIR/config.cfg" 2>/dev/null
 
 echo "-----------------------------------------------------------"
-echo " ${PLUGIN_NAME} v0.0.31 installed successfully."
-echo " Settings: Settings → Plugins → Unraid MCP Server"
+echo " ${PLUGIN_NAME} v0.0.34 installed successfully."
+echo " Settings: Settings → User Utilities → Unraid MCP Server"
 echo " Set UNRAID_API_KEY in: $CONFIG_DIR/config.cfg"
 echo " Start daemon: $INSTALL_DIR/scripts/start.sh"
 echo "-----------------------------------------------------------"
@@ -172,7 +177,7 @@ echo "Then hard refresh browser (Ctrl+F5)"
 <INLINE>
 <![CDATA[
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
 
@@ -195,7 +200,7 @@ echo "Pre-update cleanup complete"
 <INLINE>
 <![CDATA[
 #!/bin/bash
-PLUGIN_NAME="unraid-mcp"
+PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PIDFILE="$CONFIG_DIR/server.pid"
