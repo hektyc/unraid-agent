@@ -7,13 +7,6 @@ LOGFILE="/var/log/unraid-agent.log"
 
 mkdir -p "$CONFIG_DIR"
 
-# Symlink config to legacy path expected by the binary
-LEGACY_CONFIG_DIR="/boot/config/plugins/unraid-mcp"
-mkdir -p "$LEGACY_CONFIG_DIR"
-if [ ! -L "$LEGACY_CONFIG_DIR/config.cfg" ]; then
-    ln -sf "$CONFIG_DIR/config.cfg" "$LEGACY_CONFIG_DIR/config.cfg"
-fi
-
 if [ -f "$PIDFILE" ]; then
     OLDPID=$(cat "$PIDFILE")
     if kill -0 "$OLDPID" 2>/dev/null; then
