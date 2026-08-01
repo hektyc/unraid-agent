@@ -1,0 +1,45 @@
+Menu="unraid-agent:4"
+Title="Advanced"
+Tag="fa-cog"
+---
+<?php
+include "/usr/local/emhttp/plugins/unraid-agent/php/common.php";
+?>
+<form markdown="1" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#file" value="<?=$plugin?>/config.cfg">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/apply.sh">
+
+<div class="title"><span class="left"><i class="title fa fa-file-text-o"></i>Logging</span></div>
+
+_(Log Level)_:
+: <select name="UNRAID_MCP_LOG_LEVEL">
+  <option value="info" <?=($cfg('UNRAID_MCP_LOG_LEVEL') === 'info') ? 'selected' : ''?>>Info</option>
+  <option value="debug" <?=($cfg('UNRAID_MCP_LOG_LEVEL') === 'debug') ? 'selected' : ''?>>Debug</option>
+  <option value="warn" <?=($cfg('UNRAID_MCP_LOG_LEVEL') === 'warn') ? 'selected' : ''?>>Warn</option>
+  <option value="error" <?=($cfg('UNRAID_MCP_LOG_LEVEL') === 'error') ? 'selected' : ''?>>Error</option>
+  </select>
+
+<div class="title"><span class="left"><i class="title fa fa-lock"></i>TLS</span></div>
+
+_(Verify SSL)_:
+: <select name="UNRAID_VERIFY_SSL">
+  <option value="true" <?=($cfg('UNRAID_VERIFY_SSL') === 'true') ? 'selected' : ''?>>Yes</option>
+  <option value="false" <?=($cfg('UNRAID_VERIFY_SSL') === 'false') ? 'selected' : ''?>>No</option>
+  </select>
+<blockquote class="inline_help">
+Verify the Unraid API TLS certificate. Set to No when using the self-signed certificate on the WebGUI port.
+</blockquote>
+
+_(Allow Insecure TLS)_:
+: <select name="UNRAID_ALLOW_INSECURE_TLS">
+  <option value="true" <?=($cfg('UNRAID_ALLOW_INSECURE_TLS') === 'true') ? 'selected' : ''?>>Yes</option>
+  <option value="false" <?=($cfg('UNRAID_ALLOW_INSECURE_TLS') === 'false') ? 'selected' : ''?>>No</option>
+  </select>
+<blockquote class="inline_help">
+Allow insecure TLS connections (self-signed certs, etc.).
+</blockquote>
+
+<input type="submit" name="#default" value="Default">
+: <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
+</form>

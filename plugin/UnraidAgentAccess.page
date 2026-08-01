@@ -1,0 +1,32 @@
+Menu="unraid-agent:3"
+Title="MCP Access"
+Tag="fa-key"
+---
+<?php
+include "/usr/local/emhttp/plugins/unraid-agent/php/common.php";
+?>
+<form markdown="1" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#file" value="<?=$plugin?>/config.cfg">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/apply.sh">
+
+<div class="title"><span class="left"><i class="title fa fa-key"></i>MCP Access</span></div>
+
+_(Bearer Token)_:
+: <input type="password" name="UNRAID_MCP_BEARER_TOKEN" value="<?=htmlspecialchars($cfg('UNRAID_MCP_BEARER_TOKEN'))?>" autocomplete="off">
+<blockquote class="inline_help">
+Bearer token for authenticating MCP streamable-http connections. Leave empty to allow unauthenticated local connections.
+</blockquote>
+
+_(Disable HTTP Auth)_:
+: <select name="UNRAID_MCP_DISABLE_HTTP_AUTH">
+  <option value="false" <?=($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH') === 'false') ? 'selected' : ''?>>Yes (recommended)</option>
+  <option value="true" <?=($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH') === 'true') ? 'selected' : ''?>>No (disable auth)</option>
+  </select>
+<blockquote class="inline_help">
+When a bearer token is set, HTTP requests must include it as an Authorization: Bearer header unless auth is disabled.
+</blockquote>
+
+<input type="submit" name="#default" value="Default">
+: <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
+</form>

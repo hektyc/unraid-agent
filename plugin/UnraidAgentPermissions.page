@@ -1,0 +1,124 @@
+Menu="unraid-agent:2"
+Title="Permissions"
+Tag="fa-shield"
+---
+<?php
+include "/usr/local/emhttp/plugins/unraid-agent/php/common.php";
+
+$yesno = function($key, $default = 'false') use ($cfg) {
+    $val = $cfg($key, $default);
+    $yes = ($val === 'true') ? 'selected' : '';
+    $no  = ($val !== 'true') ? 'selected' : '';
+    return "<select name=\"$key\"><option value=\"true\" $yes>Yes</option><option value=\"false\" $no>No</option></select>";
+};
+?>
+<form markdown="1" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="#file" value="<?=$plugin?>/config.cfg">
+<input type="hidden" name="#command" value="/usr/local/emhttp/plugins/<?=$plugin?>/scripts/apply.sh">
+
+<div class="title"><span class="left"><i class="title fa fa-shield"></i>Master Switch</span></div>
+
+_(Read Only (Recommended))_:
+: <?=$yesno('READ_ONLY', 'true')?>
+<blockquote class="inline_help">
+Read-only mode blocks all state-changing operations (container/VM/array management, updates, file downloads, etc.)
+</blockquote>
+
+_(Allow Destructive (All))_:
+: <?=$yesno('ALLOW_DESTRUCTIVE')?>
+<blockquote class="inline_help">
+WARNING: Enabling this allows ALL destructive operations including array stop, disk remove, container delete, VM delete, plugin install/remove, system updates, and flash backup.
+</blockquote>
+
+<div class="title"><span class="left"><i class="title fa fa-hdd-o"></i>Array</span></div>
+
+_(Allow Array Stop/Start)_:
+: <?=$yesno('ALLOW_ARRAY_ACTIONS')?>
+
+_(Allow Array Stop)_:
+: <?=$yesno('ALLOW_ARRAY_STOP')?>
+
+_(Allow Array Start)_:
+: <?=$yesno('ALLOW_ARRAY_START')?>
+
+_(Allow Array Add Disk)_:
+: <?=$yesno('ALLOW_ARRAY_ADD_DISK')?>
+
+_(Allow Array Remove Disk)_:
+: <?=$yesno('ALLOW_ARRAY_REMOVE_DISK')?>
+
+_(Allow Array Clear Stats)_:
+: <?=$yesno('ALLOW_ARRAY_CLEAR_STATS')?>
+
+<div class="title"><span class="left"><i class="title fa fa-cubes"></i>Containers</span></div>
+
+_(Allow Docker Actions)_:
+: <?=$yesno('ALLOW_DOCKER_ACTIONS')?>
+
+_(Allow Container Stop)_:
+: <?=$yesno('ALLOW_CONTAINER_STOP')?>
+
+_(Allow Container Restart)_:
+: <?=$yesno('ALLOW_CONTAINER_RESTART')?>
+
+_(Allow Container Remove)_:
+: <?=$yesno('ALLOW_CONTAINER_REMOVE')?>
+
+<div class="title"><span class="left"><i class="title fa fa-desktop"></i>Virtual Machines</span></div>
+
+_(Allow VM Actions)_:
+: <?=$yesno('ALLOW_VM_ACTIONS')?>
+
+_(Allow VM Stop)_:
+: <?=$yesno('ALLOW_VM_STOP')?>
+
+_(Allow VM Force Stop)_:
+: <?=$yesno('ALLOW_VM_FORCE_STOP')?>
+
+_(Allow VM Reset)_:
+: <?=$yesno('ALLOW_VM_RESET')?>
+
+<div class="title"><span class="left"><i class="title fa fa-plug"></i>Plugins</span></div>
+
+_(Allow Plugin Install)_:
+: <?=$yesno('ALLOW_PLUGIN_INSTALL')?>
+
+_(Allow Plugin Remove)_:
+: <?=$yesno('ALLOW_PLUGIN_REMOVE')?>
+
+<div class="title"><span class="left"><i class="title fa fa-cog"></i>System</span></div>
+
+_(Allow Setting Updates)_:
+: <?=$yesno('ALLOW_SETTING_UPDATES')?>
+
+_(Allow SSH Update)_:
+: <?=$yesno('ALLOW_SSH_UPDATE')?>
+
+_(Allow Time Update)_:
+: <?=$yesno('ALLOW_TIME_UPDATE')?>
+
+_(Allow Flash Backup)_:
+: <?=$yesno('ALLOW_FLASH_BACKUP')?>
+
+_(Allow Notification Delete)_:
+: <?=$yesno('ALLOW_NOTIFICATION_DELETE')?>
+
+_(Allow API Key Create)_:
+: <?=$yesno('ALLOW_API_KEY_CREATE')?>
+
+_(Allow API Key Delete)_:
+: <?=$yesno('ALLOW_API_KEY_DELETE')?>
+
+_(Allow Rsync Operations)_:
+: <?=$yesno('ALLOW_RCLONE_OPERATIONS')?>
+
+_(Allow Connect Actions)_:
+: <?=$yesno('ALLOW_CONNECT_ACTIONS')?>
+
+_(Allow Onboarding Actions)_:
+: <?=$yesno('ALLOW_ONBOARDING_ACTIONS')?>
+
+<input type="submit" name="#default" value="Default">
+: <input type="submit" name="#apply" value="Apply"> <input type="button" value="Done" onclick="done()">
+</form>
