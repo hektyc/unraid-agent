@@ -5,8 +5,8 @@
 - Transport: stdio (default) or streamable-http
 - Read-only mode: true by default
 - Process runs as: nobody:nobody
-- Config location: /boot/config/plugins/unraid-mcp/config.cfg
-- Binary location: /usr/local/emhttp/plugins/unraid-mcp/bin/unraid-mcp
+- Config location: /boot/config/plugins/unraid-agent/config.cfg
+- Binary location: /usr/local/emhttp/plugins/unraid-agent/bin/unraid-agent
 
 ## Security Rules
 1. Always enforce READ_ONLY mode if enabled

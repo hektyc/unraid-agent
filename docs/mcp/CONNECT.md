@@ -17,7 +17,7 @@ This server supports multiple transport modes and works with every major AI clie
   "mcpServers": {
     "unraid": {
       "command": "npx",
-      "args": ["-y", "unraid-mcp-server"],
+      "args": ["-y", "unraid-agent"],
       "env": {
         "UNRAID_API_URL": "https://your-unraid.local/graphql",
         "UNRAID_API_KEY": "your-api-key"
@@ -31,10 +31,10 @@ This server supports multiple transport modes and works with every major AI clie
 
 ```bash
 # Add marketplace
-/plugin marketplace add hektyc/unraid-mcp-server
+/plugin marketplace add hektyc/unraid-agent
 
 # Install plugin
-/plugin install unraid-mcp-server@unraid-mcp-server
+/plugin install unraid-agent@unraid-agent
 ```
 
 ## VS Code
@@ -45,7 +45,7 @@ This server supports multiple transport modes and works with every major AI clie
     "unraid": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "unraid-mcp-server"],
+      "args": ["-y", "unraid-agent"],
       "env": {
         "UNRAID_API_URL": "https://your-unraid.local/graphql",
         "UNRAID_API_KEY": "your-api-key"
@@ -67,7 +67,7 @@ codex
 
 ```bash
 export TRANSPORT=streamable-http
-npx unraid-mcp-server start
+npx unraid-agent start
 
 # MCP endpoint: http://localhost:6970/mcp
 # Health check: http://localhost:6970/health
@@ -80,5 +80,5 @@ docker run -it --rm \
   -e UNRAID_API_URL=https://your-unraid.local/graphql \
   -e UNRAID_API_KEY=your-api-key \
   -p 6970:6970 \
-  unraid-mcp-server
+  unraid-agent
 ```

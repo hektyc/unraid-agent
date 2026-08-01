@@ -6,18 +6,18 @@ Private, safety-first MCP server for Unraid. Runs as a native Unraid plugin (`.p
 
 ### Option A: Install from GitHub Releases (Recommended)
 
-1. Go to **Releases** page: `https://github.com/hektyc/unraid-mcp-server/releases/latest`
-2. Download `unraid-mcp.plg` (right-click → "Save Link As", or click the file then download)
+1. Go to **Releases** page: `https://github.com/hektyc/unraid-agent/releases/latest`
+2. Download `unraid-agent.plg` (right-click → "Save Link As", or click the file then download)
 3. In Unraid WebUI: **Settings > Plugins > Install Plugin > Choose File**
 4. Select the downloaded `.plg` file and click **Install**
-5. Unraid downloads the package (`unraid-mcp.tar`) from Releases and installs it
+5. Unraid downloads the package (`unraid-agent.tar`) from Releases and installs it
 
 ### Option B: GitHub Actions Build
 
 1. Push code to the `dev` branch
 2. Go to **Actions** tab in GitHub
-3. Select **Build Unraid MCP Plugin** workflow
-4. Download the `unraid-mcp-plg` and `unraid-mcp-package` artifacts
+3. Select **Build Unraid Agent Plugin** workflow
+4. Download the `unraid-agent-plg` and `unraid-agent-package` artifacts
 5. In Unraid WebUI: **Settings > Plugins > Install Plugin**
 6. Upload the `.plg` file, and manually install the package
 
@@ -25,19 +25,19 @@ Private, safety-first MCP server for Unraid. Runs as a native Unraid plugin (`.p
 
 ```bash
 # Requires Go 1.24+
-git clone https://github.com/hektyc/unraid-mcp-server.git
-cd unraid-mcp-server
+git clone https://github.com/hektyc/unraid-agent.git
+cd unraid-agent
 git checkout dev
 chmod +x build.sh
 ./build.sh
-# → creates: unraid-mcp.plg + unraid-mcp.tar.gz
+# → creates: unraid-agent.plg + unraid-agent.tar.gz
 ```
 
 Upload the `.plg` via Unraid WebUI.
 
 ## Configuration
 
-After install, go to **Settings > Unraid MCP Server**:
+After install, go to **Settings > Unraid Agent**:
 
 | Setting | Default | Description |
 |---|---|---|
@@ -69,7 +69,7 @@ After install, go to **Settings > Unraid MCP Server**:
   "mcpServers": {
     "unraid": {
       "command": "ssh",
-      "args": ["root@tower.local", "/usr/local/emhttp/plugins/unraid-mcp/bin/unraid-mcp"]
+      "args": ["root@tower.local", "/usr/local/emhttp/plugins/unraid-agent/bin/unraid-agent"]
     }
   }
 }
@@ -93,16 +93,16 @@ After install, go to **Settings > Unraid MCP Server**:
 
 | Path | Purpose |
 |---|---|
-| `/usr/local/emhttp/plugins/unraid-mcp/` | Plugin install dir |
-| `/boot/config/plugins/unraid-mcp/config.cfg` | Persistent settings |
-| `/boot/config/plugins/unraid-mcp/AGENT-SKILLS.md` | Agent skills (editable) |
-| `/boot/config/plugins/unraid-mcp/AGENT-MEMORY.md` | Agent memory (editable) |
-| `/var/log/unraid-mcp.log` | Plugin logs |
-| `/usr/local/emhttp/plugins/unraid-mcp/bin/unraid-mcp` | Go binary |
+| `/usr/local/emhttp/plugins/unraid-agent/` | Plugin install dir |
+| `/boot/config/plugins/unraid-agent/config.cfg` | Persistent settings |
+| `/boot/config/plugins/unraid-agent/AGENT-SKILLS.md` | Agent skills (editable) |
+| `/boot/config/plugins/unraid-agent/AGENT-MEMORY.md` | Agent memory (editable) |
+| `/var/log/unraid-agent.log` | Plugin logs |
+| `/usr/local/emhttp/plugins/unraid-agent/bin/unraid-agent` | Go binary |
 
 ## AGENT-SKILLS.md and AGENT-MEMORY.md
 
-These files live in `/boot/config/plugins/unraid-mcp/` and can be edited by you or by the AI agent through the MCP tools. They provide:
+These files live in `/boot/config/plugins/unraid-agent/` and can be edited by you or by the AI agent through the MCP tools. They provide:
 
 - **AGENT-SKILLS.md** — How-to guides for carrying out tasks
 - **AGENT-MEMORY.md** — Rules, constraints, and remembered state

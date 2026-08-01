@@ -3,15 +3,15 @@
     <!ENTITY name        "unraid-agent">
     <!ENTITY author      "hektyc">
     <!ENTITY version     "0.0.34">
-    <!ENTITY gitURL      "https://raw.githubusercontent.com/hektyc/unraid-mcp-server/main">
+    <!ENTITY gitURL      "https://raw.githubusercontent.com/hektyc/unraid-agent/main">
     <!ENTITY pluginURL   "&gitURL;/plugin/unraid-agent.plg">
-    <!ENTITY releaseURL  "https://github.com/hektyc/unraid-mcp-server/releases/latest/download">
+    <!ENTITY releaseURL  "https://github.com/hektyc/unraid-agent/releases/latest/download">
     <!ENTITY pluginLOC    "/boot/config/plugins/&name;">
     <!ENTITY emhttpLOC    "/usr/local/emhttp/plugins/&name;">
     <!ENTITY iconPath     "&emhttpLOC;/images/unraid-agent-48.png">
 ]>
 
-<PLUGIN name="&name;" author="&author;" version="&version;" launch="Settings/&name;" icon="&iconPath;" min="6.12.0" pluginURL="&pluginURL;" support="https://github.com/hektyc/unraid-mcp-server/issues" project="https://github.com/hektyc/unraid-mcp-server">
+<PLUGIN name="&name;" author="&author;" version="&version;" launch="Settings/&name;" icon="&iconPath;" min="6.12.0" pluginURL="&pluginURL;" support="https://github.com/hektyc/unraid-agent/issues" project="https://github.com/hektyc/unraid-agent">
 
 <DESCRIPTION>Unraid MCP Server (named 'unraid-agent' to avoid conflicts) - Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
 <CHANGES>
@@ -59,7 +59,7 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 #!/bin/bash
 PLUGIN_NAME="unraid-agent"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
-PKG_URL="https://github.com/hektyc/unraid-mcp-server/releases/latest/download/unraid-agent.tar"
+PKG_URL="https://github.com/hektyc/unraid-agent/releases/latest/download/unraid-agent.tar"
 TMP_FILE="/tmp/unraid-agent.tar"
 
 if [ -f "$CONFIG_DIR/unraid-agent.tar" ]; then
@@ -157,7 +157,7 @@ chmod 600 "$CONFIG_DIR/config.cfg" 2>/dev/null
 
 echo "-----------------------------------------------------------"
 echo " ${PLUGIN_NAME} v0.0.34 installed successfully."
-echo " Settings: Settings → User Utilities → Unraid MCP Server"
+echo " Settings: Settings → User Utilities → Unraid Agent"
 echo " Set UNRAID_API_KEY in: $CONFIG_DIR/config.cfg"
 echo " Start daemon: $INSTALL_DIR/scripts/start.sh"
 echo "-----------------------------------------------------------"

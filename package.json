@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "unraid-mcp-server",
+  "name": "unraid-agent",
   "version": "0.0.1",
   "private": false,
   "type": "module",
@@ -8,7 +8,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "unraid-mcp-server": "./dist/index.js"
+    "unraid-agent": "./dist/index.js"
   },
   "exports": {
     ".": {
@@ -33,7 +33,7 @@
   "keywords": [
     "mcp",
     "unraid",
-    "unraid-mcp",
+    "unraid-agent",
     "graphql",
     "server",
     "ai",
