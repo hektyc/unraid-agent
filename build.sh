@@ -52,7 +52,7 @@ cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
 cp plugin/unraid-agent.plg "$INSTALL_DIR/unraid-agent.plg"
 cp plugin/unraid-agent.plg "$CONFIG_DIR/unraid-agent.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
-chmod 644 "$CONFIG_DIR/unraid-agent.plg" "$CONFIG_DIR/config.cfg"
+chmod 644 "$CONFIG_DIR/unraid-agent.plg"
 chmod 644 "$INSTALL_DIR/images/"*.png
 
 echo "==> Creating package tarball..."
