@@ -1,7 +1,6 @@
 package connect
 
 import (
-
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
@@ -10,20 +9,19 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_status",
 		Description: "Get connection status. Read-only.",
-		Query:       `query { connect { status } }`,
+		Query:       `query { connect { dynamicRemoteAccess settings { values } } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_sign_in",
 		Description: "Sign in to Connect.",
-		Query:       `mutation SignIn($email: String!, $password: String!) { connect { signIn(email: $email, password: $password) { status } } }`,
+		Query:       `mutation($apiKey: String!) { connectSignIn(input: {apiKey: $apiKey}) }`,
 		Params: map[string]string{
-			"email": "string", // required=true
-			"password": "string", // required=true
+			"apiKey": "string",
 		},
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "connect_sign_out",
 		Description: "Sign out of Connect.",
-		Query:       `mutation { connect { signOut { status } } }`,
+		Query:       `mutation { connectSignOut }`,
 	})
 }

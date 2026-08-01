@@ -1,7 +1,6 @@
 package setting
 
 import (
-
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 )
@@ -10,48 +9,47 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "setting_list",
 		Description: "Get all settings. Read-only.",
-		Query:       `query { settings }`,
+		Query:       `query { settings { unified { values } } }`,
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "setting_get",
-		Description: "Get single setting by name.",
-		Query:       `query Setting($name: String!) { setting(name: $name) }`,
+		Description: "Get single setting by name. Read-only.",
+		Query:       `query { settings { unified { dataSchema uiSchema values } } }`,
 		Params: map[string]string{
-			"name": "string", // required=true
+			"name": "string",
 		},
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "setting_update",
-		Description: "Update a setting.",
-		Query:       `mutation UpdateSetting($name: String!, $value: String!) { updateSetting(name: $name, value: $value) { status } }`,
+		Description: "Update settings (pass a JSON object of setting keys to new values).",
+		Query:       `mutation($settings: JSON!) { updateSettings(input: $settings) { __typename } }`,
 		Params: map[string]string{
-			"name": "string", // required=true
-			"value": "string", // required=true
-		},
-	})
-	s.RegisterTool(&mcp.ToolDef{
-		Name:        "setting_configure_ups",
-		Description: "Configure UPS.",
-		Query:       `mutation ConfigureUPS($driver: String!, $port: String!) { configureUPS(driver: $driver, port: $port) { status } }`,
-		Params: map[string]string{
-			"driver": "string", // required=true
-			"port": "string", // required=true
+			"settings": "object",
 		},
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "setting_update_ssh",
 		Description: "Update SSH settings.",
-		Query:       `mutation UpdateSSH($enabled: Boolean!) { updateSSH(enabled: $enabled) { status } }`,
+		Query:       `mutation($enabled: Boolean!) { updateSshSettings(input: {enabled: $enabled}) { useSsh portssh } }`,
 		Params: map[string]string{
-			"enabled": "boolean", // required=true
+			"enabled": "boolean",
 		},
 	})
 	s.RegisterTool(&mcp.ToolDef{
 		Name:        "setting_update_system_time",
 		Description: "Update system time/NTP.",
-		Query:       `mutation UpdateSystemTime($tz: String!) { updateSystemTime(timezone: $tz) { status } }`,
+		Query:       `mutation($timezone: String!) { updateSystemTime(input: {timeZone: $timezone}) { currentTime timeZone useNtp } }`,
 		Params: map[string]string{
-			"timezone": "string", // required=true
+			"timezone": "string",
+		},
+	})
+	s.RegisterTool(&mcp.ToolDef{
+		Name:        "setting_configure_ups",
+		Description: "Configure UPS.",
+		Query:       `mutation($driver: String!, $port: String!) { configureUps(config: {upsType: $driver, device: $port}) }`,
+		Params: map[string]string{
+			"driver": "string",
+			"port":   "string",
 		},
 	})
 }

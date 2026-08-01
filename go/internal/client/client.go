@@ -61,10 +61,6 @@ func (c *Client) Query(ctx context.Context, query string, variables map[string]i
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
-	}
-
 	var result struct {
 		Data   map[string]interface{} `json:"data"`
 		Errors []struct {
@@ -73,11 +69,15 @@ func (c *Client) Query(ctx context.Context, query string, variables map[string]i
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("decode response: %w", err)
+		return nil, fmt.Errorf("decode response (status %d): %w", resp.StatusCode, err)
 	}
 
 	if len(result.Errors) > 0 {
 		return nil, fmt.Errorf("graphql errors: %s", strings.TrimSpace(result.Errors[0].Message))
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
 	}
 
 	if result.Data == nil {
