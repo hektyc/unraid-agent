@@ -45,17 +45,32 @@ if ($serverHost === '') {
 
 // Build the paste-ready client configuration snippet.
 if ($stdioMode) {
+    // Detect SSH port from var.ini (default 22); inject -p when non-default
+    $sshPort = '22';
+    $varIniPath = '/var/local/emhttp/var.ini';
+    if (file_exists($varIniPath)) {
+        $varsIni = @parse_ini_file($varIniPath, false, INI_SCANNER_RAW);
+        if (is_array($varsIni) && !empty($varsIni['PORTSSH'])) {
+            $sshPort = trim($varsIni['PORTSSH'], "\"' ");
+        }
+    }
+    $sshCmd = ["ssh", "-T", "-o", "BatchMode=yes"];
+    if ($sshPort !== '' && $sshPort !== '22') {
+        $sshCmd[] = "-p";
+        $sshCmd[] = $sshPort;
+    }
+    $sshCmd[] = "root@$serverHost";
+    $sshCmd[] = "/usr/local/emhttp/plugins/unraid-agent/bin/unraid-agent";
+    $sshCmd[] = "-config";
+    $sshCmd[] = "/boot/config/plugins/unraid-agent/config.cfg";
+    $sshCmd[] = "-transport";
+    $sshCmd[] = "stdio";
+
     $clientConfig = json_encode([
         "mcp" => [
             "unraid-agent" => [
                 "type"    => "local",
-                "command" => [
-                    "ssh", "-T", "-o", "BatchMode=yes",
-                    "root@$serverHost",
-                    "/usr/local/emhttp/plugins/unraid-agent/bin/unraid-agent",
-                    "-config", "/boot/config/plugins/unraid-agent/config.cfg",
-                    "-transport", "stdio"
-                ],
+                "command" => $sshCmd,
                 "enabled" => true
             ]
         ]
@@ -164,28 +179,28 @@ _(Port)_:
 <div class="title"><span class="left"><i class="title fa fa-file-code-o"></i>Client Configuration</span></div>
 
 <?php if ($stdioMode && !$stdioEnable): ?>
-<blockquote class="inline_help">
+<div style="padding:10px 14px;margin:8px 0;border-left:3px solid #e6a23c;background:rgba(230,162,60,0.08);">
 stdio is currently disabled. Set <b>Enable stdio Transport</b> to Yes and Apply to
 generate the client configuration snippet.
-</blockquote>
+</div>
 <?php else: ?>
-<blockquote class="inline_help">
+<div style="padding:10px 14px;margin:8px 0;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);">
 Paste this into your MCP client's configuration (Kilo Code: <code>~/.config/kilo/kilo.jsonc</code>,
 or your IDE's MCP settings):
-</blockquote>
+</div>
 <pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;overflow-x:auto;font-size:12px;line-height:1.5;"><?=htmlspecialchars($clientConfig)?></pre>
 <?php endif; ?>
 
 <?php if ($stdioMode && $stdioEnable): ?>
 <div class="title"><span class="left"><i class="title fa fa-terminal"></i>SSH Setup for stdio</span></div>
-<blockquote class="inline_help">
+<div style="padding:12px 16px;margin:8px 0;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);line-height:1.7;">
 stdio over SSH requires key-based authentication from your client machine:<br><br>
 1. On your client: <code>ssh-keygen -t ed25519</code> (skip if you already have a key)<br>
 2. Install the public key on this server: append <code>~/.ssh/id_ed25519.pub</code> (client) to <code>/root/.ssh/authorized_keys</code> (server)<br>
-3. Enable SSH: Unraid Settings → Management Access → SSH<br>
-4. Test: <code>ssh -T -o BatchMode=yes root@<?=htmlspecialchars($serverHost)?> true</code><br><br>
+3. Enable SSH: Unraid Settings → Management Access → SSH<?php if ($sshPort !== '22'): ?> (port <?=htmlspecialchars($sshPort)?>)<?php endif; ?><br>
+4. Test: <code>ssh -T -o BatchMode=yes <?php if ($sshPort !== '22'): ?>-p <?=htmlspecialchars($sshPort)?> <?php endif; ?>root@<?=htmlspecialchars($serverHost)?> true</code><br><br>
 <b>Security note:</b> SSH-stdio grants root shell access to anyone holding the key.
 streamable-http with a bearer token is the smaller attack surface — prefer it for
 always-on use, and set Enable stdio Transport back to No when you're done.
-</blockquote>
+</div>
 <?php endif; ?>
