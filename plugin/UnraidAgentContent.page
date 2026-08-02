@@ -190,9 +190,9 @@ $(function() {
         $('.ac-pane[data-tab="' + t + '"]').addClass('active');
     }
     var saved = localStorage.getItem(KEY);
-    if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) { activate(saved); }
-    // Guarantee the first sub-tab's content shows even if nothing is active
-    if (!$('.ac-pane.active').length) { activate('skills'); }
+    // Always activate a valid sub-tab on load — never land on a blank canvas
+    var target = (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) ? saved : 'skills';
+    activate(target);
     $('.ua-subtab').on('click', function() {
         var t = $(this).data('tab');
         activate(t);
