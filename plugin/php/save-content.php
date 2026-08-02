@@ -74,9 +74,9 @@ if (!is_dir($dir)) {
 }
 $target = "$dir/$name.md";
 
-if (strlen($content) > 65536) {
+if (strlen($content) > 131072) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'Content exceeds 64KB']);
+    echo json_encode(['ok' => false, 'error' => 'Content exceeds 128KB']);
     exit;
 }
 

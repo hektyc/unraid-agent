@@ -29,7 +29,7 @@ const (
 	defaultSkillsSubdir = "defaults"
 	customSkillsSubdir  = "custom"
 	defaultMemorySubdir = "defaults"
-	maxEntryBytes       = 64 * 1024
+	maxEntryBytes       = 128 * 1024
 )
 
 var nameRE = regexp.MustCompile(`^[a-z][a-z0-9-]{0,63}$`)
