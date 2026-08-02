@@ -32,6 +32,17 @@ $containers = ua_list_containers();
 $vms = ua_list_vms();
 $plugins = ua_list_installed_plugins();
 
+$tristate = function($key) use ($cfg) {
+    $val = $cfg($key, 'domain');
+    $opts = ['domain' => 'Default', 'true' => 'Yes', 'false' => 'No'];
+    $html = "<select name=\"$key\" title=\"Default follows the domain master toggle\">";
+    foreach ($opts as $v => $l) {
+        $sel = ($val === $v) ? 'selected' : '';
+        $html .= "<option value=\"$v\" $sel>$l</option>";
+    }
+    return $html . "</select>";
+};
+
 // Tool domain groups for the Tool Access sub-tabs
 $toolGroups = [
   'core' => ['Core System', ['system', 'array', 'health', 'help', 'user']],
