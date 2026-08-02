@@ -417,6 +417,10 @@ $(function() {
     if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) {
         activate(saved);
     }
+    // Guarantee Master Switch shows if no pane ended up active
+    if (!$('.ua-pane.active').length) {
+        activate('master');
+    }
     $('.ua-subtab').on('click', function() {
         var t = $(this).data('tab');
         activate(t);
