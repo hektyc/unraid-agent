@@ -108,7 +108,7 @@ skills folder.
     <div class="ua-card-image"><?=htmlspecialchars(mb_strimwidth($sk['description'], 0, 90, '…'))?></div>
     <div class="ua-card-status"><?=$sk['mtime'] ? date('Y-m-d H:i', $sk['mtime']) : ''?></div>
     <div class="ua-card-chips">
-      <span class="ua-chip ua-chip-global ac-export" data-name="<?=htmlspecialchars($sk['name'])?>" data-source="<?=$sk['source']?>" title="Download as SKILL.md">Export</span>
+      <span class="ua-chip ua-chip-global ac-export" data-kind="skill" data-name="<?=htmlspecialchars($sk['name'])?>" data-source="<?=htmlspecialchars($sk['source'] === 'default' ? 'defaults' : 'custom')?>" title="Download as SKILL.md">Export</span>
     </div>
   </div>
 <?php endforeach; ?>
@@ -139,7 +139,10 @@ agents require Allow Memory Write in Permissions → System.
       </div>
       <div class="ua-card-name"><?=htmlspecialchars($m['name'])?></div>
       <div class="ua-card-status"><?=$m['mtime'] ? date('Y-m-d H:i', $m['mtime']) : ''?></div>
-      <div class="ua-card-chips"><span class="ua-chip ua-chip-global"><?=htmlspecialchars($scope)?></span></div>
+      <div class="ua-card-chips">
+        <span class="ua-chip ua-chip-global"><?=htmlspecialchars($scope)?></span>
+        <span class="ua-chip ua-chip-global ac-export" data-kind="memory" data-name="<?=htmlspecialchars($m['name'])?>" data-scope="<?=htmlspecialchars($scope)?>" title="Download as markdown">Export</span>
+      </div>
     </div>
   <?php endforeach; ?>
   </div>
@@ -218,8 +221,12 @@ $(function() {
 
     function loadFile(file, cb) {
         $.post('/plugins/unraid-agent/php/read-content.php', {csrf_token: '<?=$var['csrf_token']?>', file: file}, function(resp) {
-            cb(resp && resp.ok ? resp.content : '');
-        }, 'json');
+            cb(resp && resp.ok ? resp.content : '', null);
+        }, 'json').fail(function(xhr) {
+            var msg = '// Failed to load content (HTTP ' + xhr.status + ')';
+            try { var r = JSON.parse(xhr.responseText); if (r.error) msg += ' — ' + r.error; } catch(e) {}
+            cb(msg, msg);
+        });
     }
 
     $(document).on('click', '.ac-skill-card', function(e) {
@@ -229,7 +236,8 @@ $(function() {
             openModal('skill', {name: card.data('name'), source: card.data('source'), file: card.data('file'), content: content, isNew: false});
         });
     });
-    $(document).on('click', '.ac-memory-card', function() {
+    $(document).on('click', '.ac-memory-card', function(e) {
+        if ($(e.target).hasClass('ac-export')) return;
         var card = $(this);
         loadFile(card.data('file'), function(content) {
             openModal('memory', {name: card.data('name'), scope: card.data('scope'), file: card.data('file'), content: content, isNew: false});
@@ -238,7 +246,14 @@ $(function() {
     $(document).on('click', '.ac-export', function(e) {
         e.stopPropagation();
         var el = $(this);
-        window.location = '/plugins/unraid-agent/php/export-skill.php?name=' + encodeURIComponent(el.data('name')) + '&source=' + encodeURIComponent(el.data('source'));
+        var kind = el.data('kind') || 'skill';
+        var url = '/plugins/unraid-agent/php/export-content.php?kind=' + encodeURIComponent(kind) + '&name=' + encodeURIComponent(el.data('name'));
+        if (kind === 'skill') {
+            url += '&source=' + encodeURIComponent(el.data('source'));
+        } else {
+            url += '&scope=' + encodeURIComponent(el.data('scope'));
+        }
+        window.location = url;
     });
     $('#ac-new-skill').on('click', function() { openModal('skill', {isNew: true, source: 'custom', title: 'New Skill'}); });
     $('#ac-new-memory').on('click', function() { openModal('memory', {isNew: true, scope: 'custom', title: 'New Memory'}); });
