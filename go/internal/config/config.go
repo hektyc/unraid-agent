@@ -214,6 +214,40 @@ var ToolDomains = []string{
 	"setting", "system", "user", "vm", "agentcontent",
 }
 
+// ToolDomainOf maps a tool name to its domain via prefix rules.
+// Keep in sync with the Tool Access UI map in the plugin pages.
+func ToolDomainOf(tool string) string {
+	if tool == "plugin_logs" {
+		return "logs"
+	}
+	for _, d := range ToolDomains {
+		if strings.HasPrefix(tool, d+"_") {
+			return d
+		}
+	}
+	switch {
+	case tool == "help_full":
+		return "help"
+	case tool == "user_me":
+		return "user"
+	case strings.HasPrefix(tool, "skills_"), strings.HasPrefix(tool, "memory_"), tool == "agent_endpoint_log":
+		return "agentcontent"
+	}
+	return "system"
+}
+
+// IsToolEnabled resolves registration for a single tool:
+// explicit per-tool override (UNRAID_MCP_TOOL_<NAME>=true/false) wins in
+// both directions; otherwise the tool follows its domain toggle.
+func (c *Config) IsToolEnabled(tool string) bool {
+	key := "UNRAID_MCP_TOOL_" + strings.ToUpper(tool)
+	v := os.Getenv(key)
+	if v != "" && v != "domain" {
+		return getEnvBool(key, true)
+	}
+	return c.IsDomainEnabled(ToolDomainOf(tool))
+}
+
 // IsDomainEnabled reports whether a tool domain is enabled (default true).
 func (c *Config) IsDomainEnabled(name string) bool {
 	if c.Domains == nil {

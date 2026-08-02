@@ -53,6 +53,9 @@ type Server struct {
 	// clientScope is the sanitized client name from initialize clientInfo,
 	// used as the default memory scope for this connection.
 	clientScope string
+
+	// ToolEnabled, when set, decides per-tool registration. Nil = all tools.
+	ToolEnabled func(name string) bool
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -66,6 +69,9 @@ func NewServer(cfg *config.Config) *Server {
 }
 
 func (s *Server) RegisterTool(t *ToolDef) {
+	if s.ToolEnabled != nil && !s.ToolEnabled(t.Name) {
+		return
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tools[t.Name] = t
