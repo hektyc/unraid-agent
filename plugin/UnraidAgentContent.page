@@ -92,7 +92,7 @@ custom skills are yours. Export any skill as SKILL.md for direct install into yo
 skills folder.
 </blockquote>
 
-<div class="ac-toolbar"><button class="ac-btn-new" id="ac-new-skill">+ New Skill</button></div>
+<div class="ac-toolbar"><button type="button" class="ac-btn-new" id="ac-new-skill">+ New Skill</button></div>
 
 <div class="ua-grid">
 <?php foreach ($mergedSkills as $sk): ?>
@@ -125,7 +125,7 @@ its own scope; the defaults scope holds the auto-generated server profile. Write
 agents require Allow Memory Write in Permissions → System.
 </blockquote>
 
-<div class="ac-toolbar"><button class="ac-btn-new" id="ac-new-memory">+ New Memory</button></div>
+<div class="ac-toolbar"><button type="button" class="ac-btn-new" id="ac-new-memory">+ New Memory</button></div>
 
 <?php foreach ($memoryByScope as $scope => $entries): ?>
 <div class="ac-scope">
@@ -173,9 +173,9 @@ agents require Allow Memory Write in Permissions → System.
     </div>
     <div class="ua-modal-err" id="ac-err"></div>
     <div class="ua-modal-foot">
-      <button class="ua-btn" id="ac-delete" style="border-color:#e74c3c;color:#e74c3c;">Delete</button>
-      <button class="ua-btn" id="ac-cancel">Cancel</button>
-      <button class="ua-btn ua-btn-primary" id="ac-save">Save</button>
+      <button type="button" class="ua-btn" id="ac-delete" style="border-color:#e74c3c;color:#e74c3c;">Delete</button>
+      <button type="button" class="ua-btn" id="ac-cancel">Cancel</button>
+      <button type="button" class="ua-btn ua-btn-primary" id="ac-save">Save</button>
     </div>
   </div>
 </div>
@@ -191,6 +191,8 @@ $(function() {
     }
     var saved = localStorage.getItem(KEY);
     if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) { activate(saved); }
+    // Guarantee the first sub-tab's content shows even if nothing is active
+    if (!$('.ac-pane.active').length) { activate('skills'); }
     $('.ua-subtab').on('click', function() {
         var t = $(this).data('tab');
         activate(t);
@@ -258,7 +260,8 @@ $(function() {
     $('#ac-new-skill').on('click', function() { openModal('skill', {isNew: true, source: 'custom', title: 'New Skill'}); });
     $('#ac-new-memory').on('click', function() { openModal('memory', {isNew: true, scope: 'custom', title: 'New Memory'}); });
 
-    $('#ac-save').on('click', function() {
+    $('#ac-save').on('click', function(e) {
+        e.preventDefault();
         if (!cur) return;
         var isSkill = (cur === 'skill');
         var payload = {
@@ -270,7 +273,7 @@ $(function() {
         if (!isSkill) payload.scope = cur.data.scope || 'custom';
         $('#ac-err').text('Saving…');
         $.post('/plugins/unraid-agent/php/save-content.php', $.extend(payload, {kind: cur}), function(resp) {
-            if (resp && resp.ok) { location.reload(); }
+            if (resp && resp.ok) { location.replace(location.href); }
             else { $('#ac-err').text((resp && resp.error) ? resp.error : 'Save failed'); }
         }, 'json').fail(function(xhr) {
             var msg = 'Save failed (' + xhr.status + ')';
@@ -278,21 +281,26 @@ $(function() {
             $('#ac-err').text(msg);
         });
     });
-    $('#ac-delete').on('click', function() {
+    $('#ac-delete').on('click', function(e) {
+        e.preventDefault();
         if (!cur || !cur.data.file) return;
         if (!confirm('Delete this entry?')) return;
+        $('#ac-err').text('Deleting…');
         $.post('/plugins/unraid-agent/php/save-content.php', {
             csrf_token: '<?=$var['csrf_token']?>',
             kind: cur,
             action: 'delete',
-            name: $('#ac-name').val(),
-            scope: cur.data.scope || ''
+            file: cur.data.file
         }, function(resp) {
-            if (resp && resp.ok) { location.reload(); }
+            if (resp && resp.ok) { location.replace(location.href); }
             else { $('#ac-err').text((resp && resp.error) ? resp.error : 'Delete failed'); }
-        }, 'json');
+        }, 'json').fail(function(xhr) {
+            var msg = 'Delete failed (' + xhr.status + ')';
+            try { var r = JSON.parse(xhr.responseText); if (r.error) msg = r.error; } catch(e) {}
+            $('#ac-err').text(msg);
+        });
     });
-    $('#ac-cancel').on('click', closeModal);
+    $('#ac-cancel').on('click', function(e) { e.preventDefault(); closeModal(); });
     $('#ac-modal').on('click', function(e) { if (e.target === this) closeModal(); });
 });
 </script>

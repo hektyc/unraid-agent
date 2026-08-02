@@ -44,13 +44,30 @@ if (!is_dir($dir)) {
 $target = "$dir/$name.md";
 
 if ($action === 'delete') {
-    if (!is_file($target)) {
+    // Delete by explicit file path, confined to the writable dirs:
+    // skills only in custom/, memory in any scope EXCEPT defaults/.
+    $file = $_POST['file'] ?? '';
+    $real = realpath($file);
+    if ($file === '' || $real === false || !is_file($real)) {
         http_response_code(404);
-        echo json_encode(['ok' => false, 'error' => 'Entry not found (only custom entries can be deleted)']);
+        echo json_encode(['ok' => false, 'error' => 'Entry not found']);
         exit;
     }
-    unlink($target);
-    echo json_encode(['ok' => true, 'deleted' => $name]);
+    if ($kind === 'skill') {
+        if (strpos($real, "$base/skills/custom/") !== 0) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Default pack skills cannot be deleted']);
+            exit;
+        }
+    } else {
+        if (strpos($real, "$base/memory/") !== 0 || strpos($real, "$base/memory/defaults/") === 0) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'This memory entry cannot be deleted']);
+            exit;
+        }
+    }
+    unlink($real);
+    echo json_encode(['ok' => true, 'deleted' => basename($real, '.md')]);
     exit;
 }
 
