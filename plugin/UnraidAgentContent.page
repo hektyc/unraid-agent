@@ -212,10 +212,7 @@ $(function() {
             ? 'Name (lowercase letters, digits, hyphens)'
             : 'Name (lowercase letters, digits, hyphens) — scope: ' + (data.scope || 'default'));
         $('#ac-content').val(data.content || '');
-        var deletable = !data.isNew && (isSkill ? data.source === 'custom' : data.scope !== 'defaults');
-        $('#ac-delete').prop('disabled', !deletable)
-            .css({opacity: deletable ? 1 : 0.4, cursor: deletable ? 'pointer' : 'not-allowed'})
-            .attr('title', deletable ? 'Delete this entry' : 'Default pack entries cannot be deleted (they refresh on update)');
+        $('#ac-delete').toggle(!data.isNew && (isSkill ? data.source === 'custom' : data.scope !== 'defaults'));
         $('#ac-err').text('');
         cur.data = data;
         $('#ac-modal').fadeIn(120);
