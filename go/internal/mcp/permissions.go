@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"context"
 	"fmt"
 	"strings"
 )
@@ -8,10 +9,12 @@ import (
 // Permission resolution order (all evaluated for mutation tools only):
 //   1. READ_ONLY=true            -> every mutation blocked
 //   2. ALLOW_DESTRUCTIVE=true    -> every mutation allowed
-//   3. Category toggle           -> ALLOW_ARRAY_ACTIONS / ALLOW_DOCKER_ACTIONS /
+//   3. Per-entity override       -> perms.json explicit "deny" blocks,
+//                                   explicit "allow" permits (containers/VMs)
+//   4. Category toggle           -> ALLOW_ARRAY_ACTIONS / ALLOW_DOCKER_ACTIONS /
 //                                   ALLOW_VM_ACTIONS allow their group
-//   4. Specific toggle           -> allows that single tool
-//   5. Mutation with no toggle   -> allowed (not considered destructive)
+//   5. Specific toggle           -> allows that single tool
+//   6. Mutation with no toggle   -> allowed (not considered destructive)
 //
 // Queries (read-only tools) are always allowed.
 
@@ -36,13 +39,13 @@ var toolPermissions = map[string][]string{
 	"customization_set_theme": {"ALLOW_SETTING_UPDATES"},
 
 	// Docker
-	"docker_start":            {"ALLOW_DOCKER_ACTIONS"},
+	"docker_start":            {"ALLOW_CONTAINER_START", "ALLOW_DOCKER_ACTIONS"},
 	"docker_stop":             {"ALLOW_CONTAINER_STOP", "ALLOW_DOCKER_ACTIONS"},
 	"docker_restart":          {"ALLOW_CONTAINER_RESTART", "ALLOW_DOCKER_ACTIONS"},
-	"docker_pause":            {"ALLOW_DOCKER_ACTIONS"},
-	"docker_unpause":          {"ALLOW_DOCKER_ACTIONS"},
+	"docker_pause":            {"ALLOW_CONTAINER_PAUSE", "ALLOW_DOCKER_ACTIONS"},
+	"docker_unpause":          {"ALLOW_CONTAINER_UNPAUSE", "ALLOW_DOCKER_ACTIONS"},
 	"docker_remove_container": {"ALLOW_CONTAINER_REMOVE", "ALLOW_DOCKER_ACTIONS"},
-	"docker_update_container": {"ALLOW_DOCKER_ACTIONS"},
+	"docker_update_container": {"ALLOW_CONTAINER_UPDATE", "ALLOW_DOCKER_ACTIONS"},
 	"docker_create_folder":    {"ALLOW_DOCKER_ACTIONS"},
 	"docker_delete_entries":   {"ALLOW_DOCKER_ACTIONS"},
 	"docker_refresh_digests":  {"ALLOW_DOCKER_ACTIONS"},
@@ -78,12 +81,12 @@ var toolPermissions = map[string][]string{
 	"setting_configure_ups":      {"ALLOW_SETTING_UPDATES"},
 
 	// VMs
-	"vm_start":      {"ALLOW_VM_ACTIONS"},
+	"vm_start":      {"ALLOW_VM_START", "ALLOW_VM_ACTIONS"},
 	"vm_stop":       {"ALLOW_VM_STOP", "ALLOW_VM_ACTIONS"},
-	"vm_pause":      {"ALLOW_VM_ACTIONS"},
-	"vm_resume":     {"ALLOW_VM_ACTIONS"},
+	"vm_pause":      {"ALLOW_VM_PAUSE", "ALLOW_VM_ACTIONS"},
+	"vm_resume":     {"ALLOW_VM_RESUME", "ALLOW_VM_ACTIONS"},
 	"vm_force_stop": {"ALLOW_VM_FORCE_STOP", "ALLOW_VM_ACTIONS"},
-	"vm_reboot":     {"ALLOW_VM_ACTIONS"},
+	"vm_reboot":     {"ALLOW_VM_REBOOT", "ALLOW_VM_ACTIONS"},
 	"vm_reset":      {"ALLOW_VM_RESET", "ALLOW_VM_ACTIONS"},
 }
 
@@ -100,7 +103,7 @@ func isMutationTool(t *ToolDef) bool {
 
 // checkPermission enforces the permission model for a tool call.
 // Returns nil when the call is allowed, or a descriptive error.
-func (s *Server) checkPermission(t *ToolDef) error {
+func (s *Server) checkPermission(ctx context.Context, t *ToolDef, args map[string]interface{}) error {
 	if !isMutationTool(t) {
 		return nil
 	}
@@ -115,6 +118,17 @@ func (s *Server) checkPermission(t *ToolDef) error {
 		return nil
 	}
 
+	// Per-entity overrides (containers/VMs) beat global toggles in both
+	// directions: explicit "deny" blocks, explicit "allow" permits.
+	if _, tracked := entityActions[t.Name]; tracked {
+		switch s.entityOverride(ctx, t.Name, args) {
+		case "deny":
+			return fmt.Errorf("permission denied: %s is explicitly denied for this %s in per-entity settings (Permissions → %s)", t.Name, entityKindLabel(t.Name), entityTabLabel(t.Name))
+		case "allow":
+			return nil
+		}
+	}
+
 	toggles, gated := toolPermissions[t.Name]
 	if !gated || len(toggles) == 0 {
 		// Mutation without a specific toggle — allowed when not READ_ONLY
@@ -125,8 +139,26 @@ func (s *Server) checkPermission(t *ToolDef) error {
 		return nil
 	}
 
-	return fmt.Errorf("permission denied: %s is blocked by configuration — enable one of [%s] in Settings → unRAID Agent → Permissions (or ALLOW_DESTRUCTIVE for all)",
+	msg := fmt.Sprintf("permission denied: %s is blocked by configuration — enable one of [%s] in Settings → unRAID Agent → Permissions (or ALLOW_DESTRUCTIVE for all)",
 		t.Name, strings.Join(toggles, ", "))
+	if _, tracked := entityActions[t.Name]; tracked {
+		msg += fmt.Sprintf(", or set a per-entity override for this %s", entityKindLabel(t.Name))
+	}
+	return fmt.Errorf("%s", msg)
+}
+
+func entityKindLabel(toolName string) string {
+	if strings.HasPrefix(toolName, "docker_") {
+		return "container"
+	}
+	return "VM"
+}
+
+func entityTabLabel(toolName string) string {
+	if strings.HasPrefix(toolName, "docker_") {
+		return "Containers"
+	}
+	return "Virtual Machines"
 }
 
 func anyToggleEnabled(cfg interface{ PermissionValue(string) bool }, toggles []string) bool {

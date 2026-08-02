@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -80,6 +81,7 @@ func main() {
 	logger.Get().Infof("Transport: %s, Read-only: %v", transport, cfg.ReadOnly)
 
 	server := mcp.NewServer(cfg)
+	server.PermsPath = filepath.Join(filepath.Dir(*configPath), "perms.json")
 	array.RegisterTools(server, cfg)
 	connect.RegisterTools(server, cfg)
 	customization.RegisterTools(server, cfg)

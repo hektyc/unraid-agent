@@ -38,6 +38,11 @@ type Server struct {
 	tools    map[string]*ToolDef
 	handlers map[string]ToolHandler
 	mu       sync.RWMutex
+
+	// PermsPath points to perms.json (per-container/VM overrides).
+	// ecache caches entity ID->name resolution for the override engine.
+	PermsPath string
+	ecache    entityCache
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -137,12 +142,12 @@ func (s *Server) callTool(ctx context.Context, req *JSONRPCRequest) *JSONRPCResp
 		return NewErrorResponse(req.ID, -32602, fmt.Sprintf("unknown tool: %s", name))
 	}
 
+	args, _ := req.Params["arguments"].(map[string]interface{})
+
 	// Enforce the permission model before any state-changing execution.
-	if err := s.checkPermission(tool); err != nil {
+	if err := s.checkPermission(ctx, tool, args); err != nil {
 		return toolErrorResult(req.ID, err)
 	}
-
-	args, _ := req.Params["arguments"].(map[string]interface{})
 
 	var text string
 	if tool.Handler != nil {
