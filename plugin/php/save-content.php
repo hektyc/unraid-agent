@@ -18,34 +18,11 @@ if (!in_array($kind, ['skill', 'memory'], true)) {
     echo json_encode(['ok' => false, 'error' => 'Invalid kind']);
     exit;
 }
-if (!preg_match('/^[a-z][a-z0-9-]{0,63}$/', $name)) {
-    http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'Invalid name (lowercase letters, digits, hyphens)']);
-    exit;
-}
 
-if ($kind === 'skill') {
-    $dir = "$base/skills/custom";
-    $desc = trim($_POST['description'] ?? '');
-} else {
-    $scope = preg_replace('/[^a-zA-Z0-9_-]/', '-', strtolower(trim($_POST['scope'] ?? 'custom')));
-    $scope = trim($scope, '-');
-    if ($scope === '' ) $scope = 'custom';
-    if ($scope === 'defaults') {
-        http_response_code(400);
-        echo json_encode(['ok' => false, 'error' => 'The defaults scope is read-only']);
-        exit;
-    }
-    $dir = "$base/memory/$scope";
-}
-if (!is_dir($dir)) {
-    mkdir($dir, 0755, true);
-}
-$target = "$dir/$name.md";
-
+// Deletes are file-based and handled before name validation — the entry's
+// real path is the authority, confined to the writable dirs:
+// skills only in custom/, memory in any scope EXCEPT defaults/.
 if ($action === 'delete') {
-    // Delete by explicit file path, confined to the writable dirs:
-    // skills only in custom/, memory in any scope EXCEPT defaults/.
     $file = $_POST['file'] ?? '';
     $real = realpath($file);
     if ($file === '' || $real === false || !is_file($real)) {
@@ -71,6 +48,31 @@ if ($action === 'delete') {
     echo json_encode(['ok' => true, 'deleted' => basename($real, '.md')]);
     exit;
 }
+
+if (!preg_match('/^[a-z][a-z0-9-]{0,63}$/', $name)) {
+    http_response_code(400);
+    echo json_encode(['ok' => false, 'error' => 'Invalid name (lowercase letters, digits, hyphens)']);
+    exit;
+}
+
+if ($kind === 'skill') {
+    $dir = "$base/skills/custom";
+    $desc = trim($_POST['description'] ?? '');
+} else {
+    $scope = preg_replace('/[^a-zA-Z0-9_-]/', '-', strtolower(trim($_POST['scope'] ?? 'custom')));
+    $scope = trim($scope, '-');
+    if ($scope === '' ) $scope = 'custom';
+    if ($scope === 'defaults') {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'The defaults scope is read-only']);
+        exit;
+    }
+    $dir = "$base/memory/$scope";
+}
+if (!is_dir($dir)) {
+    mkdir($dir, 0755, true);
+}
+$target = "$dir/$name.md";
 
 if (strlen($content) > 65536) {
     http_response_code(400);
