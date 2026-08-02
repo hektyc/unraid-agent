@@ -3,6 +3,9 @@
 // entry as markdown. Read-only; names are strictly validated and the file
 // must resolve inside the plugin's skills/ or memory/ directories.
 
+define('UA_NO_OUTPUT', true);
+include '/usr/local/emhttp/plugins/unraid-agent/php/common.php';
+
 $base = '/boot/config/plugins/unraid-agent';
 $kind = $_GET['kind'] ?? 'skill';
 $name = $_GET['name'] ?? '';
@@ -43,6 +46,7 @@ if ($real === false || strpos($real, $prefix) !== 0 || !is_file($real)) {
     http_response_code(404);
     exit;
 }
+ua_ep_log('export-content', "$kind $name ok");
 
 header('Content-Type: text/markdown; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $download . '"');

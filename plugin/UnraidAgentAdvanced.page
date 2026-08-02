@@ -46,3 +46,22 @@ Allow insecure TLS connections (self-signed certs, etc.).
 <input type="button" value="Done" onclick="done()">
 </div>
 </form>
+
+<?php
+$epLogFile = "/boot/config/plugins/$plugin/logs/endpoints.log";
+$epLogTail = '';
+if (is_file($epLogFile)) {
+    $epLogLines = file($epLogFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $epLogTail = implode("\n", array_slice($epLogLines, -20));
+}
+?>
+<div class="title"><span class="left"><i class="title fa fa-stethoscope"></i>Diagnostics</span></div>
+
+<div style="padding:10px 14px;margin:8px 0;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);">
+The <b>endpoint request log</b> records WebGUI actions (content reads, skill/memory saves and
+deletes, permission override saves, exports) for troubleshooting — newest entries last.
+Agents can read it remotely with the read-only MCP tool
+<code>agent_endpoint_log</code> (optional <code>tail</code> parameter, default 50, max 200).
+</div>
+
+<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:11px;line-height:1.5;max-height:280px;overflow:auto;"><?=$epLogTail !== '' ? htmlspecialchars($epLogTail) : 'No endpoint log entries yet — entries appear here as you use the settings pages.'?></pre>

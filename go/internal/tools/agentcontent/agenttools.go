@@ -4,6 +4,9 @@ package agenttools
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 
 	ac "github.com/hektyc/unraid-mcp-server/internal/agentcontent"
 	"github.com/hektyc/unraid-mcp-server/internal/config"
@@ -141,6 +144,30 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 				return "", err
 			}
 			return "memory deleted: " + scope + "/" + name, nil
+		},
+	})
+	s.RegisterTool(&mcp.ToolDef{
+		Name:        "agent_endpoint_log",
+		Description: "Read recent lines of the plugin's endpoint request log (WebGUI action diagnostics: content reads, saves, deletes, exports). Read-only.",
+		ReadOnly:    true,
+		Params:      map[string]string{"tail": "number"},
+		Handler: func(ctx context.Context, args map[string]interface{}) (string, error) {
+			tail := 50
+			if v, ok := args["tail"].(float64); ok && v > 0 {
+				tail = int(v)
+			}
+			if tail > 200 {
+				tail = 200
+			}
+			data, err := os.ReadFile(filepath.Join(s.ConfigDir, "logs", "endpoints.log"))
+			if err != nil {
+				return "no endpoint log entries yet", nil
+			}
+			lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
+			if len(lines) > tail {
+				lines = lines[len(lines)-tail:]
+			}
+			return strings.Join(lines, "\n"), nil
 		},
 	})
 }

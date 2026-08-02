@@ -66,6 +66,7 @@ if ($action === 'delete') {
             exit;
         }
     }
+    ua_ep_log('save-content', "$kind delete " . basename($real) . ' ok');
     unlink($real);
     echo json_encode(['ok' => true, 'deleted' => basename($real, '.md')]);
     exit;
@@ -93,6 +94,7 @@ if ($kind === 'skill') {
     $out = $content;
 }
 
+ua_ep_log('save-content', "$kind $action $name");
 $tmp = $target . '.tmp';
 if (file_put_contents($tmp, $out) === false) {
     http_response_code(500);

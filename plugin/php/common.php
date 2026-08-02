@@ -203,3 +203,27 @@ function ua_plugin_icon_url($name) {
 }
 
 } // end function_exists guard
+
+if (!function_exists('ua_ep_log')) {
+
+// Append one line to the endpoint request log (WebGUI AJAX diagnostics).
+// Rotates at 256KB. Agents can read it via the agent_endpoint_log MCP tool;
+// users can see the tail on the Advanced tab under Diagnostics.
+function ua_ep_log($action, $detail = '') {
+    $dir = '/boot/config/plugins/unraid-agent/logs';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+    $file = "$dir/endpoints.log";
+    if (is_file($file) && filesize($file) > 262144) {
+        @rename($file, $file . '.1');
+    }
+    $detail = trim(preg_replace('/\s+/', ' ', $detail));
+    if (strlen($detail) > 300) {
+        $detail = substr($detail, 0, 300) . '…';
+    }
+    $line = date('Y-m-d H:i:s') . ' ' . $action . ($detail !== '' ? ' ' . $detail : '') . "\n";
+    @file_put_contents($file, $line, FILE_APPEND | LOCK_EX);
+}
+
+}
