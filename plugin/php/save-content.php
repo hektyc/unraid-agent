@@ -37,11 +37,13 @@ if ($action === 'delete') {
             exit;
         }
     } else {
-        if (strpos($real, "$base/memory/") !== 0 || strpos($real, "$base/memory/defaults/") === 0) {
+        if (strpos($real, "$base/memory/") !== 0) {
             http_response_code(400);
             echo json_encode(['ok' => false, 'error' => 'This memory entry cannot be deleted']);
             exit;
         }
+        // Deleting the server profile is allowed — a fresh one regenerates
+        // on the next daemon start.
     }
     ua_ep_log('save-content', "$kind delete " . basename($real) . ' ok');
     unlink($real);
@@ -62,11 +64,9 @@ if ($kind === 'skill') {
     $scope = preg_replace('/[^a-zA-Z0-9_-]/', '-', strtolower(trim($_POST['scope'] ?? 'custom')));
     $scope = trim($scope, '-');
     if ($scope === '' ) $scope = 'custom';
-    if ($scope === 'defaults') {
-        http_response_code(400);
-        echo json_encode(['ok' => false, 'error' => 'The defaults scope is read-only']);
-        exit;
-    }
+    // Memory defaults are editable: the server profile is generated content
+    // (no sync overwrites it), and deleting it regenerates a fresh profile
+    // on the next daemon start.
     $dir = "$base/memory/$scope";
 }
 if (!is_dir($dir)) {
