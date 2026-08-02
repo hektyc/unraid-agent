@@ -24,7 +24,7 @@ if ($type === 'vm') {
         }
     }
 } else {
-    foreach (ua_list_plugins() as $p) {
+    foreach (ua_list_installed_plugins() as $p) {
         if (($p['name'] ?? '') === $name) {
             $valid = true;
             break;
@@ -43,8 +43,21 @@ if ($type === 'vm') {
         "/boot/config/plugins/dynamix.vm.manager/templates/images/$name.png",
     ];
 } else {
-    $whitelist = ['/usr/local/emhttp/plugins/'];
-    $candidates = ["/usr/local/emhttp/plugins/$name/$name.png"];
+    $whitelist = ['/usr/local/emhttp/plugins/', '/boot/config/plugins/'];
+    $candidates = [
+        "/usr/local/emhttp/plugins/$name/$name.png",
+        "/usr/local/emhttp/plugins/$name/icon.png",
+        "/usr/local/emhttp/plugins/$name/images/$name.png",
+        "/usr/local/emhttp/plugins/$name/images/icon.png",
+        "/boot/config/plugins/$name/$name.png",
+    ];
+    foreach ([glob("/usr/local/emhttp/plugins/$name/*.png") ?: [],
+              glob("/usr/local/emhttp/plugins/$name/images/*.png") ?: [],
+              glob("/boot/config/plugins/$name/*.png") ?: []] as $g) {
+        foreach ($g as $f) {
+            $candidates[] = $f;
+        }
+    }
 }
 
 foreach ($candidates as $path) {
