@@ -30,7 +30,7 @@ $formClose = function() {
 $perms = ua_load_perms();
 $containers = ua_list_containers();
 $vms = ua_list_vms();
-$plugins = ua_list_plugins();
+$plugins = ua_list_installed_plugins();
 
 $containerActions = [
     'start' => 'Start', 'stop' => 'Stop', 'restart' => 'Restart',
