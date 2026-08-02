@@ -499,9 +499,11 @@ $(function() {
     var cur = null;
 
     function openModal(card) {
+        var entity = card.data('entity');
+        if (!entity) { return; } // never open an empty modal
         cur = {
             type: card.data('type'),
-            entity: card.data('entity'),
+            entity: entity,
             icon: card.data('icon'),
             perms: card.data('perms') || {}
         };
@@ -578,7 +580,12 @@ $(function() {
         });
     }
 
-    $(document).on('click', '.ua-card', function() { openModal($(this)); });
+    $(document).on('click', '.ua-card', function(e) {
+        var card = $(this);
+        if (!card.data('entity')) { return; } // ignore clicks that carry no entity data
+        e.stopPropagation();
+        openModal(card);
+    });
     $('#ua-modal-cancel').on('click', closeModal);
     $('#ua-modal-save').on('click', function() { save(false); });
     $('#ua-modal-clear').on('click', function() { save(true); });
