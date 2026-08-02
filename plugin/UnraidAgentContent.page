@@ -80,11 +80,11 @@ unset($list);
 </style>
 
 <div class="ua-subtabs">
-  <div class="ua-subtab active" data-tab="skills"><i class="fa fa-graduation-cap" style="color:#ff8c2f;"></i> Agent Skills</div>
-  <div class="ua-subtab" data-tab="memory"><i class="fa fa-database" style="color:#4a90d9;"></i> Agent Memory</div>
+  <div class="ua-subtab active" data-uatab="skills"><i class="fa fa-graduation-cap" style="color:#ff8c2f;"></i> Agent Skills</div>
+  <div class="ua-subtab" data-uatab="memory"><i class="fa fa-database" style="color:#4a90d9;"></i> Agent Memory</div>
 </div>
 
-<div class="ac-pane active" data-tab="skills">
+<div class="ac-pane active" data-uatab="skills">
 <blockquote class="inline_help">
 Playbooks the agent can fetch via skills_list/skills_get (also exposed as MCP resources
 at unraid-agent://skills/*). Default skills ship with the plugin and refresh on update;
@@ -118,7 +118,7 @@ skills folder.
 </div>
 </div>
 
-<div class="ac-pane" data-tab="memory">
+<div class="ac-pane" data-uatab="memory">
 <blockquote class="inline_help">
 Facts and notes agents can read via memory_list/memory_get. Each connected client gets
 its own scope; the defaults scope holds the auto-generated server profile. Writes from
@@ -185,16 +185,16 @@ $(function() {
     var KEY = 'unraid-agent-content-tab';
     function activate(t) {
         $('.ua-subtab').removeClass('active');
-        $('.ac-pane[data-tab]').removeClass('active');
-        $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
-        $('.ac-pane[data-tab="' + t + '"]').addClass('active');
+        $('.ac-pane[data-uatab]').removeClass('active');
+        $('.ua-subtab[data-uatab="' + t + '"]').addClass('active');
+        $('.ac-pane[data-uatab="' + t + '"]').addClass('active');
     }
     var saved = localStorage.getItem(KEY);
     // Always activate a valid sub-tab on load — never land on a blank canvas
-    var target = (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) ? saved : 'skills';
+    var target = (saved && $('.ua-subtab[data-uatab="' + saved + '"]').length) ? saved : 'skills';
     activate(target);
     $('.ua-subtab').on('click', function() {
-        var t = $(this).data('tab');
+        var t = $(this).data('uatab');
         activate(t);
         localStorage.setItem(KEY, t);
     });
