@@ -14,7 +14,7 @@ $yesno = function($key, $default = 'false') use ($cfg) {
 
 // Form wrappers (the markdown fields stay literal; wrappers emit plain HTML).
 $formOpen = function() use ($plugin, $var) {
-    echo "<form markdown=\"1\" method=\"POST\" action=\"/update.php\" target=\"progressFrame\">\n";
+    echo "<form method=\"POST\" action=\"/update.php\" target=\"progressFrame\">\n";
     echo "<input type=\"hidden\" name=\"csrf_token\" value=\"{$var['csrf_token']}\">\n";
     echo "<input type=\"hidden\" name=\"#file\" value=\"$plugin/config.cfg\">\n";
     echo "<input type=\"hidden\" name=\"#command\" value=\"/usr/local/emhttp/plugins/$plugin/scripts/apply.sh\">\n";
@@ -120,8 +120,7 @@ $chips = function($entityPerms, $actions) {
 <div class="ua-pane active" data-tab="master">
 <?php $formOpen(); ?>
 
-_(Read Only (Recommended))_:
-: <?=$yesno('READ_ONLY', 'true')?>
+<dl><dt>Read Only (Recommended)</dt><dd><?=$yesno('READ_ONLY', 'true')?></dd></dl>
 
 <blockquote class="inline_help">
 Read-only mode blocks ALL state-changing operations regardless of any other toggle.
@@ -129,8 +128,7 @@ Resolution order: READ_ONLY → ALLOW_DESTRUCTIVE → per-entity overrides → c
 specific toggles. Enforced inside the MCP server before any operation reaches the Unraid API.
 </blockquote>
 
-_(Allow Destructive (All))_:
-: <?=$yesno('ALLOW_DESTRUCTIVE')?>
+<dl><dt>Allow Destructive (All)</dt><dd><?=$yesno('ALLOW_DESTRUCTIVE')?></dd></dl>
 
 <blockquote class="inline_help">
 WARNING: Enabling this allows ALL destructive operations including array stop, disk remove,
@@ -143,27 +141,21 @@ container delete, VM delete, plugin install/remove, system updates, and flash ba
 <div class="ua-pane" data-tab="array">
 <?php $formOpen(); ?>
 
-_(Allow Array Stop/Start)_:
-: <?=$yesno('ALLOW_ARRAY_ACTIONS')?>
+<dl><dt>Allow Array Stop/Start</dt><dd><?=$yesno('ALLOW_ARRAY_ACTIONS')?></dd></dl>
 
 <blockquote class="inline_help">
 Category toggle: allows all array operations in this section.
 </blockquote>
 
-_(Allow Array Stop)_:
-: <?=$yesno('ALLOW_ARRAY_STOP')?>
+<dl><dt>Allow Array Stop</dt><dd><?=$yesno('ALLOW_ARRAY_STOP')?></dd></dl>
 
-_(Allow Array Start)_:
-: <?=$yesno('ALLOW_ARRAY_START')?>
+<dl><dt>Allow Array Start</dt><dd><?=$yesno('ALLOW_ARRAY_START')?></dd></dl>
 
-_(Allow Array Add Disk)_:
-: <?=$yesno('ALLOW_ARRAY_ADD_DISK')?>
+<dl><dt>Allow Array Add Disk</dt><dd><?=$yesno('ALLOW_ARRAY_ADD_DISK')?></dd></dl>
 
-_(Allow Array Remove Disk)_:
-: <?=$yesno('ALLOW_ARRAY_REMOVE_DISK')?>
+<dl><dt>Allow Array Remove Disk</dt><dd><?=$yesno('ALLOW_ARRAY_REMOVE_DISK')?></dd></dl>
 
-_(Allow Array Clear Stats)_:
-: <?=$yesno('ALLOW_ARRAY_CLEAR_STATS')?>
+<dl><dt>Allow Array Clear Stats</dt><dd><?=$yesno('ALLOW_ARRAY_CLEAR_STATS')?></dd></dl>
 
 <?php $formClose(); ?>
 </div>
@@ -171,34 +163,26 @@ _(Allow Array Clear Stats)_:
 <div class="ua-pane" data-tab="containers">
 <?php $formOpen(); ?>
 
-_(Allow Docker Actions)_:
-: <?=$yesno('ALLOW_DOCKER_ACTIONS')?>
+<dl><dt>Allow Docker Actions</dt><dd><?=$yesno('ALLOW_DOCKER_ACTIONS')?></dd></dl>
 
 <blockquote class="inline_help">
 Category toggle: allows all container operations in this section. Per-container
 overrides below take precedence over these global defaults.
 </blockquote>
 
-_(Allow Container Start)_:
-: <?=$yesno('ALLOW_CONTAINER_START')?>
+<dl><dt>Allow Container Start</dt><dd><?=$yesno('ALLOW_CONTAINER_START')?></dd></dl>
 
-_(Allow Container Stop)_:
-: <?=$yesno('ALLOW_CONTAINER_STOP')?>
+<dl><dt>Allow Container Stop</dt><dd><?=$yesno('ALLOW_CONTAINER_STOP')?></dd></dl>
 
-_(Allow Container Restart)_:
-: <?=$yesno('ALLOW_CONTAINER_RESTART')?>
+<dl><dt>Allow Container Restart</dt><dd><?=$yesno('ALLOW_CONTAINER_RESTART')?></dd></dl>
 
-_(Allow Container Pause)_:
-: <?=$yesno('ALLOW_CONTAINER_PAUSE')?>
+<dl><dt>Allow Container Pause</dt><dd><?=$yesno('ALLOW_CONTAINER_PAUSE')?></dd></dl>
 
-_(Allow Container Unpause)_:
-: <?=$yesno('ALLOW_CONTAINER_UNPAUSE')?>
+<dl><dt>Allow Container Unpause</dt><dd><?=$yesno('ALLOW_CONTAINER_UNPAUSE')?></dd></dl>
 
-_(Allow Container Remove)_:
-: <?=$yesno('ALLOW_CONTAINER_REMOVE')?>
+<dl><dt>Allow Container Remove</dt><dd><?=$yesno('ALLOW_CONTAINER_REMOVE')?></dd></dl>
 
-_(Allow Container Update)_:
-: <?=$yesno('ALLOW_CONTAINER_UPDATE')?>
+<dl><dt>Allow Container Update</dt><dd><?=$yesno('ALLOW_CONTAINER_UPDATE')?></dd></dl>
 
 <?php $formClose(); ?>
 
@@ -239,34 +223,26 @@ immediately — no Apply or restart required.
 <div class="ua-pane" data-tab="vms">
 <?php $formOpen(); ?>
 
-_(Allow VM Actions)_:
-: <?=$yesno('ALLOW_VM_ACTIONS')?>
+<dl><dt>Allow VM Actions</dt><dd><?=$yesno('ALLOW_VM_ACTIONS')?></dd></dl>
 
 <blockquote class="inline_help">
 Category toggle: allows all VM operations in this section. Per-VM overrides below
 take precedence over these global defaults.
 </blockquote>
 
-_(Allow VM Start)_:
-: <?=$yesno('ALLOW_VM_START')?>
+<dl><dt>Allow VM Start</dt><dd><?=$yesno('ALLOW_VM_START')?></dd></dl>
 
-_(Allow VM Stop)_:
-: <?=$yesno('ALLOW_VM_STOP')?>
+<dl><dt>Allow VM Stop</dt><dd><?=$yesno('ALLOW_VM_STOP')?></dd></dl>
 
-_(Allow VM Pause)_:
-: <?=$yesno('ALLOW_VM_PAUSE')?>
+<dl><dt>Allow VM Pause</dt><dd><?=$yesno('ALLOW_VM_PAUSE')?></dd></dl>
 
-_(Allow VM Resume)_:
-: <?=$yesno('ALLOW_VM_RESUME')?>
+<dl><dt>Allow VM Resume</dt><dd><?=$yesno('ALLOW_VM_RESUME')?></dd></dl>
 
-_(Allow VM Force Stop)_:
-: <?=$yesno('ALLOW_VM_FORCE_STOP')?>
+<dl><dt>Allow VM Force Stop</dt><dd><?=$yesno('ALLOW_VM_FORCE_STOP')?></dd></dl>
 
-_(Allow VM Reboot)_:
-: <?=$yesno('ALLOW_VM_REBOOT')?>
+<dl><dt>Allow VM Reboot</dt><dd><?=$yesno('ALLOW_VM_REBOOT')?></dd></dl>
 
-_(Allow VM Reset)_:
-: <?=$yesno('ALLOW_VM_RESET')?>
+<dl><dt>Allow VM Reset</dt><dd><?=$yesno('ALLOW_VM_RESET')?></dd></dl>
 
 <?php $formClose(); ?>
 
@@ -307,11 +283,9 @@ immediately — no Apply or restart required.
 <div class="ua-pane" data-tab="plugins">
 <?php $formOpen(); ?>
 
-_(Allow Plugin Install)_:
-: <?=$yesno('ALLOW_PLUGIN_INSTALL')?>
+<dl><dt>Allow Plugin Install</dt><dd><?=$yesno('ALLOW_PLUGIN_INSTALL')?></dd></dl>
 
-_(Allow Plugin Remove)_:
-: <?=$yesno('ALLOW_PLUGIN_REMOVE')?>
+<dl><dt>Allow Plugin Remove</dt><dd><?=$yesno('ALLOW_PLUGIN_REMOVE')?></dd></dl>
 
 <?php $formClose(); ?>
 </div>
@@ -319,35 +293,25 @@ _(Allow Plugin Remove)_:
 <div class="ua-pane" data-tab="system">
 <?php $formOpen(); ?>
 
-_(Allow Setting Updates)_:
-: <?=$yesno('ALLOW_SETTING_UPDATES')?>
+<dl><dt>Allow Setting Updates</dt><dd><?=$yesno('ALLOW_SETTING_UPDATES')?></dd></dl>
 
-_(Allow SSH Update)_:
-: <?=$yesno('ALLOW_SSH_UPDATE')?>
+<dl><dt>Allow SSH Update</dt><dd><?=$yesno('ALLOW_SSH_UPDATE')?></dd></dl>
 
-_(Allow Time Update)_:
-: <?=$yesno('ALLOW_TIME_UPDATE')?>
+<dl><dt>Allow Time Update</dt><dd><?=$yesno('ALLOW_TIME_UPDATE')?></dd></dl>
 
-_(Allow Flash Backup)_:
-: <?=$yesno('ALLOW_FLASH_BACKUP')?>
+<dl><dt>Allow Flash Backup</dt><dd><?=$yesno('ALLOW_FLASH_BACKUP')?></dd></dl>
 
-_(Allow Notification Delete)_:
-: <?=$yesno('ALLOW_NOTIFICATION_DELETE')?>
+<dl><dt>Allow Notification Delete</dt><dd><?=$yesno('ALLOW_NOTIFICATION_DELETE')?></dd></dl>
 
-_(Allow API Key Create)_:
-: <?=$yesno('ALLOW_API_KEY_CREATE')?>
+<dl><dt>Allow API Key Create</dt><dd><?=$yesno('ALLOW_API_KEY_CREATE')?></dd></dl>
 
-_(Allow API Key Delete)_:
-: <?=$yesno('ALLOW_API_KEY_DELETE')?>
+<dl><dt>Allow API Key Delete</dt><dd><?=$yesno('ALLOW_API_KEY_DELETE')?></dd></dl>
 
-_(Allow Rsync Operations)_:
-: <?=$yesno('ALLOW_RCLONE_OPERATIONS')?>
+<dl><dt>Allow Rsync Operations</dt><dd><?=$yesno('ALLOW_RCLONE_OPERATIONS')?></dd></dl>
 
-_(Allow Connect Actions)_:
-: <?=$yesno('ALLOW_CONNECT_ACTIONS')?>
+<dl><dt>Allow Connect Actions</dt><dd><?=$yesno('ALLOW_CONNECT_ACTIONS')?></dd></dl>
 
-_(Allow Onboarding Actions)_:
-: <?=$yesno('ALLOW_ONBOARDING_ACTIONS')?>
+<dl><dt>Allow Onboarding Actions</dt><dd><?=$yesno('ALLOW_ONBOARDING_ACTIONS')?></dd></dl>
 
 <?php $formClose(); ?>
 </div>
