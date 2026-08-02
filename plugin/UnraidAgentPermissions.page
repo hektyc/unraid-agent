@@ -32,6 +32,29 @@ $containers = ua_list_containers();
 $vms = ua_list_vms();
 $plugins = ua_list_installed_plugins();
 
+// Tool domain -> tool names (keep in sync with the daemon's registrations)
+$toolDomains = [
+  'system' => ['System', ['system_overview','system_array','system_network','system_network_interfaces','system_network_metrics','system_registration','system_flash','system_metrics','system_server','system_server_time','system_services','system_settings','system_variables','system_timezones','system_online','system_config','system_display','system_ups_config','system_ups_devices','system_owner','system_servers']],
+  'docker' => ['Docker', ['docker_list','docker_networks','docker_ports','docker_details','docker_network_details','docker_create_folder','docker_delete_entries','docker_refresh_digests','docker_logs','docker_start','docker_stop','docker_restart','docker_pause','docker_unpause','docker_remove_container','docker_update_container']],
+  'array' => ['Array', ['array_parity_status','array_parity_history','array_assignable_disks','array_start','array_stop','array_parity_start','array_parity_pause','array_parity_resume','array_parity_cancel','array_add_disk','array_remove_disk']],
+  'agentcontent' => ['Agent Content', ['skills_list','skills_get','skills_create','skills_update','skills_delete','memory_list','memory_get','memory_write','memory_delete','agent_endpoint_log']],
+  'vm' => ['Virtual Machines', ['vm_list','vm_details','vm_start','vm_stop','vm_pause','vm_resume','vm_force_stop','vm_reboot','vm_reset']],
+  'live' => ['Live Metrics', ['live_cpu','live_memory','live_temperature','live_network_metrics','live_array_state','live_parity_progress','live_notifications_overview','live_docker_container_stats','live_collect']],
+  'notification' => ['Notifications', ['notification_overview','notification_list','notification_archive','notification_create','notification_delete','notification_delete_archived']],
+  'setting' => ['Settings', ['setting_list','setting_get','setting_update','setting_update_ssh','setting_update_system_time','setting_configure_ups']],
+  'key' => ['API Keys', ['key_list','key_get','key_create','key_update','key_delete']],
+  'health' => ['Health', ['health_check','health_test_connection','health_diagnose','health_setup']],
+  'plugin' => ['Plugins', ['plugin_list','plugin_add','plugin_remove','plugin_install']],
+  'connect' => ['Connect', ['connect_status','connect_sign_in','connect_sign_out']],
+  'customization' => ['Customization', ['customization_themes','customization_locales','customization_set_theme']],
+  'logs' => ['Logs', ['logs_list','logs_read','plugin_logs']],
+  'oidc' => ['OIDC', ['oidc_providers','oidc_create','oidc_delete']],
+  'onboarding' => ['Onboarding', ['onboarding_state','onboarding_complete','onboarding_reset']],
+  'rclone' => ['RClone', ['rclone_list_remotes','rclone_create_remote','rclone_delete_remote']],
+  'help' => ['Help', ['help_full']],
+  'user' => ['User', ['user_me']],
+];
+
 $containerActions = [
     'start' => 'Start', 'stop' => 'Stop', 'restart' => 'Restart',
     'pause' => 'Pause', 'unpause' => 'Unpause', 'remove' => 'Remove', 'update' => 'Update',
@@ -401,52 +424,62 @@ Use this when sharing log output with external/cloud AI models.
 <div class="ua-pane" data-tab="tools">
 <?php $formOpen(); ?>
 
-<div class="title"><span class="left"><i class="title fa fa-wrench"></i>Tool Domains</span></div>
+<div class="title"><span class="left"><i class="title fa fa-wrench"></i>Agent Toolset</span></div>
 <blockquote class="inline_help">
-Each MCP tool domain can be enabled or disabled. Disabled domains are never
-registered — their tools and schemas never reach AI clients, which directly
-shrinks the standing token payload of every session. Apply restarts the MCP
-server, so changes take effect immediately. Tools you disable cannot be called;
-disable only domains you don't need.
+These toggles decide <b>which tools the AI agent can see and call</b>. Turning a tool or
+domain off removes it from the agent entirely — it can't be invoked, and its schema stops
+consuming tokens in every session. This is separate from the Permissions above, which
+gate whether an available tool may actually change something.<br><br>
+Each domain has a master toggle (Yes/No). Expand a domain to set individual tools to
+<b>Use Domain</b> (follow the master), <b>Yes</b> (force on), or <b>No</b> (force off) —
+individual choices win in both directions: a Yes tool stays available inside a No domain,
+and a No tool stays hidden inside a Yes domain.
 </blockquote>
 
-<dl><dt>System (21 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_SYSTEM', 'true')?></dd></dl>
+<style>
+.ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
+.ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
+.ua-domain-head:hover { background:rgba(128,128,128,0.08); }
+.ua-domain-title { font-weight:bold; font-size:13px; }
+.ua-domain-count { font-size:11px; opacity:0.65; margin-left:8px; }
+.ua-domain-caret { margin-right:8px; opacity:0.7; }
+.ua-domain-tools { display:none; padding:4px 12px 10px; border-top:1px solid rgba(128,128,128,0.2); }
+.ua-tool-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed rgba(128,128,128,0.15); }
+.ua-tool-row:last-child { border-bottom:none; }
+.ua-tool-name { font-family:monospace; font-size:12px; }
+</style>
 
-<dl><dt>Docker (17 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_DOCKER', 'true')?></dd></dl>
-
-<dl><dt>Array (11 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_ARRAY', 'true')?></dd></dl>
-
-<dl><dt>Agent Content (10 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_AGENTCONTENT', 'true')?></dd></dl>
-
-<dl><dt>Virtual Machines (9 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_VM', 'true')?></dd></dl>
-
-<dl><dt>Live Metrics (9 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_LIVE', 'true')?></dd></dl>
-
-<dl><dt>Notifications (6 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_NOTIFICATION', 'true')?></dd></dl>
-
-<dl><dt>Settings (6 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_SETTING', 'true')?></dd></dl>
-
-<dl><dt>API Keys (5 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_KEY', 'true')?></dd></dl>
-
-<dl><dt>Health (4 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_HEALTH', 'true')?></dd></dl>
-
-<dl><dt>Plugins (4 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_PLUGIN', 'true')?></dd></dl>
-
-<dl><dt>Connect (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_CONNECT', 'true')?></dd></dl>
-
-<dl><dt>Customization (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_CUSTOMIZATION', 'true')?></dd></dl>
-
-<dl><dt>Logs (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_LOGS', 'true')?></dd></dl>
-
-<dl><dt>OIDC (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_OIDC', 'true')?></dd></dl>
-
-<dl><dt>Onboarding (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_ONBOARDING', 'true')?></dd></dl>
-
-<dl><dt>RClone (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_RCLONE', 'true')?></dd></dl>
-
-<dl><dt>Help (1 tool)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_HELP', 'true')?></dd></dl>
-
-<dl><dt>User (1 tool)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_USER', 'true')?></dd></dl>
+<?php
+$tristate = function($key) use ($cfg) {
+    $val = $cfg($key, 'domain');
+    $opts = ['domain' => 'Use Domain', 'true' => 'Yes', 'false' => 'No'];
+    $html = "<select name=\"$key\">";
+    foreach ($opts as $v => $l) {
+        $sel = ($val === $v) ? 'selected' : '';
+        $html .= "<option value=\"$v\" $sel>$l</option>";
+    }
+    return $html . "</select>";
+};
+foreach ($toolDomains as $dom => $info):
+    list($label, $tools) = $info;
+    $domKey = 'UNRAID_MCP_DOMAIN_' . strtoupper($dom);
+    $count = count($tools);
+?>
+<div class="ua-domain">
+  <div class="ua-domain-head" onclick="event.stopPropagation();">
+    <span><span class="ua-domain-caret">▸</span><span class="ua-domain-title"><?=$label?></span><span class="ua-domain-count"><?=$count?> tools</span></span>
+    <span onclick="event.stopPropagation();"><?=$yesno($domKey, 'true')?></span>
+  </div>
+  <div class="ua-domain-tools">
+  <?php foreach ($tools as $tool): ?>
+    <div class="ua-tool-row">
+      <span class="ua-tool-name"><?=$tool?></span>
+      <?=$tristate('UNRAID_MCP_TOOL_' . strtoupper($tool))?>
+    </div>
+  <?php endforeach; ?>
+  </div>
+</div>
+<?php endforeach; ?>
 
 <?php $formClose(); ?>
 </div>
@@ -488,6 +521,13 @@ $(function() {
         var t = $(this).data('tab');
         activate(t);
         localStorage.setItem(KEY, t);
+    });
+
+    // Expand/collapse tool domains
+    $(document).on('click', '.ua-domain-head', function() {
+        var tools = $(this).next('.ua-domain-tools');
+        tools.toggle();
+        $(this).find('.ua-domain-caret').text(tools.is(':visible') ? '▾' : '▸');
     });
 
     var ACTIONS = {
