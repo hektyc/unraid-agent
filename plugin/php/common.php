@@ -28,3 +28,9 @@ if (file_exists($pidfile)) {
         }
     }
 }
+
+// Shared plugin UI styles (all unRAID Agent pages include this file).
+// Constrain selects — Unraid's default form CSS stretches them full width.
+echo '<style>
+form select { width:auto !important; min-width:140px; }
+</style>';
