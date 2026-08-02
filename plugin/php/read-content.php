@@ -7,13 +7,7 @@ include '/usr/local/emhttp/plugins/unraid-agent/php/common.php';
 
 header('Content-Type: application/json');
 
-$var = @parse_ini_file('/var/local/emhttp/var.ini');
-$token = $_POST['csrf_token'] ?? '';
-if (!$var || empty($var['csrf_token']) || !hash_equals($var['csrf_token'], $token)) {
-    http_response_code(403);
-    echo json_encode(['ok' => false, 'error' => 'Invalid CSRF token']);
-    exit;
-}
+ua_csrf_check();
 
 $base = '/boot/config/plugins/unraid-agent';
 $file = $_POST['file'] ?? '';
