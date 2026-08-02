@@ -179,10 +179,25 @@ function ua_vm_icon_url($name) {
 }
 
 // Plugin icon: plgman convention <plugin>/<plugin>.png, via the icon proxy.
+// Plugins stash icons in a few places, so check the common candidates and
+// fall back to the first PNG found in the plugin dir or images/.
 function ua_plugin_icon_url($name) {
-    $p = "/usr/local/emhttp/plugins/$name/$name.png";
-    if (is_file($p)) {
-        return '/plugins/unraid-agent/php/icon.php?type=plugin&name=' . rawurlencode($name);
+    $candidates = [
+        "/usr/local/emhttp/plugins/$name/$name.png",
+        "/usr/local/emhttp/plugins/$name/icon.png",
+        "/usr/local/emhttp/plugins/$name/images/$name.png",
+        "/usr/local/emhttp/plugins/$name/images/icon.png",
+        "/boot/config/plugins/$name/$name.png",
+    ];
+    foreach ($candidates as $p) {
+        if (is_file($p)) {
+            return '/plugins/unraid-agent/php/icon.php?type=plugin&name=' . rawurlencode($name);
+        }
+    }
+    foreach ([glob("/usr/local/emhttp/plugins/$name/*.png") ?: [], glob("/usr/local/emhttp/plugins/$name/images/*.png") ?: []] as $g) {
+        if (count($g)) {
+            return '/plugins/unraid-agent/php/icon.php?type=plugin&name=' . rawurlencode($name);
+        }
     }
     return '';
 }
