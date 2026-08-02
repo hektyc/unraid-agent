@@ -101,11 +101,11 @@ process per-session, typically over SSH. There is no service to start or stop he
 Use the client configuration snippet below.
 </blockquote>
 <?php else: ?>
-<div style="text-align:center;margin:10px 0 4px;">
+<div style="text-align:center;margin:12px 0 6px;">
 <?php if ($running): ?>
-<span style="font-weight:bold; color:#2ecc71; font-size:22px;">RUNNING</span>
+<span style="font-weight:bold; color:#2ecc71; font-size:28px;">unRAID AGENT RUNNING</span>
 <?php else: ?>
-<span style="font-weight:bold; color:#e74c3c; font-size:22px;">STOPPED</span>
+<span style="font-weight:bold; color:#e74c3c; font-size:28px;">unRAID AGENT STOPPED</span>
 <?php endif; ?>
 </div>
 <?php endif; ?>
@@ -169,8 +169,7 @@ _(Port)_:
 </div>
 </form>
 
-<div class="title"><span class="left"><i class="title fa fa-power-off"></i>Service Control</span></div>
-<div style="text-align:center;margin-bottom:14px;">
+<div style="text-align:center;margin:16px 0;">
 <?php if (!$stdioMode): ?>
 <form method="POST" style="display:inline;">
 <input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
@@ -189,16 +188,16 @@ _(Port)_:
 <div class="title"><span class="left"><i class="title fa fa-file-code-o"></i>Client Configuration</span></div>
 
 <?php if ($stdioMode && !$stdioEnable): ?>
-<div style="padding:10px 14px;margin:8px auto;border-left:3px solid #e6a23c;background:rgba(230,162,60,0.08);max-width:640px;">
+<div style="padding:10px 14px;margin:8px auto;border-left:3px solid #e6a23c;background:rgba(230,162,60,0.08);width:70%;box-sizing:border-box;">
 stdio is currently disabled. Set <b>Enable stdio Transport</b> to Yes and Apply to
 generate the client configuration snippet.
 </div>
 <?php else: ?>
-<div style="padding:10px 14px;margin:8px auto;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);max-width:640px;text-align:center;">
+<div style="padding:10px 14px;margin:8px auto;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);width:70%;text-align:center;">
 Paste this into your MCP client's configuration — the MCP / AI-assistant section of your
 IDE's settings, or an <code>mcp.json</code> / <code>config.json</code> file your client uses:
 </div>
-<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:12px;line-height:1.5;max-width:640px;max-height:240px;margin:0 auto 14px;overflow:auto;text-align:left;"><?=htmlspecialchars($clientConfig)?></pre>
+<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:12px;line-height:1.5;width:70%;max-height:240px;margin:0 auto 14px;overflow:auto;text-align:left;box-sizing:border-box;"><?=htmlspecialchars($clientConfig)?></pre>
 <?php endif; ?>
 
 <?php if ($stdioMode && $stdioEnable): ?>
