@@ -23,7 +23,7 @@ if ($kind === 'skill') {
     }
     $file = "$base/skills/$source/$name.md";
     $prefix = "$base/skills/";
-    $download = 'SKILL.md';
+    $download = "$name.SKILL.md";
 } elseif ($kind === 'memory') {
     $scope = $_GET['scope'] ?? '';
     if (!preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/', $scope)) {

@@ -203,3 +203,31 @@ function ua_plugin_icon_url($name) {
 }
 
 } // end function_exists guard
+
+if (!function_exists('ua_csrf_token')) {
+
+// Read the session CSRF token from var.ini without INI-parser quirks —
+// parse_ini_file can fail or mangle lines in Unraid's var.ini, which made
+// endpoint validation 403 on every request.
+function ua_csrf_token() {
+    foreach ((@file('/var/local/emhttp/var.ini') ?: []) as $line) {
+        if (preg_match('/^\s*csrf_token\s*=\s*"([^"]*)"/', $line, $m)) {
+            return $m[1];
+        }
+    }
+    return '';
+}
+
+// Validate the posted CSRF token; dies with 403 JSON on mismatch.
+function ua_csrf_check() {
+    $expected = ua_csrf_token();
+    $token = $_POST['csrf_token'] ?? '';
+    header('Content-Type: application/json');
+    if ($expected === '' || !hash_equals($expected, $token)) {
+        http_response_code(403);
+        echo json_encode(['ok' => false, 'error' => 'Invalid CSRF token']);
+        exit;
+    }
+}
+
+}
