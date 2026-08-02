@@ -101,23 +101,13 @@ process per-session, typically over SSH. There is no service to start or stop he
 Use the client configuration snippet below.
 </blockquote>
 <?php else: ?>
+<div style="text-align:center;margin:10px 0 4px;">
 <?php if ($running): ?>
-<span style="font-weight:bold; color:green;">RUNNING</span>
+<span style="font-weight:bold; color:#2ecc71; font-size:22px;">RUNNING</span>
 <?php else: ?>
-<span style="font-weight:bold; color:red;">STOPPED</span>
+<span style="font-weight:bold; color:#e74c3c; font-size:22px;">STOPPED</span>
 <?php endif; ?>
-
-<form method="POST" style="display:inline;">
-<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
-<input type="hidden" name="agent_action" value="start">
-<input type="submit" value="Start MCP Server">
-</form>
-
-<form method="POST" style="display:inline;">
-<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
-<input type="hidden" name="agent_action" value="stop">
-<input type="submit" value="Stop MCP Server">
-</form>
+</div>
 <?php endif; ?>
 
 <form markdown="1" method="POST" action="/update.php" target="progressFrame">
@@ -179,19 +169,36 @@ _(Port)_:
 </div>
 </form>
 
+<div class="title"><span class="left"><i class="title fa fa-power-off"></i>Service Control</span></div>
+<div style="text-align:center;margin-bottom:14px;">
+<?php if (!$stdioMode): ?>
+<form method="POST" style="display:inline;">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="agent_action" value="start">
+<input type="submit" value="Start MCP Server">
+</form>
+
+<form method="POST" style="display:inline;">
+<input type="hidden" name="csrf_token" value="<?=$var['csrf_token']?>">
+<input type="hidden" name="agent_action" value="stop">
+<input type="submit" value="Stop MCP Server">
+</form>
+<?php endif; ?>
+</div>
+
 <div class="title"><span class="left"><i class="title fa fa-file-code-o"></i>Client Configuration</span></div>
 
 <?php if ($stdioMode && !$stdioEnable): ?>
-<div style="padding:10px 14px;margin:8px 0;border-left:3px solid #e6a23c;background:rgba(230,162,60,0.08);">
+<div style="padding:10px 14px;margin:8px auto;border-left:3px solid #e6a23c;background:rgba(230,162,60,0.08);max-width:640px;">
 stdio is currently disabled. Set <b>Enable stdio Transport</b> to Yes and Apply to
 generate the client configuration snippet.
 </div>
 <?php else: ?>
-<div style="padding:10px 14px;margin:8px 0;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);">
-Paste this into your MCP client's configuration (Kilo Code: <code>~/.config/kilo/kilo.jsonc</code>,
-or your IDE's MCP settings):
+<div style="padding:10px 14px;margin:8px auto;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);max-width:640px;text-align:center;">
+Paste this into your MCP client's configuration — the MCP / AI-assistant section of your
+IDE's settings, or an <code>mcp.json</code> / <code>config.json</code> file your client uses:
 </div>
-<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;overflow-x:auto;font-size:12px;line-height:1.5;"><?=htmlspecialchars($clientConfig)?></pre>
+<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:12px;line-height:1.5;max-width:640px;max-height:240px;margin:0 auto 14px;overflow:auto;text-align:left;"><?=htmlspecialchars($clientConfig)?></pre>
 <?php endif; ?>
 
 <?php if ($stdioMode && $stdioEnable): ?>
