@@ -31,7 +31,10 @@ if (file_exists($pidfile)) {
 
 // Shared plugin UI styles (all unRAID Agent pages include this file).
 // Constrain selects — Unraid's default form CSS stretches them full width.
-if (!defined('UA_NO_OUTPUT')) {
+// Guards: the tab system can include this file twice per request (parent
+// page body + active tab body), so everything must be include-safe.
+if (!defined('UA_NO_OUTPUT') && !defined('UA_STYLES_PRINTED')) {
+    define('UA_STYLES_PRINTED', true);
     echo '<style>
 form select { width:auto !important; min-width:140px; }
 </style>';
@@ -40,6 +43,8 @@ form select { width:auto !important; min-width:140px; }
 // ---------------------------------------------------------------------------
 // GraphQL + entity helpers (used by the Permissions pages and API endpoints)
 // ---------------------------------------------------------------------------
+
+if (!function_exists('ua_graphql')) {
 
 function ua_graphql($query, $vars = []) {
     global $config;
@@ -121,3 +126,5 @@ function ua_vm_icon_url($name) {
     }
     return '';
 }
+
+} // end function_exists guard
