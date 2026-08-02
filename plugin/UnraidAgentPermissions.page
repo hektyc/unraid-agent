@@ -437,6 +437,7 @@ and a No tool stays hidden inside a Yes domain.
 </blockquote>
 
 <style>
+.ua-tools-wrap { width:65%; min-width:420px; }
 .ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
 .ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
 .ua-domain-head:hover { background:rgba(128,128,128,0.08); }
@@ -449,6 +450,7 @@ and a No tool stays hidden inside a Yes domain.
 .ua-tool-name { font-family:monospace; font-size:12px; }
 </style>
 
+<div class="ua-tools-wrap">
 <?php
 $tristate = function($key) use ($cfg) {
     $val = $cfg($key, 'domain');
@@ -466,9 +468,9 @@ foreach ($toolDomains as $dom => $info):
     $count = count($tools);
 ?>
 <div class="ua-domain">
-  <div class="ua-domain-head" onclick="event.stopPropagation();">
-    <span><span class="ua-domain-caret">▸</span><span class="ua-domain-title"><?=$label?></span><span class="ua-domain-count"><?=$count?> tools</span></span>
-    <span onclick="event.stopPropagation();"><?=$yesno($domKey, 'true')?></span>
+  <div class="ua-domain-head">
+    <span class="ua-domain-title-wrap"><span class="ua-domain-caret">▸</span><span class="ua-domain-title"><?=$label?></span><span class="ua-domain-count"><?=$count?> tools</span></span>
+    <span class="ua-domain-master" onclick="event.stopPropagation();"><?=$yesno($domKey, 'true')?></span>
   </div>
   <div class="ua-domain-tools">
   <?php foreach ($tools as $tool): ?>
@@ -480,6 +482,7 @@ foreach ($toolDomains as $dom => $info):
   </div>
 </div>
 <?php endforeach; ?>
+</div>
 
 <?php $formClose(); ?>
 </div>
