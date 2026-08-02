@@ -56,7 +56,7 @@ if ($type === 'plugins' && $entity === 'unraid-agent') {
 }
 
 // Validate the entity exists in the live list (prevents arbitrary key injection)
-$live = ($type === 'containers') ? ua_list_containers() : (($type === 'vms') ? ua_list_vms() : ua_list_plugins());
+$live = ($type === 'containers') ? ua_list_containers() : (($type === 'vms') ? ua_list_vms() : ua_list_installed_plugins());
 $liveNames = [];
 foreach ($live as $item) {
     if ($type === 'containers') {

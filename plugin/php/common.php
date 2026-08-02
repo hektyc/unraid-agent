@@ -86,6 +86,52 @@ function ua_list_plugins() {
     return ($d && isset($d['plugins'])) ? $d['plugins'] : [];
 }
 
+// Installed plugins: ground truth is the .plg files in /boot/config/plugins/.
+// The API's `plugins` query only returns API-module plugins (a subset), so we
+// parse each .plg's ENTITY declarations for name/version like plgman does,
+// then enrich API/CLI badges from the API-module list where names match.
+function ua_list_installed_plugins() {
+    $out = [];
+    foreach (glob('/boot/config/plugins/*.plg') ?: [] as $file) {
+        $content = @file_get_contents($file);
+        if ($content === false) {
+            continue;
+        }
+        $name = '';
+        $version = '';
+        if (preg_match('/<!ENTITY\s+name\s+"([^"]+)"/', $content, $m)) {
+            $name = $m[1];
+        }
+        if (preg_match('/<!ENTITY\s+version\s+"([^"]+)"/', $content, $m)) {
+            $version = $m[1];
+        }
+        if ($name === '' && preg_match('/<PLUGIN\s[^>]*name="([^"]+)"/', $content, $m)) {
+            $name = $m[1];
+        }
+        if ($version === '' && preg_match('/<PLUGIN\s[^>]*version="([^"]+)"/', $content, $m)) {
+            $version = $m[1];
+        }
+        if ($name === '' || strpos($name, '&') !== false) {
+            $name = basename($file, '.plg');
+        }
+        if (strpos($version, '&') !== false) {
+            $version = '';
+        }
+        $out[] = ['name' => $name, 'version' => $version, 'hasApiModule' => false, 'hasCliModule' => false];
+    }
+    foreach (ua_list_plugins() as $ap) {
+        foreach ($out as &$o) {
+            if ($o['name'] === ($ap['name'] ?? '')) {
+                $o['hasApiModule'] = !empty($ap['hasApiModule']);
+                $o['hasCliModule'] = !empty($ap['hasCliModule']);
+            }
+        }
+    }
+    unset($o);
+    usort($out, function($a, $b) { return strcasecmp($a['name'], $b['name']); });
+    return $out;
+}
+
 function ua_perms_path() {
     return '/boot/config/plugins/unraid-agent/perms.json';
 }
