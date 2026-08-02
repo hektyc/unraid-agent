@@ -204,7 +204,7 @@ function ua_plugin_icon_url($name) {
 
 } // end function_exists guard
 
-if (!function_exists('ua_csrf_token')) {
+if (!function_exists('ua_csrf_check')) {
 
 // Unraid issues CSRF tokens per login session (stored in the PHP session —
 // the same mechanism update.php validates against). Validate against the
