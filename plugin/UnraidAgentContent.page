@@ -202,7 +202,7 @@ $(function() {
     var cur = null;
 
     function openModal(kind, data) {
-        cur = kind;
+        cur = { kind: kind, data: data };
         var isSkill = (kind === 'skill');
         $('#ac-modal-title').text(data.title || (isSkill ? 'Edit Skill' : 'Edit Memory'));
         $('#ac-modal-icon').attr('class', 'fa ' + (isSkill ? 'fa-graduation-cap' : 'fa-sticky-note'))
@@ -216,7 +216,6 @@ $(function() {
         $('#ac-content').val(data.content || '');
         $('#ac-delete').toggle(!data.isNew && (isSkill ? data.source === 'custom' : data.scope !== 'defaults'));
         $('#ac-err').text('');
-        cur.data = data;
         $('#ac-modal').fadeIn(120);
     }
     function closeModal() { $('#ac-modal').fadeOut(120); cur = null; }
@@ -263,7 +262,7 @@ $(function() {
     $('#ac-save').on('click', function(e) {
         e.preventDefault();
         if (!cur) return;
-        var isSkill = (cur === 'skill');
+        var isSkill = (cur.kind === 'skill');
         var payload = {
             csrf_token: '<?=$var['csrf_token']?>',
             name: $('#ac-name').val(),
@@ -272,7 +271,7 @@ $(function() {
         if (isSkill) payload.description = $('#ac-desc').val();
         if (!isSkill) payload.scope = cur.data.scope || 'custom';
         $('#ac-err').text('Saving…');
-        $.post('/plugins/unraid-agent/php/save-content.php', $.extend(payload, {kind: cur}), function(resp) {
+        $.post('/plugins/unraid-agent/php/save-content.php', $.extend(payload, {kind: cur.kind}), function(resp) {
             if (resp && resp.ok) { location.replace(location.href); }
             else { $('#ac-err').text((resp && resp.error) ? resp.error : 'Save failed'); }
         }, 'json').fail(function(xhr) {
@@ -283,12 +282,12 @@ $(function() {
     });
     $('#ac-delete').on('click', function(e) {
         e.preventDefault();
-        if (!cur || !cur.data.file) return;
+        if (!cur || !cur.data || !cur.data.file) return;
         if (!confirm('Delete this entry?')) return;
         $('#ac-err').text('Deleting…');
         $.post('/plugins/unraid-agent/php/save-content.php', {
             csrf_token: '<?=$var['csrf_token']?>',
-            kind: cur,
+            kind: cur.kind,
             action: 'delete',
             file: cur.data.file
         }, function(resp) {

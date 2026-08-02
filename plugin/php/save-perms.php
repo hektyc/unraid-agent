@@ -91,6 +91,7 @@ if (empty($clean)) {
     $all[$type][$entity] = $clean;
 }
 
+ua_ep_log('save-perms', "$type $entity " . json_encode($clean));
 $file = ua_perms_path();
 $tmp = $file . '.tmp';
 if (file_put_contents($tmp, json_encode($all, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) === false) {
