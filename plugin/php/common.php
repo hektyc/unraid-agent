@@ -203,38 +203,3 @@ function ua_plugin_icon_url($name) {
 }
 
 } // end function_exists guard
-
-if (!function_exists('ua_csrf_check')) {
-
-// Unraid issues CSRF tokens per login session (stored in the PHP session —
-// the same mechanism update.php validates against). Validate against the
-// session token first; fall back to var.ini for completeness.
-function ua_csrf_check() {
-    $candidates = [];
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        @session_start();
-    }
-    if (!empty($_SESSION['csrf_token'])) {
-        $candidates[] = $_SESSION['csrf_token'];
-    }
-    foreach ((@file('/var/local/emhttp/var.ini') ?: []) as $line) {
-        if (preg_match('/^\s*csrf_token\s*=\s*"([^"]*)"/', $line, $m)) {
-            $candidates[] = $m[1];
-            break;
-        }
-    }
-
-    header('Content-Type: application/json');
-
-    $token = $_POST['csrf_token'] ?? '';
-    foreach ($candidates as $expected) {
-        if ($expected !== '' && hash_equals($expected, $token)) {
-            return;
-        }
-    }
-    http_response_code(403);
-    echo json_encode(['ok' => false, 'error' => 'Invalid CSRF token']);
-    exit;
-}
-
-}
