@@ -119,6 +119,7 @@ $chips = function($entityPerms, $actions) {
   <div class="ua-subtab" data-tab="vms"><i class="fa fa-desktop" style="color:#9b59b6;"></i> Virtual Machines</div>
   <div class="ua-subtab" data-tab="plugins"><i class="fa fa-plug" style="color:#2ecc71;"></i> Plugins</div>
   <div class="ua-subtab" data-tab="system"><i class="fa fa-cog" style="color:#95a5a6;"></i> System</div>
+  <div class="ua-subtab" data-tab="tools"><i class="fa fa-wrench" style="color:#e67e22;"></i> Tool Access</div>
 </div>
 
 <div class="ua-pane active" data-tab="master">
@@ -393,6 +394,59 @@ before reaching the AI model: the server hostname becomes "Tower", and IP
 addresses and MAC addresses are replaced with consistent tokens ([ip1], [mac1]).
 Use this when sharing log output with external/cloud AI models.
 </blockquote>
+
+<?php $formClose(); ?>
+</div>
+
+<div class="ua-pane" data-tab="tools">
+<?php $formOpen(); ?>
+
+<div class="title"><span class="left"><i class="title fa fa-wrench"></i>Tool Domains</span></div>
+<blockquote class="inline_help">
+Each MCP tool domain can be enabled or disabled. Disabled domains are never
+registered — their tools and schemas never reach AI clients, which directly
+shrinks the standing token payload of every session. Apply restarts the MCP
+server, so changes take effect immediately. Tools you disable cannot be called;
+disable only domains you don't need.
+</blockquote>
+
+<dl><dt>System (21 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_SYSTEM', 'true')?></dd></dl>
+
+<dl><dt>Docker (17 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_DOCKER', 'true')?></dd></dl>
+
+<dl><dt>Array (11 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_ARRAY', 'true')?></dd></dl>
+
+<dl><dt>Agent Content (10 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_AGENTCONTENT', 'true')?></dd></dl>
+
+<dl><dt>Virtual Machines (9 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_VM', 'true')?></dd></dl>
+
+<dl><dt>Live Metrics (9 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_LIVE', 'true')?></dd></dl>
+
+<dl><dt>Notifications (6 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_NOTIFICATION', 'true')?></dd></dl>
+
+<dl><dt>Settings (6 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_SETTING', 'true')?></dd></dl>
+
+<dl><dt>API Keys (5 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_KEY', 'true')?></dd></dl>
+
+<dl><dt>Health (4 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_HEALTH', 'true')?></dd></dl>
+
+<dl><dt>Plugins (4 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_PLUGIN', 'true')?></dd></dl>
+
+<dl><dt>Connect (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_CONNECT', 'true')?></dd></dl>
+
+<dl><dt>Customization (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_CUSTOMIZATION', 'true')?></dd></dl>
+
+<dl><dt>Logs (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_LOGS', 'true')?></dd></dl>
+
+<dl><dt>OIDC (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_OIDC', 'true')?></dd></dl>
+
+<dl><dt>Onboarding (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_ONBOARDING', 'true')?></dd></dl>
+
+<dl><dt>RClone (3 tools)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_RCLONE', 'true')?></dd></dl>
+
+<dl><dt>Help (1 tool)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_HELP', 'true')?></dd></dl>
+
+<dl><dt>User (1 tool)</dt><dd><?=$yesno('UNRAID_MCP_DOMAIN_USER', 'true')?></dd></dl>
 
 <?php $formClose(); ?>
 </div>

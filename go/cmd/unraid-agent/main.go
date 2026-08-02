@@ -96,26 +96,35 @@ func main() {
 	go agentcontent.EnsureProfile(configDir, func(q string) (map[string]interface{}, error) {
 		return server.GraphQLQuery(context.Background(), q, nil)
 	})
-	array.RegisterTools(server, cfg)
-	agenttools.RegisterTools(server, cfg)
-	array.RegisterTools(server, cfg)
-	connect.RegisterTools(server, cfg)
-	customization.RegisterTools(server, cfg)
-	docker.RegisterTools(server, cfg)
-	health.RegisterTools(server, cfg)
-	help.RegisterTools(server, cfg)
-	key.RegisterTools(server, cfg)
-	live.RegisterTools(server, cfg)
-	logs.RegisterTools(server, cfg)
-	notification.RegisterTools(server, cfg)
-	oidc.RegisterTools(server, cfg)
-	onboarding.RegisterTools(server, cfg)
-	plugin.RegisterTools(server, cfg)
-	rclone.RegisterTools(server, cfg)
-	setting.RegisterTools(server, cfg)
-	system.RegisterTools(server, cfg)
-	user.RegisterTools(server, cfg)
-	vm.RegisterTools(server, cfg)
+	// Register tool families conditionally on the domain toggles.
+	// Disabled domains are never registered — their tools and schemas
+	// never reach clients, cutting the standing token payload.
+	register := func(domain string, fn func(*mcp.Server, *config.Config)) {
+		if cfg.IsDomainEnabled(domain) {
+			fn(server, cfg)
+		} else {
+			logger.Get().Infof("Tool domain disabled: %s", domain)
+		}
+	}
+	register("array", array.RegisterTools)
+	register("connect", connect.RegisterTools)
+	register("customization", customization.RegisterTools)
+	register("docker", docker.RegisterTools)
+	register("health", health.RegisterTools)
+	register("help", help.RegisterTools)
+	register("key", key.RegisterTools)
+	register("live", live.RegisterTools)
+	register("logs", logs.RegisterTools)
+	register("notification", notification.RegisterTools)
+	register("oidc", oidc.RegisterTools)
+	register("onboarding", onboarding.RegisterTools)
+	register("plugin", plugin.RegisterTools)
+	register("rclone", rclone.RegisterTools)
+	register("setting", setting.RegisterTools)
+	register("system", system.RegisterTools)
+	register("user", user.RegisterTools)
+	register("vm", vm.RegisterTools)
+	register("agentcontent", agenttools.RegisterTools)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
