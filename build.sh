@@ -41,10 +41,14 @@ cp plugin/unraid-agent.page "$INSTALL_DIR/unraid-agent.page"
 cp plugin/UnraidAgentPermissions.page "$INSTALL_DIR/UnraidAgentPermissions.page"
 cp plugin/UnraidAgentAccess.page "$INSTALL_DIR/UnraidAgentAccess.page"
 cp plugin/UnraidAgentAdvanced.page "$INSTALL_DIR/UnraidAgentAdvanced.page"
+cp plugin/UnraidAgentContent.page "$INSTALL_DIR/UnraidAgentContent.page"
 mkdir -p "$INSTALL_DIR/php"
 cp plugin/php/common.php "$INSTALL_DIR/php/common.php"
 cp plugin/php/save-perms.php "$INSTALL_DIR/php/save-perms.php"
 cp plugin/php/icon.php "$INSTALL_DIR/php/icon.php"
+cp plugin/php/read-content.php "$INSTALL_DIR/php/read-content.php"
+cp plugin/php/save-content.php "$INSTALL_DIR/php/save-content.php"
+cp plugin/php/export-skill.php "$INSTALL_DIR/php/export-skill.php"
 
 # default.cfg goes in plugin root as a fallback default
 # NOTE: config.cfg is intentionally NOT packaged — it is created on first

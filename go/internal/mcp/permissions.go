@@ -88,12 +88,21 @@ var toolPermissions = map[string][]string{
 	"vm_force_stop": {"ALLOW_VM_FORCE_STOP", "ALLOW_VM_ACTIONS"},
 	"vm_reboot":     {"ALLOW_VM_REBOOT", "ALLOW_VM_ACTIONS"},
 	"vm_reset":      {"ALLOW_VM_RESET", "ALLOW_VM_ACTIONS"},
+
+	// Agent content (skills + memory)
+	"skills_create": {"ALLOW_SKILLS_WRITE"},
+	"skills_update": {"ALLOW_SKILLS_WRITE"},
+	"skills_delete": {"ALLOW_SKILLS_WRITE"},
+	"memory_write":  {"ALLOW_MEMORY_WRITE"},
+	"memory_delete": {"ALLOW_MEMORY_WRITE"},
 }
 
 // isMutationTool reports whether executing this tool changes state.
-// GraphQL mutations mutate; tools whose Handler self-gates (oidc_*) are
-// treated as mutations too so READ_ONLY still short-circuits them.
+// GraphQL mutations mutate; Handler tools mutate unless marked ReadOnly.
 func isMutationTool(t *ToolDef) bool {
+	if t.ReadOnly {
+		return false
+	}
 	if t.Handler != nil {
 		return true
 	}

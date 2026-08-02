@@ -10,10 +10,12 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/hektyc/unraid-mcp-server/internal/agentcontent"
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/logger"
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/array"
+	agenttools "github.com/hektyc/unraid-mcp-server/internal/tools/agentcontent"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/connect"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/customization"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/docker"
@@ -81,7 +83,20 @@ func main() {
 	logger.Get().Infof("Transport: %s, Read-only: %v", transport, cfg.ReadOnly)
 
 	server := mcp.NewServer(cfg)
-	server.PermsPath = filepath.Join(filepath.Dir(*configPath), "perms.json")
+	configDir := filepath.Dir(*configPath)
+	server.PermsPath = filepath.Join(configDir, "perms.json")
+	server.ConfigDir = configDir
+
+	// Agent content: sync the embedded skill pack to flash, then generate
+	// the server profile memory in the background (first start only).
+	if err := agentcontent.SyncDefaults(configDir); err != nil {
+		logger.Get().Infof("agent content sync: %v", err)
+	}
+	go agentcontent.EnsureProfile(configDir, func(q string) (map[string]interface{}, error) {
+		return server.GraphQLQuery(context.Background(), q, nil)
+	})
+	array.RegisterTools(server, cfg)
+	agenttools.RegisterTools(server, cfg)
 	array.RegisterTools(server, cfg)
 	connect.RegisterTools(server, cfg)
 	customization.RegisterTools(server, cfg)

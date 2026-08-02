@@ -1,0 +1,283 @@
+Menu="unraid-agent:4"
+Title="Agent Content"
+Tag="fa-graduation-cap"
+---
+<?php
+include "/usr/local/emhttp/plugins/unraid-agent/php/common.php";
+
+$skillsBase = "/boot/config/plugins/$plugin/skills";
+$memoryBase = "/boot/config/plugins/$plugin/memory";
+
+// Read skills from defaults + custom dirs (flash is ground truth; the daemon
+// syncs the embedded pack into defaults/ at startup)
+$ua_read_skills = function($dir, $source) {
+    $out = [];
+    foreach (glob("$dir/*.md") ?: [] as $f) {
+        $content = @file_get_contents($f);
+        if ($content === false) continue;
+        $name = basename($f, '.md');
+        $desc = '';
+        if (preg_match('/^---\s*\n(.*?)\n---/s', $content, $m)) {
+            if (preg_match('/^name:\s*(.+)$/m', $m[1], $nm)) $name = trim($nm[1]);
+            if (preg_match('/^description:\s*(.+)$/m', $m[1], $dm)) $desc = trim($dm[1]);
+        }
+        $out[] = ['name' => $name, 'description' => $desc, 'source' => $source, 'file' => $f, 'mtime' => filemtime($f)];
+    }
+    return $out;
+};
+
+$skills = array_merge(
+    $ua_read_skills("$skillsBase/defaults", 'default'),
+    $ua_read_skills("$skillsBase/custom", 'custom')
+);
+// custom wins on name collisions
+$seen = [];
+$mergedSkills = [];
+foreach ($skills as $sk) {
+    if (isset($seen[$sk['name']])) {
+        if ($sk['source'] === 'custom') $mergedSkills[$seen[$sk['name']]] = $sk;
+        continue;
+    }
+    $seen[$sk['name']] = count($mergedSkills);
+    $mergedSkills[] = $sk;
+}
+usort($mergedSkills, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+
+// Read memory entries grouped by scope
+$memoryByScope = [];
+foreach (glob("$memoryBase/*", GLOB_ONLYDIR) ?: [] as $scopeDir) {
+    $scope = basename($scopeDir);
+    foreach (glob("$scopeDir/*.md") ?: [] as $f) {
+        $memoryByScope[$scope][] = ['name' => basename($f, '.md'), 'file' => $f, 'mtime' => filemtime($f)];
+    }
+}
+ksort($memoryByScope);
+foreach ($memoryByScope as &$list) {
+    usort($list, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+}
+unset($list);
+?>
+<style>
+.ac-pane { display:none; }
+.ac-pane.active { display:block; }
+.ac-toolbar { margin:4px 0 12px; }
+.ac-btn-new { padding:6px 16px; border-radius:5px; border:1px solid #ff8c2f; background:#ff8c2f; color:#1a1a1a; font-weight:bold; cursor:pointer; }
+.ac-btn-new:hover { opacity:0.9; }
+.ac-badge { font-size:10px; border:1px solid; border-radius:4px; padding:1px 6px; }
+.ac-badge-default { border-color:#4a90d9; color:#4a90d9; }
+.ac-badge-custom { border-color:#2ecc71; color:#2ecc71; }
+.ac-scope { margin-top:18px; }
+.ac-scope-title { font-weight:bold; font-size:14px; margin-bottom:8px; text-transform:capitalize; }
+.ac-modal { background:#222; color:#eee; border:1px solid #555; border-radius:10px;
+            width:720px; max-width:94vw; max-height:88vh; overflow-y:auto; padding:18px 20px; }
+.ac-modal textarea { width:100%; box-sizing:border-box; background:#1b1b1b; color:#ddd;
+                     border:1px solid #555; border-radius:6px; padding:10px; font-family:monospace; font-size:12px; }
+.ac-modal input[type=text] { background:#1b1b1b; color:#ddd; border:1px solid #555; border-radius:6px; padding:6px 10px; }
+.ac-field { margin-bottom:12px; }
+.ac-field label { display:block; font-size:12px; opacity:0.75; margin-bottom:4px; }
+.ac-name-input { width:280px; }
+.ac-desc-input { width:100%; box-sizing:border-box; }
+</style>
+
+<div class="ua-subtabs">
+  <div class="ua-subtab active" data-tab="skills"><i class="fa fa-graduation-cap" style="color:#ff8c2f;"></i> Agent Skills</div>
+  <div class="ua-subtab" data-tab="memory"><i class="fa fa-database" style="color:#4a90d9;"></i> Agent Memory</div>
+</div>
+
+<div class="ac-pane active" data-tab="skills">
+<blockquote class="inline_help">
+Playbooks the agent can fetch via skills_list/skills_get (also exposed as MCP resources
+at unraid-agent://skills/*). Default skills ship with the plugin and refresh on update;
+custom skills are yours. Export any skill as SKILL.md for direct install into your IDE's
+skills folder.
+</blockquote>
+
+<div class="ac-toolbar"><button class="ac-btn-new" id="ac-new-skill">+ New Skill</button></div>
+
+<div class="ua-grid">
+<?php foreach ($mergedSkills as $sk): ?>
+  <div class="ua-card ac-skill-card"
+       data-name="<?=htmlspecialchars($sk['name'])?>"
+       data-source="<?=$sk['source']?>"
+       data-file="<?=htmlspecialchars($sk['file'])?>">
+    <div class="ua-card-top">
+      <i class="fa fa-graduation-cap ua-card-icon-fa" style="color:#ff8c2f;"></i>
+      <span class="ac-badge ac-badge-<?=$sk['source']?>"><?=$sk['source'] === 'default' ? 'Default' : 'Custom'?></span>
+    </div>
+    <div class="ua-card-name"><?=htmlspecialchars($sk['name'])?></div>
+    <div class="ua-card-image"><?=htmlspecialchars(mb_strimwidth($sk['description'], 0, 90, '…'))?></div>
+    <div class="ua-card-status"><?=$sk['mtime'] ? date('Y-m-d H:i', $sk['mtime']) : ''?></div>
+    <div class="ua-card-chips">
+      <span class="ua-chip ua-chip-global ac-export" data-name="<?=htmlspecialchars($sk['name'])?>" data-source="<?=$sk['source']?>" title="Download as SKILL.md">Export</span>
+    </div>
+  </div>
+<?php endforeach; ?>
+<?php if (empty($mergedSkills)): ?>
+  <p><em>No skills found — start the MCP server once so it syncs the default pack, then reload this page.</em></p>
+<?php endif; ?>
+</div>
+</div>
+
+<div class="ac-pane" data-tab="memory">
+<blockquote class="inline_help">
+Facts and notes agents can read via memory_list/memory_get. Each connected client gets
+its own scope; the defaults scope holds the auto-generated server profile. Writes from
+agents require Allow Memory Write in Permissions → System.
+</blockquote>
+
+<div class="ac-toolbar"><button class="ac-btn-new" id="ac-new-memory">+ New Memory</button></div>
+
+<?php foreach ($memoryByScope as $scope => $entries): ?>
+<div class="ac-scope">
+  <div class="ac-scope-title"><i class="fa fa-database" style="color:#4a90d9;"></i> <?=htmlspecialchars($scope)?></div>
+  <div class="ua-grid">
+  <?php foreach ($entries as $m): ?>
+    <div class="ua-card ac-memory-card" data-scope="<?=htmlspecialchars($scope)?>" data-name="<?=htmlspecialchars($m['name'])?>" data-file="<?=htmlspecialchars($m['file'])?>">
+      <div class="ua-card-top">
+        <i class="fa fa-sticky-note ua-card-icon-fa" style="color:#4a90d9;"></i>
+        <span class="ua-dot" style="background:#4a90d9;"></span>
+      </div>
+      <div class="ua-card-name"><?=htmlspecialchars($m['name'])?></div>
+      <div class="ua-card-status"><?=$m['mtime'] ? date('Y-m-d H:i', $m['mtime']) : ''?></div>
+      <div class="ua-card-chips"><span class="ua-chip ua-chip-global"><?=htmlspecialchars($scope)?></span></div>
+    </div>
+  <?php endforeach; ?>
+  </div>
+</div>
+<?php endforeach; ?>
+<?php if (empty($memoryByScope)): ?>
+  <p><em>No memory entries yet — the server profile is generated on first daemon start, and agents can write their own once Allow Memory Write is enabled.</em></p>
+<?php endif; ?>
+</div>
+
+<div class="ua-modal-overlay" id="ac-modal" style="display:none;">
+  <div class="ac-modal ua-modal" style="width:720px;">
+    <div class="ua-modal-head">
+      <i class="fa fa-graduation-cap" style="font-size:34px;color:#ff8c2f;" id="ac-modal-icon"></i>
+      <span class="ua-modal-name" id="ac-modal-title">Edit</span>
+    </div>
+    <div class="ac-field" id="ac-field-name">
+      <label>Name (lowercase letters, digits, hyphens)</label>
+      <input type="text" class="ac-name-input" id="ac-name">
+    </div>
+    <div class="ac-field" id="ac-field-desc">
+      <label>Description (what it does and when to use it — the trigger text)</label>
+      <input type="text" class="ac-desc-input" id="ac-desc">
+    </div>
+    <div class="ac-field">
+      <label>Content (Markdown)</label>
+      <textarea id="ac-content" rows="16"></textarea>
+    </div>
+    <div class="ua-modal-err" id="ac-err"></div>
+    <div class="ua-modal-foot">
+      <button class="ua-btn" id="ac-delete" style="border-color:#e74c3c;color:#e74c3c;">Delete</button>
+      <button class="ua-btn" id="ac-cancel">Cancel</button>
+      <button class="ua-btn ua-btn-primary" id="ac-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+$(function() {
+    var KEY = 'unraid-agent-content-tab';
+    function activate(t) {
+        $('.ua-subtab').removeClass('active');
+        $('.ac-pane[data-tab]').removeClass('active');
+        $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
+        $('.ac-pane[data-tab="' + t + '"]').addClass('active');
+    }
+    var saved = localStorage.getItem(KEY);
+    if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) { activate(saved); }
+    $('.ua-subtab').on('click', function() {
+        var t = $(this).data('tab');
+        activate(t);
+        localStorage.setItem(KEY, t);
+    });
+
+    var cur = null;
+
+    function openModal(kind, data) {
+        cur = kind;
+        var isSkill = (kind === 'skill');
+        $('#ac-modal-title').text(data.title || (isSkill ? 'Edit Skill' : 'Edit Memory'));
+        $('#ac-modal-icon').attr('class', 'fa ' + (isSkill ? 'fa-graduation-cap' : 'fa-sticky-note'))
+            .css({fontSize: '34px', color: isSkill ? '#ff8c2f' : '#4a90d9'});
+        $('#ac-name').val(data.name || '').prop('disabled', !data.isNew && !isSkill);
+        $('#ac-desc').val(data.description || '');
+        $('#ac-field-desc').toggle(isSkill);
+        $('#ac-field-name label').text(isSkill
+            ? 'Name (lowercase letters, digits, hyphens)'
+            : 'Name (lowercase letters, digits, hyphens) — scope: ' + (data.scope || 'default'));
+        $('#ac-content').val(data.content || '');
+        $('#ac-delete').toggle(!data.isNew && (isSkill ? data.source === 'custom' : data.scope !== 'defaults'));
+        $('#ac-err').text('');
+        cur.data = data;
+        $('#ac-modal').fadeIn(120);
+    }
+    function closeModal() { $('#ac-modal').fadeOut(120); cur = null; }
+
+    function loadFile(file, cb) {
+        $.post('/plugins/unraid-agent/php/read-content.php', {csrf_token: '<?=$var['csrf_token']?>', file: file}, function(resp) {
+            cb(resp && resp.ok ? resp.content : '');
+        }, 'json');
+    }
+
+    $(document).on('click', '.ac-skill-card', function(e) {
+        if ($(e.target).hasClass('ac-export')) return;
+        var card = $(this);
+        loadFile(card.data('file'), function(content) {
+            openModal('skill', {name: card.data('name'), source: card.data('source'), file: card.data('file'), content: content, isNew: false});
+        });
+    });
+    $(document).on('click', '.ac-memory-card', function() {
+        var card = $(this);
+        loadFile(card.data('file'), function(content) {
+            openModal('memory', {name: card.data('name'), scope: card.data('scope'), file: card.data('file'), content: content, isNew: false});
+        });
+    });
+    $(document).on('click', '.ac-export', function(e) {
+        e.stopPropagation();
+        var el = $(this);
+        window.location = '/plugins/unraid-agent/php/export-skill.php?name=' + encodeURIComponent(el.data('name')) + '&source=' + encodeURIComponent(el.data('source'));
+    });
+    $('#ac-new-skill').on('click', function() { openModal('skill', {isNew: true, source: 'custom', title: 'New Skill'}); });
+    $('#ac-new-memory').on('click', function() { openModal('memory', {isNew: true, scope: 'custom', title: 'New Memory'}); });
+
+    $('#ac-save').on('click', function() {
+        if (!cur) return;
+        var isSkill = (cur === 'skill');
+        var payload = {
+            csrf_token: '<?=$var['csrf_token']?>',
+            name: $('#ac-name').val(),
+            content: $('#ac-content').val()
+        };
+        if (isSkill) payload.description = $('#ac-desc').val();
+        if (!isSkill) payload.scope = cur.data.scope || 'custom';
+        $('#ac-err').text('Saving…');
+        $.post('/plugins/unraid-agent/php/save-content.php', $.extend(payload, {kind: cur}), function(resp) {
+            if (resp && resp.ok) { location.reload(); }
+            else { $('#ac-err').text((resp && resp.error) ? resp.error : 'Save failed'); }
+        }, 'json').fail(function(xhr) {
+            var msg = 'Save failed (' + xhr.status + ')';
+            try { var r = JSON.parse(xhr.responseText); if (r.error) msg = r.error; } catch(e) {}
+            $('#ac-err').text(msg);
+        });
+    });
+    $('#ac-delete').on('click', function() {
+        if (!cur || !cur.data.file) return;
+        if (!confirm('Delete this entry?')) return;
+        $.post('/plugins/unraid-agent/php/save-content.php', {
+            csrf_token: '<?=$var['csrf_token']?>',
+            kind: cur,
+            action: 'delete',
+            name: $('#ac-name').val(),
+            scope: cur.data.scope || ''
+        }, function(resp) {
+            if (resp && resp.ok) { location.reload(); }
+            else { $('#ac-err').text((resp && resp.error) ? resp.error : 'Delete failed'); }
+        }, 'json');
+    });
+    $('#ac-cancel').on('click', closeModal);
+    $('#ac-modal').on('click', function(e) { if (e.target === this) closeModal(); });
+});
+</script>
