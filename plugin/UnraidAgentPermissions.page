@@ -493,7 +493,7 @@ foreach ($toolGroups as $gid => $ginfo):
 </div>
 
 <style>
-.ua-tools-wrap { width:55%; min-width:480px; margin:0 auto; }
+.ua-tools-wrap { width:45%; min-width:460px; margin:0 auto; }
 .ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
 .ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
 .ua-domain-head:hover { background:rgba(128,128,128,0.08); }
