@@ -32,7 +32,9 @@ $fieldsHtml
 };
 
 $field = function($label, $selectHtml, $help = '') {
-    $h = $help ? "<blockquote class=\"inline_help\">$help</blockquote>" : '';
+    // Match the main tab's markdown structure exactly: blank lines around
+    // every entry — required for definition-list parsing (dt/dd pairs).
+    $h = $help ? "\n<blockquote class=\"inline_help\">$help</blockquote>\n" : '';
     return "_($label)_:\n: $selectHtml\n$h\n";
 };
 ?>
