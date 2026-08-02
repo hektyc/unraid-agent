@@ -385,6 +385,15 @@ Permits agents to write and delete their own memory entries via
 memory_write/memory_delete. Memory reads are always allowed.
 </blockquote>
 
+<dl><dt>Anonymize Logs</dt><dd><?=$yesno('ANONYMIZE_LOGS')?></dd></dl>
+
+<blockquote class="inline_help">
+When enabled, log content returned by logs_read and plugin_logs is anonymized
+before reaching the AI model: the server hostname becomes "Tower", and IP
+addresses and MAC addresses are replaced with consistent tokens ([ip1], [mac1]).
+Use this when sharing log output with external/cloud AI models.
+</blockquote>
+
 <?php $formClose(); ?>
 </div>
 

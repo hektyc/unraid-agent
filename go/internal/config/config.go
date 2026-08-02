@@ -35,6 +35,7 @@ type Config struct {
 	AllowVmReboot         bool
 	AllowSkillsWrite      bool
 	AllowMemoryWrite      bool
+	AnonymizeLogs         bool
 	AllowPluginInstall    bool
 	AllowPluginRemove     bool
 	AllowSettingUpdates   bool
@@ -89,6 +90,7 @@ func Load() (*Config, error) {
 	cfg.AllowVmReboot = getEnvBool("ALLOW_VM_REBOOT", false)
 	cfg.AllowSkillsWrite = getEnvBool("ALLOW_SKILLS_WRITE", false)
 	cfg.AllowMemoryWrite = getEnvBool("ALLOW_MEMORY_WRITE", false)
+	cfg.AnonymizeLogs = getEnvBool("ANONYMIZE_LOGS", false)
 	cfg.AllowPluginInstall = getEnvBool("ALLOW_PLUGIN_INSTALL", false)
 	cfg.AllowPluginRemove = getEnvBool("ALLOW_PLUGIN_REMOVE", false)
 	cfg.AllowSettingUpdates = getEnvBool("ALLOW_SETTING_UPDATES", false)
