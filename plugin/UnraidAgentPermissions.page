@@ -99,11 +99,12 @@ $chips = function($entityPerms, $actions) {
 .ua-modal-head img { width:44px; height:44px; object-fit:contain; }
 .ua-modal-head .fa { font-size:40px; }
 .ua-modal-name { font-size:16px; font-weight:bold; word-break:break-all; }
-.ua-perm-row { display:flex; justify-content:center; align-items:center; gap:18px; padding:8px 0;
-               border-bottom:1px solid rgba(128,128,128,0.2); }
-.ua-perm-row:last-of-type { border-bottom:none; }
-.ua-perm-label { width:110px; text-align:right; font-size:13px; flex:none; }
-.ua-perm-select { width:170px !important; max-width:none; flex:none; }
+.ua-perm-row { display:flex; justify-content:center; padding:3px 0; }
+.ua-perm-pair { display:flex; align-items:center; gap:14px; padding:7px 2px 9px;
+                border-bottom:1px solid rgba(128,128,128,0.25); }
+.ua-perm-row:last-of-type .ua-perm-pair { border-bottom:none; }
+.ua-perm-label { width:80px; text-align:right; font-size:13px; flex:none; }
+.ua-perm-select { width:auto !important; min-width:150px; max-width:180px; flex:none; }
 .ua-modal-foot { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
 .ua-btn { padding:6px 16px; border-radius:5px; border:1px solid #777; background:#333; color:#eee; cursor:pointer; }
 .ua-btn:hover { border-color:#ff8c2f; }
@@ -443,13 +444,13 @@ $(function() {
             $.each(ACTIONS[cur.type], function(i, pair) {
                 var action = pair[0], label = pair[1];
                 var val = cur.perms[action] || 'inherit';
-                rows += '<div class="ua-perm-row">' +
+                rows += '<div class="ua-perm-row"><div class="ua-perm-pair">' +
                     '<span class="ua-perm-label">' + label + '</span>' +
                     '<select class="ua-perm-select" data-action="' + action + '">' +
                     '<option value="inherit"' + (val === 'inherit' ? ' selected' : '') + '>Use Global</option>' +
                     '<option value="allow"' + (val === 'allow' ? ' selected' : '') + '>Allow</option>' +
                     '<option value="deny"' + (val === 'deny' ? ' selected' : '') + '>Deny</option>' +
-                    '</select></div>';
+                    '</select></div></div>';
             });
             $('#ua-modal-rows').html(rows);
             $('#ua-modal-save').show();
