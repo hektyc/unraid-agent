@@ -197,7 +197,7 @@ generate the client configuration snippet.
 Paste this into your MCP client's configuration — the MCP / AI-assistant section of your
 IDE's settings, or an <code>mcp.json</code> / <code>config.json</code> file your client uses:
 </div>
-<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:12px;line-height:1.5;width:70%;max-height:240px;margin:0 auto 14px;overflow:auto;text-align:left;box-sizing:border-box;"><?=htmlspecialchars($clientConfig)?></pre>
+<pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:12px;line-height:1.5;max-width:640px;max-height:240px;margin:0 auto 14px;overflow:auto;text-align:left;box-sizing:border-box;"><?=htmlspecialchars($clientConfig)?></pre>
 <?php endif; ?>
 
 <?php if ($stdioMode && $stdioEnable): ?>
