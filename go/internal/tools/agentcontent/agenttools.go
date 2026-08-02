@@ -177,15 +177,28 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 		Name:        "agent_page_check",
 		Description: "Diagnostic: checksum and inspect the installed UnraidAgentPermissions.page on disk (md5, size, and the bytes around the tools pane tag) to verify file integrity. Read-only.",
 		ReadOnly:    true,
+		Params:      map[string]string{"file": "string", "needle": "string"},
 		Handler: func(ctx context.Context, args map[string]interface{}) (string, error) {
 			path := "/usr/local/emhttp/plugins/unraid-agent/UnraidAgentPermissions.page"
+			if f, ok := args["file"].(string); ok && f != "" {
+				// Whitelist: only files under /usr/local/emhttp/plugins/
+				clean := filepath.Clean(f)
+				if !strings.HasPrefix(clean, "/usr/local/emhttp/plugins/") {
+					return "", fmt.Errorf("file must be under /usr/local/emhttp/plugins/")
+				}
+				path = clean
+			}
+			needle := `data-tab="tools"`
+			if n, ok := args["needle"].(string); ok && n != "" {
+				needle = n
+			}
 			data, err := os.ReadFile(path)
 			if err != nil {
 				return "", fmt.Errorf("read page file: %w", err)
 			}
 			sum := md5.Sum(data)
-			idx := bytes.Index(data, []byte(`data-tab="tools"`))
-			region := "(tag not found)"
+			idx := bytes.Index(data, []byte(needle))
+			region := "(needle not found)"
 			if idx >= 0 {
 				start := idx - 150
 				if start < 0 {
@@ -197,7 +210,7 @@ func RegisterTools(s *mcp.Server, cfg *config.Config) {
 				}
 				region = string(data[start:end])
 			}
-			return fmt.Sprintf("md5=%x\nsize=%d bytes\nexpected_md5(v2026.08.02.2207)=e4b5ee0eb44d2b4cd1a554dfbdd6907e\n--- region ---\n%s", sum, len(data), region), nil
+			return fmt.Sprintf("md5=%x\nsize=%d bytes\nfile=%s\n--- region ---\n%s", sum, len(data), path, region), nil
 		},
 	})
 }
