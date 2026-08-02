@@ -99,11 +99,11 @@ $chips = function($entityPerms, $actions) {
 .ua-modal-head img { width:44px; height:44px; object-fit:contain; }
 .ua-modal-head .fa { font-size:40px; }
 .ua-modal-name { font-size:16px; font-weight:bold; word-break:break-all; }
-.ua-perm-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0;
-               border-bottom:1px solid rgba(128,128,128,0.2); gap:16px; }
+.ua-perm-row { display:flex; justify-content:center; align-items:center; gap:18px; padding:8px 0;
+               border-bottom:1px solid rgba(128,128,128,0.2); }
 .ua-perm-row:last-of-type { border-bottom:none; }
-.ua-perm-label { font-size:13px; white-space:nowrap; }
-.ua-perm-select { width:auto !important; min-width:150px; max-width:200px; flex-shrink:0; }
+.ua-perm-label { width:110px; text-align:right; font-size:13px; flex:none; }
+.ua-perm-select { width:170px !important; max-width:none; flex:none; }
 .ua-modal-foot { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
 .ua-btn { padding:6px 16px; border-radius:5px; border:1px solid #777; background:#333; color:#eee; cursor:pointer; }
 .ua-btn:hover { border-color:#ff8c2f; }
