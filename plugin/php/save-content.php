@@ -7,8 +7,6 @@ include '/usr/local/emhttp/plugins/unraid-agent/php/common.php';
 
 header('Content-Type: application/json');
 
-ua_csrf_check();
-
 $base = '/boot/config/plugins/unraid-agent';
 $kind = $_POST['kind'] ?? '';
 $action = $_POST['action'] ?? 'save';

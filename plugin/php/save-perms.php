@@ -9,8 +9,6 @@ include '/usr/local/emhttp/plugins/unraid-agent/php/common.php';
 header('Content-Type: application/json');
 
 // CSRF validation against var.ini
-ua_csrf_check();
-
 $type = $_POST['entity_type'] ?? '';
 $entity = trim($_POST['entity'] ?? '');
 $permsRaw = $_POST['perms'] ?? '{}';
