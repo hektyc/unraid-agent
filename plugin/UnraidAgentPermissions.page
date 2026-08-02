@@ -30,6 +30,7 @@ $formClose = function() {
 $perms = ua_load_perms();
 $containers = ua_list_containers();
 $vms = ua_list_vms();
+$plugins = ua_list_plugins();
 
 $containerActions = [
     'start' => 'Start', 'stop' => 'Stop', 'restart' => 'Restart',
@@ -39,6 +40,7 @@ $vmActions = [
     'start' => 'Start', 'stop' => 'Stop', 'pause' => 'Pause', 'resume' => 'Resume',
     'force_stop' => 'Force Stop', 'reboot' => 'Reboot', 'reset' => 'Reset',
 ];
+$pluginActions = ['remove' => 'Remove'];
 
 $stateDot = function($state) {
     $s = strtolower($state);
@@ -287,7 +289,61 @@ immediately — no Apply or restart required.
 
 <dl><dt>Allow Plugin Remove</dt><dd><?=$yesno('ALLOW_PLUGIN_REMOVE')?></dd></dl>
 
+<blockquote class="inline_help">
+Global default for removing plugins. Per-plugin overrides below take precedence.
+Note: unraid-agent itself is protected — it can never be removed via the MCP
+server (use the WebGUI Plugins page if that is ever intended).
+</blockquote>
+
 <?php $formClose(); ?>
+
+<div class="title"><span class="left"><i class="title fa fa-plug"></i>Per-Plugin Permissions</span></div>
+<blockquote class="inline_help">
+Click a plugin card to set its Remove permission: Use Global, Allow, or Deny.
+Overrides take effect immediately. Plugin installs stay under the global
+Allow Plugin Install toggle — they can't be granted per-plugin.
+</blockquote>
+<div class="ua-grid">
+<?php foreach ($plugins as $p):
+    $name = $p['name'] ?? '?';
+    $iconUrl = ua_plugin_icon_url($name);
+    $entPerms = $perms['plugins'][$name] ?? [];
+    $permsJson = htmlspecialchars(json_encode($entPerms), ENT_QUOTES);
+    $protected = ($name === 'unraid-agent');
+?>
+  <div class="ua-card" data-type="plugins" data-entity="<?=htmlspecialchars($name)?>" data-icon="<?=htmlspecialchars($iconUrl)?>" data-perms="<?=$permsJson?>">
+    <div class="ua-card-top">
+      <?php if ($iconUrl): ?>
+      <img class="ua-card-icon" src="<?=htmlspecialchars($iconUrl)?>" onerror="this.outerHTML='<i class=\'fa fa-plug ua-card-icon-fa\' style=\'color:#2ecc71;\'></i>'">
+      <?php else: ?>
+      <i class="fa fa-plug ua-card-icon-fa" style="color:#2ecc71;"></i>
+      <?php endif; ?>
+      <?php if ($protected): ?>
+      <span class="ua-chip" style="border-color:#ff8c2f;color:#ff8c2f;" title="Protected: cannot be removed via the MCP server">Protected</span>
+      <?php else: ?>
+      <span class="ua-dot" style="background:#2ecc71;" title="Installed"></span>
+      <?php endif; ?>
+    </div>
+    <div class="ua-card-name"><?=htmlspecialchars($name)?></div>
+    <div class="ua-card-image">v<?=htmlspecialchars($p['version'] ?? '')?></div>
+    <div class="ua-card-status">
+      Installed
+      <?php if (!empty($p['hasApiModule'])): ?><span class="ua-chip ua-chip-global" title="Has API module">API</span><?php endif; ?>
+      <?php if (!empty($p['hasCliModule'])): ?><span class="ua-chip ua-chip-global" title="Has CLI module">CLI</span><?php endif; ?>
+    </div>
+    <div class="ua-card-chips">
+      <?php if ($protected): ?>
+      <span class="ua-chip" style="border-color:#95a5a6;color:#95a5a6;" title="Removal via the MCP server is always blocked">Rem ✗</span>
+      <?php else: ?>
+      <?=$chips($entPerms, $pluginActions)?>
+      <?php endif; ?>
+    </div>
+  </div>
+<?php endforeach; ?>
+<?php if (empty($plugins)): ?>
+  <p><em>No plugins detected (is the Unraid API reachable with the configured API key?)</em></p>
+<?php endif; ?>
+</div>
 </div>
 
 <div class="ua-pane" data-tab="system">
@@ -353,8 +409,10 @@ $(function() {
 
     var ACTIONS = {
         containers: [['start','Start'],['stop','Stop'],['restart','Restart'],['pause','Pause'],['unpause','Unpause'],['remove','Remove'],['update','Update']],
-        vms: [['start','Start'],['stop','Stop'],['pause','Pause'],['resume','Resume'],['force_stop','Force Stop'],['reboot','Reboot'],['reset','Reset']]
+        vms: [['start','Start'],['stop','Stop'],['pause','Pause'],['resume','Resume'],['force_stop','Force Stop'],['reboot','Reboot'],['reset','Reset']],
+        plugins: [['remove','Remove']]
     };
+    var SELF_PROTECTED = 'unraid-agent';
     var cur = null;
 
     function openModal(card) {
@@ -364,23 +422,38 @@ $(function() {
             icon: card.data('icon'),
             perms: card.data('perms') || {}
         };
+        var isSelf = (cur.type === 'plugins' && cur.entity === SELF_PROTECTED);
         $('#ua-modal-name').text(cur.entity);
         $('#ua-modal-icon').html(cur.icon
             ? '<img src="' + cur.icon + '" style="width:44px;height:44px;object-fit:contain;">'
-            : '<i class="fa ' + (cur.type === 'vms' ? 'fa-desktop' : 'fa-cubes') + '" style="font-size:40px;color:' + (cur.type === 'vms' ? '#9b59b6' : '#0db7ed') + ';"></i>');
-        var rows = '';
-        $.each(ACTIONS[cur.type], function(i, pair) {
-            var action = pair[0], label = pair[1];
-            var val = cur.perms[action] || 'inherit';
-            rows += '<div class="ua-perm-row">' +
-                '<span class="ua-perm-label">' + label + '</span>' +
-                '<select class="ua-perm-select" data-action="' + action + '">' +
-                '<option value="inherit"' + (val === 'inherit' ? ' selected' : '') + '>Use Global</option>' +
-                '<option value="allow"' + (val === 'allow' ? ' selected' : '') + '>Allow</option>' +
-                '<option value="deny"' + (val === 'deny' ? ' selected' : '') + '>Deny</option>' +
-                '</select></div>';
-        });
-        $('#ua-modal-rows').html(rows);
+            : '<i class="fa ' + (cur.type === 'vms' ? 'fa-desktop' : (cur.type === 'plugins' ? 'fa-plug' : 'fa-cubes')) + '" style="font-size:40px;color:' + (cur.type === 'vms' ? '#9b59b6' : (cur.type === 'plugins' ? '#2ecc71' : '#0db7ed')) + ';"></i>');
+
+        if (isSelf) {
+            $('#ua-modal-rows').html(
+                '<div style="padding:12px 4px;line-height:1.6;">' +
+                '<b>Protected plugin.</b><br>' +
+                'unraid-agent can never be removed through the MCP server — that would shut down ' +
+                'this very channel. If removal is ever intended, use the Unraid WebGUI Plugins page.' +
+                '</div>');
+            $('#ua-modal-save').hide();
+            $('#ua-modal-clear').hide();
+        } else {
+            var rows = '';
+            $.each(ACTIONS[cur.type], function(i, pair) {
+                var action = pair[0], label = pair[1];
+                var val = cur.perms[action] || 'inherit';
+                rows += '<div class="ua-perm-row">' +
+                    '<span class="ua-perm-label">' + label + '</span>' +
+                    '<select class="ua-perm-select" data-action="' + action + '">' +
+                    '<option value="inherit"' + (val === 'inherit' ? ' selected' : '') + '>Use Global</option>' +
+                    '<option value="allow"' + (val === 'allow' ? ' selected' : '') + '>Allow</option>' +
+                    '<option value="deny"' + (val === 'deny' ? ' selected' : '') + '>Deny</option>' +
+                    '</select></div>';
+            });
+            $('#ua-modal-rows').html(rows);
+            $('#ua-modal-save').show();
+            $('#ua-modal-clear').show();
+        }
         $('#ua-modal-err').text('');
         $('#ua-modal').fadeIn(120);
     }

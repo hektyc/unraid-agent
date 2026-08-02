@@ -21,7 +21,7 @@ $type = $_POST['entity_type'] ?? '';
 $entity = trim($_POST['entity'] ?? '');
 $permsRaw = $_POST['perms'] ?? '{}';
 
-if (!in_array($type, ['containers', 'vms'], true)) {
+if (!in_array($type, ['containers', 'vms', 'plugins'], true)) {
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => 'Invalid entity_type']);
     exit;
@@ -39,13 +39,24 @@ if (!is_array($perms)) {
     exit;
 }
 
-$allowedActions = ($type === 'containers')
-    ? ['start', 'stop', 'restart', 'pause', 'unpause', 'remove', 'update']
-    : ['start', 'stop', 'pause', 'resume', 'force_stop', 'reboot', 'reset'];
+$allowedActionsMap = [
+    'containers' => ['start', 'stop', 'restart', 'pause', 'unpause', 'remove', 'update'],
+    'vms'        => ['start', 'stop', 'pause', 'resume', 'force_stop', 'reboot', 'reset'],
+    'plugins'    => ['remove'],
+];
+$allowedActions = $allowedActionsMap[$type];
 $allowedValues = ['inherit', 'global', 'allow', 'deny'];
 
+// Self-removal is guarded at every layer: the unraid-agent plugin cannot
+// carry a "remove: allow" override (the daemon also hard-blocks it).
+if ($type === 'plugins' && $entity === 'unraid-agent') {
+    http_response_code(400);
+    echo json_encode(['ok' => false, 'error' => 'unraid-agent is protected and cannot take remove overrides']);
+    exit;
+}
+
 // Validate the entity exists in the live list (prevents arbitrary key injection)
-$live = ($type === 'containers') ? ua_list_containers() : ua_list_vms();
+$live = ($type === 'containers') ? ua_list_containers() : (($type === 'vms') ? ua_list_vms() : ua_list_plugins());
 $liveNames = [];
 foreach ($live as $item) {
     if ($type === 'containers') {

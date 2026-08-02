@@ -81,13 +81,18 @@ function ua_list_vms() {
     return ($d && isset($d['vms']['domains'])) ? $d['vms']['domains'] : [];
 }
 
+function ua_list_plugins() {
+    $d = ua_graphql('query { plugins { name version hasApiModule hasCliModule } }');
+    return ($d && isset($d['plugins'])) ? $d['plugins'] : [];
+}
+
 function ua_perms_path() {
     return '/boot/config/plugins/unraid-agent/perms.json';
 }
 
 function ua_load_perms() {
     $f = ua_perms_path();
-    $empty = ['containers' => [], 'vms' => []];
+    $empty = ['containers' => [], 'vms' => [], 'plugins' => []];
     if (!file_exists($f)) {
         return $empty;
     }
@@ -123,6 +128,15 @@ function ua_vm_icon_url($name) {
         if (is_file($p)) {
             return '/plugins/unraid-agent/php/icon.php?type=vm&name=' . rawurlencode($name);
         }
+    }
+    return '';
+}
+
+// Plugin icon: plgman convention <plugin>/<plugin>.png, via the icon proxy.
+function ua_plugin_icon_url($name) {
+    $p = "/usr/local/emhttp/plugins/$name/$name.png";
+    if (is_file($p)) {
+        return '/plugins/unraid-agent/php/icon.php?type=plugin&name=' . rawurlencode($name);
     }
     return '';
 }
