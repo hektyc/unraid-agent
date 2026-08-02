@@ -33,6 +33,8 @@ type Config struct {
 	AllowVmPause          bool
 	AllowVmResume         bool
 	AllowVmReboot         bool
+	AllowSkillsWrite      bool
+	AllowMemoryWrite      bool
 	AllowPluginInstall    bool
 	AllowPluginRemove     bool
 	AllowSettingUpdates   bool
@@ -85,6 +87,8 @@ func Load() (*Config, error) {
 	cfg.AllowVmPause = getEnvBool("ALLOW_VM_PAUSE", false)
 	cfg.AllowVmResume = getEnvBool("ALLOW_VM_RESUME", false)
 	cfg.AllowVmReboot = getEnvBool("ALLOW_VM_REBOOT", false)
+	cfg.AllowSkillsWrite = getEnvBool("ALLOW_SKILLS_WRITE", false)
+	cfg.AllowMemoryWrite = getEnvBool("ALLOW_MEMORY_WRITE", false)
 	cfg.AllowPluginInstall = getEnvBool("ALLOW_PLUGIN_INSTALL", false)
 	cfg.AllowPluginRemove = getEnvBool("ALLOW_PLUGIN_REMOVE", false)
 	cfg.AllowSettingUpdates = getEnvBool("ALLOW_SETTING_UPDATES", false)
@@ -152,6 +156,10 @@ func (c *Config) PermissionValue(name string) bool {
 		return c.AllowVmResume
 	case "ALLOW_VM_REBOOT":
 		return c.AllowVmReboot
+	case "ALLOW_SKILLS_WRITE":
+		return c.AllowSkillsWrite
+	case "ALLOW_MEMORY_WRITE":
+		return c.AllowMemoryWrite
 	case "ALLOW_PLUGIN_INSTALL":
 		return c.AllowPluginInstall
 	case "ALLOW_PLUGIN_REMOVE":

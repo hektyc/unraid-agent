@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hektyc/unraid-mcp-server/internal/agentcontent"
 	"github.com/hektyc/unraid-mcp-server/internal/client"
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/logger"
@@ -30,6 +31,9 @@ type ToolDef struct {
 	Query       string
 	Params      map[string]string
 	Handler     ToolHandler
+	// ReadOnly marks tools that only read state. Read-only tools skip the
+	// permission gate entirely, even when they use a Handler.
+	ReadOnly bool
 }
 
 type Server struct {
@@ -43,6 +47,12 @@ type Server struct {
 	// ecache caches entity ID->name resolution for the override engine.
 	PermsPath string
 	ecache    entityCache
+
+	// ConfigDir is the plugin config directory (skills/, memory/ live here).
+	ConfigDir string
+	// clientScope is the sanitized client name from initialize clientInfo,
+	// used as the default memory scope for this connection.
+	clientScope string
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -70,15 +80,25 @@ func (s *Server) GraphQLQuery(ctx context.Context, query string, variables map[s
 func (s *Server) dispatch(ctx context.Context, req *JSONRPCRequest) *JSONRPCResponse {
 	switch req.Method {
 	case "initialize":
+		// Capture the client name for per-client memory scoping.
+		if ci, ok := req.Params["clientInfo"].(map[string]interface{}); ok {
+			if n, ok := ci["name"].(string); ok {
+				s.mu.Lock()
+				s.clientScope = agentcontent.SanitizeScope(n)
+				s.mu.Unlock()
+			}
+		}
 		return NewSuccessResponse(req.ID, map[string]interface{}{
 			"protocolVersion": protocolVersion,
 			"capabilities": map[string]interface{}{
-				"tools": map[string]interface{}{},
+				"tools":     map[string]interface{}{},
+				"resources": map[string]interface{}{},
 			},
 			"serverInfo": map[string]interface{}{
 				"name":    "unraid-agent",
 				"version": ServerVersion,
 			},
+			"instructions": agentcontent.Instructions(),
 		})
 
 	case "ping":
@@ -91,6 +111,15 @@ func (s *Server) dispatch(ctx context.Context, req *JSONRPCRequest) *JSONRPCResp
 
 	case "tools/call":
 		return s.callTool(ctx, req)
+
+	case "resources/list":
+		return NewSuccessResponse(req.ID, map[string]interface{}{
+			"resources": s.listResources(),
+		})
+
+	case "resources/read":
+		uri, _ := req.Params["uri"].(string)
+		return s.readResource(req.ID, uri)
 
 	default:
 		// Notifications (no id) get no response
@@ -189,6 +218,76 @@ func toolErrorResult(id interface{}, err error) *JSONRPCResponse {
 			"isError": true,
 		},
 	}
+}
+
+// MemoryScope returns the current connection's memory scope (sanitized
+// client name from initialize, or "default").
+func (s *Server) MemoryScope() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if s.clientScope == "" {
+		return "default"
+	}
+	return s.clientScope
+}
+
+// listResources exposes skills and memory entries as MCP resources.
+func (s *Server) listResources() []map[string]interface{} {
+	var out []map[string]interface{}
+	for _, sk := range agentcontent.ListSkills(s.ConfigDir) {
+		out = append(out, map[string]interface{}{
+			"uri":         "unraid-agent://skills/" + sk.Name,
+			"name":        sk.Name,
+			"description": sk.Description,
+			"mimeType":    "text/markdown",
+		})
+	}
+	for _, m := range agentcontent.ListMemory(s.ConfigDir, s.MemoryScope()) {
+		out = append(out, map[string]interface{}{
+			"uri":         fmt.Sprintf("unraid-agent://memory/%s/%s", m.Scope, m.Name),
+			"name":        m.Name,
+			"description": "memory entry (" + m.Scope + ")",
+			"mimeType":    "text/markdown",
+		})
+	}
+	return out
+}
+
+// readResource returns a resource's content by URI.
+func (s *Server) readResource(id interface{}, uri string) *JSONRPCResponse {
+	const skillsPrefix = "unraid-agent://skills/"
+	const memoryPrefix = "unraid-agent://memory/"
+
+	switch {
+	case strings.HasPrefix(uri, skillsPrefix):
+		name := strings.TrimPrefix(uri, skillsPrefix)
+		sk, err := agentcontent.GetSkill(s.ConfigDir, name)
+		if err != nil {
+			return NewErrorResponse(id, -32602, err.Error())
+		}
+		return NewSuccessResponse(id, map[string]interface{}{
+			"contents": []map[string]interface{}{
+				{"uri": uri, "mimeType": "text/markdown", "text": sk.Content},
+			},
+		})
+
+	case strings.HasPrefix(uri, memoryPrefix):
+		rest := strings.TrimPrefix(uri, memoryPrefix)
+		parts := strings.SplitN(rest, "/", 2)
+		if len(parts) != 2 {
+			return NewErrorResponse(id, -32602, "invalid memory uri (expected unraid-agent://memory/<scope>/<name>)")
+		}
+		m, err := agentcontent.GetMemory(s.ConfigDir, parts[0], parts[1])
+		if err != nil {
+			return NewErrorResponse(id, -32602, err.Error())
+		}
+		return NewSuccessResponse(id, map[string]interface{}{
+			"contents": []map[string]interface{}{
+				{"uri": uri, "mimeType": "text/markdown", "text": m.Content},
+			},
+		})
+	}
+	return NewErrorResponse(id, -32602, "unknown resource uri: "+uri)
 }
 
 // ServeHTTP starts the MCP streamable-http transport.

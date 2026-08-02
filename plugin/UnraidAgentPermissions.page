@@ -371,6 +371,20 @@ Allow Plugin Install toggle — they can't be granted per-plugin.
 
 <dl><dt>Allow Onboarding Actions</dt><dd><?=$yesno('ALLOW_ONBOARDING_ACTIONS')?></dd></dl>
 
+<dl><dt>Allow Skills Write</dt><dd><?=$yesno('ALLOW_SKILLS_WRITE')?></dd></dl>
+
+<blockquote class="inline_help">
+Permits agents to create, update, and delete custom agent skills (playbooks)
+via skills_create/skills_update/skills_delete. Default skills are read-only.
+</blockquote>
+
+<dl><dt>Allow Memory Write</dt><dd><?=$yesno('ALLOW_MEMORY_WRITE')?></dd></dl>
+
+<blockquote class="inline_help">
+Permits agents to write and delete their own memory entries via
+memory_write/memory_delete. Memory reads are always allowed.
+</blockquote>
+
 <?php $formClose(); ?>
 </div>
 
