@@ -33,6 +33,7 @@ var entityActions = map[string]string{
 type entityPermsFile struct {
 	Containers map[string]map[string]string `json:"containers"`
 	VMs        map[string]map[string]string `json:"vms"`
+	Plugins    map[string]map[string]string `json:"plugins"`
 }
 
 type entityCache struct {
@@ -116,8 +117,7 @@ func (s *Server) resolveEntityName(ctx context.Context, kind, id string) string 
 	return s.ecache.names[kind][id]
 }
 
-func (s *Server) refreshEntityCache(ctx context.Context, kind string) {
-	var query string
+func (s *Server) refreshEntityCache(ctx context.Context, kind string) {	var query string
 	if kind == "containers" {
 		query = `query { docker { containers { id names } } }`
 	} else {
@@ -162,4 +162,48 @@ func (s *Server) refreshEntityCache(ctx context.Context, kind string) {
 	s.ecache.names[kind] = fresh
 	s.ecache.at = time.Now()
 	s.ecache.mu.Unlock()
+}
+
+// pluginRemoveOverride evaluates per-plugin "remove" overrides for a
+// plugin_remove call. names arrive directly in the args (no ID resolution
+// needed). Returns ("deny"|"allow"|"") and whether unraid-agent itself was
+// targeted. Verdict rules across the names array: any explicit deny blocks
+// the call; every name explicitly allowed permits it; otherwise "" falls
+// through to the global toggles.
+func (s *Server) pluginRemoveOverride(args map[string]interface{}) (string, bool) {
+	raw, _ := args["names"].([]interface{})
+	if len(raw) == 0 {
+		return "", false
+	}
+
+	perms := s.loadEntityPerms()
+	anyDeny := false
+	allAllow := true
+
+	for _, item := range raw {
+		name, _ := item.(string)
+		if name == "unraid-agent" {
+			return "", true
+		}
+		verdict := ""
+		if ent, ok := perms.Plugins[name]; ok {
+			if v, ok := ent["remove"]; ok && v != "inherit" && v != "global" {
+				verdict = v
+			}
+		}
+		if verdict == "deny" {
+			anyDeny = true
+		}
+		if verdict != "allow" {
+			allAllow = false
+		}
+	}
+
+	if anyDeny {
+		return "deny", false
+	}
+	if allAllow {
+		return "allow", false
+	}
+	return "", false
 }

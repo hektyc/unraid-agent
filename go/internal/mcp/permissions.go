@@ -110,12 +110,32 @@ func (s *Server) checkPermission(ctx context.Context, t *ToolDef, args map[strin
 
 	cfg := s.config
 
+	// Absolute guard (above every toggle including ALLOW_DESTRUCTIVE):
+	// unraid-agent may never be removed through the MCP server — that
+	// would shut down the very channel the agent operates through.
+	// The Unraid WebGUI Plugins page remains the human path for removal.
+	if t.Name == "plugin_remove" {
+		if _, selfRemove := s.pluginRemoveOverride(args); selfRemove {
+			return fmt.Errorf("permission denied: removing unraid-agent via the MCP server is not permitted — remove it from the Unraid WebGUI (Plugins page) if that is ever intended")
+		}
+	}
+
 	if cfg.ReadOnly {
 		return fmt.Errorf("permission denied: %s is a state-changing operation and READ_ONLY mode is enabled (Settings → unRAID Agent → Permissions → Read Only)", t.Name)
 	}
 
 	if cfg.AllowDestructive {
 		return nil
+	}
+
+	// Per-plugin remove overrides (array-aware verdict).
+	if t.Name == "plugin_remove" {
+		switch verdict, _ := s.pluginRemoveOverride(args); verdict {
+		case "deny":
+			return fmt.Errorf("permission denied: %s is explicitly denied for one or more plugins in per-entity settings (Permissions → Plugins)", t.Name)
+		case "allow":
+			return nil
+		}
 	}
 
 	// Per-entity overrides (containers/VMs) beat global toggles in both
