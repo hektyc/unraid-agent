@@ -23,6 +23,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/tools/help"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/key"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/live"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/logs"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/notification"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/oidc"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/onboarding"
@@ -105,6 +106,7 @@ func main() {
 	help.RegisterTools(server, cfg)
 	key.RegisterTools(server, cfg)
 	live.RegisterTools(server, cfg)
+	logs.RegisterTools(server, cfg)
 	notification.RegisterTools(server, cfg)
 	oidc.RegisterTools(server, cfg)
 	onboarding.RegisterTools(server, cfg)
