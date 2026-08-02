@@ -56,6 +56,11 @@ type Config struct {
 	DisableHTTPAuth       bool
 	AllowInsecureTLS      bool
 	EnableStdio           bool
+
+	// Domains maps tool domain name -> enabled. Disabled domains are not
+	// registered, so their tools and schemas never reach clients (token
+	// savings). Missing keys default to enabled.
+	Domains map[string]bool
 }
 
 func Load() (*Config, error) {
