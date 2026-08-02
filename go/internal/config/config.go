@@ -91,6 +91,11 @@ func Load() (*Config, error) {
 	cfg.AllowSkillsWrite = getEnvBool("ALLOW_SKILLS_WRITE", false)
 	cfg.AllowMemoryWrite = getEnvBool("ALLOW_MEMORY_WRITE", false)
 	cfg.AnonymizeLogs = getEnvBool("ANONYMIZE_LOGS", false)
+
+	cfg.Domains = map[string]bool{}
+	for _, d := range ToolDomains {
+		cfg.Domains[d] = getEnvBool("UNRAID_MCP_DOMAIN_"+strings.ToUpper(d), true)
+	}
 	cfg.AllowPluginInstall = getEnvBool("ALLOW_PLUGIN_INSTALL", false)
 	cfg.AllowPluginRemove = getEnvBool("ALLOW_PLUGIN_REMOVE", false)
 	cfg.AllowSettingUpdates = getEnvBool("ALLOW_SETTING_UPDATES", false)
@@ -194,6 +199,26 @@ func (c *Config) PermissionValue(name string) bool {
 		return c.AllowDestructive
 	}
 	return false
+}
+
+// ToolDomains enumerates every registerable tool family. Each maps to a
+// UNRAID_MCP_DOMAIN_<NAME> config toggle in Permissions -> Tool Access.
+var ToolDomains = []string{
+	"array", "connect", "customization", "docker", "health", "help", "key",
+	"live", "logs", "notification", "oidc", "onboarding", "plugin", "rclone",
+	"setting", "system", "user", "vm", "agentcontent",
+}
+
+// IsDomainEnabled reports whether a tool domain is enabled (default true).
+func (c *Config) IsDomainEnabled(name string) bool {
+	if c.Domains == nil {
+		return true
+	}
+	enabled, ok := c.Domains[name]
+	if !ok {
+		return true
+	}
+	return enabled
 }
 
 func getEnv(key, fallback string) string {
