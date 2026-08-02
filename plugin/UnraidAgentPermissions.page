@@ -156,16 +156,16 @@ $chips = function($entityPerms, $actions) {
 </style>
 
 <div class="ua-subtabs">
-  <div class="ua-subtab active" data-tab="master"><i class="fa fa-shield" style="color:#ff8c2f;"></i> Master Switch</div>
-  <div class="ua-subtab" data-tab="array"><i class="fa fa-hdd-o" style="color:#4a90d9;"></i> Array</div>
-  <div class="ua-subtab" data-tab="containers"><i class="fa fa-cubes" style="color:#0db7ed;"></i> Containers</div>
-  <div class="ua-subtab" data-tab="vms"><i class="fa fa-desktop" style="color:#9b59b6;"></i> Virtual Machines</div>
-  <div class="ua-subtab" data-tab="plugins"><i class="fa fa-plug" style="color:#2ecc71;"></i> Plugins</div>
-  <div class="ua-subtab" data-tab="system"><i class="fa fa-cog" style="color:#95a5a6;"></i> System</div>
-  <div class="ua-subtab" data-tab="tools"><i class="fa fa-wrench" style="color:#e67e22;"></i> Tool Access</div>
+  <div class="ua-subtab active" data-uatab="master"><i class="fa fa-shield" style="color:#ff8c2f;"></i> Master Switch</div>
+  <div class="ua-subtab" data-uatab="array"><i class="fa fa-hdd-o" style="color:#4a90d9;"></i> Array</div>
+  <div class="ua-subtab" data-uatab="containers"><i class="fa fa-cubes" style="color:#0db7ed;"></i> Containers</div>
+  <div class="ua-subtab" data-uatab="vms"><i class="fa fa-desktop" style="color:#9b59b6;"></i> Virtual Machines</div>
+  <div class="ua-subtab" data-uatab="plugins"><i class="fa fa-plug" style="color:#2ecc71;"></i> Plugins</div>
+  <div class="ua-subtab" data-uatab="system"><i class="fa fa-cog" style="color:#95a5a6;"></i> System</div>
+  <div class="ua-subtab" data-uatab="tools"><i class="fa fa-wrench" style="color:#e67e22;"></i> Tool Access</div>
 </div>
 
-<div class="ua-pane active" data-tab="master">
+<div class="ua-pane active" data-uatab="master">
 <?php $formOpen(); ?>
 
 <dl><dt>Read Only (Recommended)</dt><dd><?=$yesno('READ_ONLY', 'true')?></dd></dl>
@@ -186,7 +186,7 @@ container delete, VM delete, plugin install/remove, system updates, and flash ba
 <?php $formClose(); ?>
 </div>
 
-<div class="ua-pane" data-tab="array">
+<div class="ua-pane" data-uatab="array">
 <?php $formOpen(); ?>
 
 <dl><dt>Allow Array Stop/Start</dt><dd><?=$yesno('ALLOW_ARRAY_ACTIONS')?></dd></dl>
@@ -208,7 +208,7 @@ Category toggle: allows all array operations in this section.
 <?php $formClose(); ?>
 </div>
 
-<div class="ua-pane" data-tab="containers">
+<div class="ua-pane" data-uatab="containers">
 <?php $formOpen(); ?>
 
 <dl><dt>Allow Docker Actions</dt><dd><?=$yesno('ALLOW_DOCKER_ACTIONS')?></dd></dl>
@@ -268,7 +268,7 @@ immediately — no Apply or restart required.
 </div>
 </div>
 
-<div class="ua-pane" data-tab="vms">
+<div class="ua-pane" data-uatab="vms">
 <?php $formOpen(); ?>
 
 <dl><dt>Allow VM Actions</dt><dd><?=$yesno('ALLOW_VM_ACTIONS')?></dd></dl>
@@ -328,7 +328,7 @@ immediately — no Apply or restart required.
 </div>
 </div>
 
-<div class="ua-pane" data-tab="plugins">
+<div class="ua-pane" data-uatab="plugins">
 <?php $formOpen(); ?>
 
 <dl><dt>Allow Plugin Install</dt><dd><?=$yesno('ALLOW_PLUGIN_INSTALL')?></dd></dl>
@@ -392,7 +392,7 @@ Allow Plugin Install toggle — they can't be granted per-plugin.
 </div>
 </div>
 
-<div class="ua-pane" data-tab="system">
+<div class="ua-pane" data-uatab="system">
 <?php $formOpen(); ?>
 
 <dl><dt>Allow Setting Updates</dt><dd><?=$yesno('ALLOW_SETTING_UPDATES')?></dd></dl>
@@ -441,10 +441,10 @@ Use this when sharing log output with external/cloud AI models.
 <?php $formClose(); ?>
 </div>
 
-<div class="ua-pane" data-tab="tools">
+<div class="ua-pane" data-uatab="tools">
 <div class="ua-subtabs" style="margin-bottom:14px;">
 <?php $tgFirst = true; foreach ($toolGroups as $gid => $ginfo): ?>
-  <div class="ua-subtab<?=$tgFirst ? ' active' : ''?>" data-tab="tg-<?=$gid?>"><i class="fa fa-wrench" style="color:#e67e22;"></i> <?=$ginfo[0]?></div>
+  <div class="ua-subtab<?=$tgFirst ? ' active' : ''?>" data-uatab="tg-<?=$gid?>"><i class="fa fa-wrench" style="color:#e67e22;"></i> <?=$ginfo[0]?></div>
 <?php $tgFirst = false; endforeach; ?>
 </div>
 
@@ -465,7 +465,7 @@ foreach ($toolGroups as $gid => $ginfo):
     $paneCls = $tgFirstPane ? 'ua-pane active' : 'ua-pane';
     $tgFirstPane = false;
 ?>
-<div class="<?=$paneCls?>" data-tab="tg-<?=$gid?>">
+<div class="<?=$paneCls?>" data-uatab="tg-<?=$gid?>">
 <?php $formOpen(); ?>
 <?php foreach ($ginfo[1] as $dom):
     list($label, $tools) = $toolDomains[$dom];
@@ -527,38 +527,38 @@ $(function() {
     var KEY = 'unraid-agent-perms-tab';
     var TGKEY = 'unraid-agent-toolset-tab';
     function activate(t) {
-        $('.ua-subtab:not([data-tab^="tg-"])').removeClass('active');
-        $('.ua-pane[data-tab]:not([data-tab^="tg-"])').removeClass('active');
-        $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
-        $('.ua-pane[data-tab="' + t + '"]').addClass('active');
+        $('.ua-subtab:not([data-uatab^="tg-"])').removeClass('active');
+        $('.ua-pane[data-uatab]:not([data-uatab^="tg-"])').removeClass('active');
+        $('.ua-subtab[data-uatab="' + t + '"]').addClass('active');
+        $('.ua-pane[data-uatab="' + t + '"]').addClass('active');
         if (t === 'tools') { ensureTg(); }
     }
     function activateTg(t) {
-        $('.ua-subtab[data-tab^="tg-"]').removeClass('active');
-        $('.ua-pane[data-tab^="tg-"]').removeClass('active');
-        $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
-        $('.ua-pane[data-tab="' + t + '"]').addClass('active');
+        $('.ua-subtab[data-uatab^="tg-"]').removeClass('active');
+        $('.ua-pane[data-uatab^="tg-"]').removeClass('active');
+        $('.ua-subtab[data-uatab="' + t + '"]').addClass('active');
+        $('.ua-pane[data-uatab="' + t + '"]').addClass('active');
     }
     function ensureTg() {
         var saved = localStorage.getItem(TGKEY);
-        if (!saved || !$('.ua-subtab[data-tab="' + saved + '"]').length) { saved = 'tg-core'; }
+        if (!saved || !$('.ua-subtab[data-uatab="' + saved + '"]').length) { saved = 'tg-core'; }
         activateTg(saved);
     }
     var saved = localStorage.getItem(KEY);
-    if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) {
+    if (saved && $('.ua-subtab[data-uatab="' + saved + '"]').length) {
         activate(saved);
     }
     // Guarantee Master Switch shows if no pane ended up active
     if (!$('.ua-pane.active').length) {
         activate('master');
     }
-    $('.ua-subtab:not([data-tab^="tg-"])').on('click', function() {
-        var t = $(this).data('tab');
+    $('.ua-subtab:not([data-uatab^="tg-"])').on('click', function() {
+        var t = $(this).data('uatab');
         activate(t);
         localStorage.setItem(KEY, t);
     });
-    $('.ua-subtab[data-tab^="tg-"]').on('click', function() {
-        var t = $(this).data('tab');
+    $('.ua-subtab[data-uatab^="tg-"]').on('click', function() {
+        var t = $(this).data('uatab');
         activateTg(t);
         localStorage.setItem(TGKEY, t);
     });
