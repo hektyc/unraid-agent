@@ -22,9 +22,17 @@ type Config struct {
 	AllowContainerStop    bool
 	AllowContainerRemove  bool
 	AllowContainerRestart bool
+	AllowContainerStart   bool
+	AllowContainerPause   bool
+	AllowContainerUnpause bool
+	AllowContainerUpdate  bool
 	AllowVmForceStop      bool
 	AllowVmReset          bool
 	AllowVmStop           bool
+	AllowVmStart          bool
+	AllowVmPause          bool
+	AllowVmResume         bool
+	AllowVmReboot         bool
 	AllowPluginInstall    bool
 	AllowPluginRemove     bool
 	AllowSettingUpdates   bool
@@ -66,9 +74,17 @@ func Load() (*Config, error) {
 	cfg.AllowContainerStop = getEnvBool("ALLOW_CONTAINER_STOP", false)
 	cfg.AllowContainerRemove = getEnvBool("ALLOW_CONTAINER_REMOVE", false)
 	cfg.AllowContainerRestart = getEnvBool("ALLOW_CONTAINER_RESTART", false)
+	cfg.AllowContainerStart = getEnvBool("ALLOW_CONTAINER_START", false)
+	cfg.AllowContainerPause = getEnvBool("ALLOW_CONTAINER_PAUSE", false)
+	cfg.AllowContainerUnpause = getEnvBool("ALLOW_CONTAINER_UNPAUSE", false)
+	cfg.AllowContainerUpdate = getEnvBool("ALLOW_CONTAINER_UPDATE", false)
 	cfg.AllowVmForceStop = getEnvBool("ALLOW_VM_FORCE_STOP", false)
 	cfg.AllowVmReset = getEnvBool("ALLOW_VM_RESET", false)
 	cfg.AllowVmStop = getEnvBool("ALLOW_VM_STOP", false)
+	cfg.AllowVmStart = getEnvBool("ALLOW_VM_START", false)
+	cfg.AllowVmPause = getEnvBool("ALLOW_VM_PAUSE", false)
+	cfg.AllowVmResume = getEnvBool("ALLOW_VM_RESUME", false)
+	cfg.AllowVmReboot = getEnvBool("ALLOW_VM_REBOOT", false)
 	cfg.AllowPluginInstall = getEnvBool("ALLOW_PLUGIN_INSTALL", false)
 	cfg.AllowPluginRemove = getEnvBool("ALLOW_PLUGIN_REMOVE", false)
 	cfg.AllowSettingUpdates = getEnvBool("ALLOW_SETTING_UPDATES", false)
@@ -114,12 +130,28 @@ func (c *Config) PermissionValue(name string) bool {
 		return c.AllowContainerRemove
 	case "ALLOW_CONTAINER_RESTART":
 		return c.AllowContainerRestart
+	case "ALLOW_CONTAINER_START":
+		return c.AllowContainerStart
+	case "ALLOW_CONTAINER_PAUSE":
+		return c.AllowContainerPause
+	case "ALLOW_CONTAINER_UNPAUSE":
+		return c.AllowContainerUnpause
+	case "ALLOW_CONTAINER_UPDATE":
+		return c.AllowContainerUpdate
 	case "ALLOW_VM_FORCE_STOP":
 		return c.AllowVmForceStop
 	case "ALLOW_VM_RESET":
 		return c.AllowVmReset
 	case "ALLOW_VM_STOP":
 		return c.AllowVmStop
+	case "ALLOW_VM_START":
+		return c.AllowVmStart
+	case "ALLOW_VM_PAUSE":
+		return c.AllowVmPause
+	case "ALLOW_VM_RESUME":
+		return c.AllowVmResume
+	case "ALLOW_VM_REBOOT":
+		return c.AllowVmReboot
 	case "ALLOW_PLUGIN_INSTALL":
 		return c.AllowPluginInstall
 	case "ALLOW_PLUGIN_REMOVE":
