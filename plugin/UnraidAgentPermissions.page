@@ -32,6 +32,15 @@ $containers = ua_list_containers();
 $vms = ua_list_vms();
 $plugins = ua_list_installed_plugins();
 
+// Tool domain groups for the Tool Access sub-tabs
+$toolGroups = [
+  'core' => ['Core System', ['system', 'array', 'health', 'help', 'user']],
+  'dockervm' => ['Docker & VMs', ['docker', 'vm']],
+  'monitoring' => ['Monitoring & Logs', ['live', 'logs', 'notification']],
+  'integrations' => ['Integrations', ['connect', 'customization', 'oidc', 'onboarding', 'plugin', 'rclone', 'setting', 'key']],
+  'agentcontent' => ['Agent Content', ['agentcontent']],
+];
+
 // Tool domain -> tool names (keep in sync with the daemon's registrations)
 $toolDomains = [
   'system' => ['System', ['system_overview','system_array','system_network','system_network_interfaces','system_network_metrics','system_registration','system_flash','system_metrics','system_server','system_server_time','system_services','system_settings','system_variables','system_timezones','system_online','system_config','system_display','system_ups_config','system_ups_devices','system_owner','system_servers']],
@@ -422,48 +431,33 @@ Use this when sharing log output with external/cloud AI models.
 </div>
 
 <div class="ua-pane" data-tab="tools">
-<?php $formOpen(); ?>
+<div class="ua-subtabs" style="margin-bottom:14px;">
+<?php $tgFirst = true; foreach ($toolGroups as $gid => $ginfo): ?>
+  <div class="ua-subtab<?=$tgFirst ? ' active' : ''?>" data-tab="tg-<?=$gid?>"><i class="fa fa-wrench" style="color:#e67e22;"></i> <?=$ginfo[0]?></div>
+<?php $tgFirst = false; endforeach; ?>
+</div>
 
-<div class="title"><span class="left"><i class="title fa fa-wrench"></i>Agent Toolset</span></div>
-<blockquote class="inline_help">
-These toggles decide <b>which tools the AI agent can see and call</b>. Turning a tool or
-domain off removes it from the agent entirely — it can't be invoked, and its schema stops
-consuming tokens in every session. This is separate from the Permissions above, which
-gate whether an available tool may actually change something.<br><br>
-Each domain has a master toggle (Yes/No). Expand a domain to set individual tools to
-<b>Use Domain</b> (follow the master), <b>Yes</b> (force on), or <b>No</b> (force off) —
-individual choices win in both directions: a Yes tool stays available inside a No domain,
-and a No tool stays hidden inside a Yes domain.
-</blockquote>
-
-<style>
-.ua-tools-wrap { width:65%; min-width:420px; }
-.ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
-.ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
-.ua-domain-head:hover { background:rgba(128,128,128,0.08); }
-.ua-domain-title { font-weight:bold; font-size:13px; }
-.ua-domain-count { font-size:11px; opacity:0.65; margin-left:8px; }
-.ua-domain-caret { margin-right:8px; opacity:0.7; }
-.ua-domain-tools { display:none; padding:4px 12px 10px; border-top:1px solid rgba(128,128,128,0.2); }
-.ua-tool-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed rgba(128,128,128,0.15); }
-.ua-tool-row:last-child { border-bottom:none; }
-.ua-tool-name { font-family:monospace; font-size:12px; }
-</style>
+<div style="padding:8px 12px;margin:0 auto 12px;border-left:3px solid #4a90d9;background:rgba(74,144,217,0.08);width:55%;min-width:480px;">
+These toggles decide <b>which tools the AI agent can see and call</b>. Off = the tool
+vanishes for the agent and its schema stops consuming tokens. Separate from the
+Permissions above, which gate what an available tool may change.<br><br>
+Each domain has a master Yes/No. Expand a domain to set individual tools to
+<b>Default</b> (follow the master), <b>Yes</b> (force on), or <b>No</b> (force off).
+The toolset can also be managed from your IDE via the
+<code>toolset_list</code> / <code>toolset_set</code> tools — changes apply instantly.
+</div>
 
 <div class="ua-tools-wrap">
 <?php
-$tristate = function($key) use ($cfg) {
-    $val = $cfg($key, 'domain');
-    $opts = ['domain' => 'Use Domain', 'true' => 'Yes', 'false' => 'No'];
-    $html = "<select name=\"$key\">";
-    foreach ($opts as $v => $l) {
-        $sel = ($val === $v) ? 'selected' : '';
-        $html .= "<option value=\"$v\" $sel>$l</option>";
-    }
-    return $html . "</select>";
-};
-foreach ($toolDomains as $dom => $info):
-    list($label, $tools) = $info;
+$tgFirstPane = true;
+foreach ($toolGroups as $gid => $ginfo):
+    $paneCls = $tgFirstPane ? 'ua-pane active' : 'ua-pane';
+    $tgFirstPane = false;
+?>
+<div class="<?=$paneCls?>" data-tab="tg-<?=$gid?>">
+<?php $formOpen(); ?>
+<?php foreach ($ginfo[1] as $dom):
+    list($label, $tools) = $toolDomains[$dom];
     $domKey = 'UNRAID_MCP_DOMAIN_' . strtoupper($dom);
     $count = count($tools);
 ?>
@@ -482,10 +476,24 @@ foreach ($toolDomains as $dom => $info):
   </div>
 </div>
 <?php endforeach; ?>
-</div>
-
 <?php $formClose(); ?>
 </div>
+<?php endforeach; ?>
+</div>
+
+<style>
+.ua-tools-wrap { width:55%; min-width:480px; margin:0 auto; }
+.ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
+.ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
+.ua-domain-head:hover { background:rgba(128,128,128,0.08); }
+.ua-domain-title { font-weight:bold; font-size:13px; }
+.ua-domain-count { font-size:11px; opacity:0.65; margin-left:8px; }
+.ua-domain-caret { margin-right:8px; opacity:0.7; }
+.ua-domain-tools { display:none; padding:4px 12px 10px; border-top:1px solid rgba(128,128,128,0.2); }
+.ua-tool-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed rgba(128,128,128,0.15); }
+.ua-tool-row:last-child { border-bottom:none; }
+.ua-tool-name { font-family:monospace; font-size:12px; }
+</style>
 
 <div class="ua-modal-overlay" id="ua-modal" style="display:none;">
   <div class="ua-modal">
@@ -506,11 +514,24 @@ foreach ($toolDomains as $dom => $info):
 <script>
 $(function() {
     var KEY = 'unraid-agent-perms-tab';
+    var TGKEY = 'unraid-agent-toolset-tab';
     function activate(t) {
-        $('.ua-subtab').removeClass('active');
-        $('.ua-pane[data-tab]').removeClass('active');
+        $('.ua-subtab:not([data-tab^="tg-"])').removeClass('active');
+        $('.ua-pane[data-tab]:not([data-tab^="tg-"])').removeClass('active');
         $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
         $('.ua-pane[data-tab="' + t + '"]').addClass('active');
+        if (t === 'tools') { ensureTg(); }
+    }
+    function activateTg(t) {
+        $('.ua-subtab[data-tab^="tg-"]').removeClass('active');
+        $('.ua-pane[data-tab^="tg-"]').removeClass('active');
+        $('.ua-subtab[data-tab="' + t + '"]').addClass('active');
+        $('.ua-pane[data-tab="' + t + '"]').addClass('active');
+    }
+    function ensureTg() {
+        var saved = localStorage.getItem(TGKEY);
+        if (!saved || !$('.ua-subtab[data-tab="' + saved + '"]').length) { saved = 'tg-core'; }
+        activateTg(saved);
     }
     var saved = localStorage.getItem(KEY);
     if (saved && $('.ua-subtab[data-tab="' + saved + '"]').length) {
@@ -520,10 +541,15 @@ $(function() {
     if (!$('.ua-pane.active').length) {
         activate('master');
     }
-    $('.ua-subtab').on('click', function() {
+    $('.ua-subtab:not([data-tab^="tg-"])').on('click', function() {
         var t = $(this).data('tab');
         activate(t);
         localStorage.setItem(KEY, t);
+    });
+    $('.ua-subtab[data-tab^="tg-"]').on('click', function() {
+        var t = $(this).data('tab');
+        activateTg(t);
+        localStorage.setItem(TGKEY, t);
     });
 
     // Expand/collapse tool domains

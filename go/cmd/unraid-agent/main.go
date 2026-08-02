@@ -16,6 +16,7 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/mcp"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/array"
 	agenttools "github.com/hektyc/unraid-mcp-server/internal/tools/agentcontent"
+	"github.com/hektyc/unraid-mcp-server/internal/tools/toolset"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/connect"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/customization"
 	"github.com/hektyc/unraid-mcp-server/internal/tools/docker"
@@ -96,16 +97,16 @@ func main() {
 	go agentcontent.EnsureProfile(configDir, func(q string) (map[string]interface{}, error) {
 		return server.GraphQLQuery(context.Background(), q, nil)
 	})
-	// Register all tool families; the per-tool filter decides registration
-	// (per-tool overrides beat domain toggles in both directions).
-	server.ToolEnabled = func(name string) bool {
-		return cfg.IsToolEnabled(name)
-	}
+	// File-backed toolset filter: per-tool overrides beat domain toggles in
+	// both directions, and toolset_set applies live without a restart.
+	toolset.TS = config.NewToolset(*configPath)
+	server.ToolEnabled = toolset.TS.Enabled
 	for _, d := range config.ToolDomains {
 		if !cfg.IsDomainEnabled(d) {
 			logger.Get().Infof("Tool domain disabled: %s", d)
 		}
 	}
+	toolset.RegisterTools(server, cfg)
 	array.RegisterTools(server, cfg)
 	connect.RegisterTools(server, cfg)
 	customization.RegisterTools(server, cfg)

@@ -69,7 +69,8 @@ func NewServer(cfg *config.Config) *Server {
 }
 
 func (s *Server) RegisterTool(t *ToolDef) {
-	if s.ToolEnabled != nil && !s.ToolEnabled(t.Name) {
+	// toolset_* tools always register — the toolset can never disable itself.
+	if s.ToolEnabled != nil && !strings.HasPrefix(t.Name, "toolset_") && !s.ToolEnabled(t.Name) {
 		return
 	}
 	s.mu.Lock()

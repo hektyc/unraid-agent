@@ -16,7 +16,8 @@ Resolution order for every state-changing tool call: self-removal guard → READ
 ## Tool Domains and token management (Permissions → Tool Access)
 - Every tool family (19 domains, ~120 tools) has a toggle. Disabled domains are **never registered** — their tools and schemas never reach the client, which shrinks the standing token payload of every session.
 - Use it to match the toolset to the job: a read-only monitoring agent can run with everything except system/docker/array/logs disabled; a docker-only helper can drop vm, rclone, oidc, onboarding.
-- Apply restarts the daemon, so changes take effect immediately. Disabled tools cannot be called — keep the domains your workflows actually use.
+- Manage the toolset from the WebGUI (Permissions → Tool Access, grouped sub-tabs with per-pane Apply) OR from any IDE via the toolset_list / toolset_set MCP tools: toolset_set target=domain name=docker value=disabled, target=tool name=docker_stop value=enabled, or value=default to reset. toolset_set applies instantly — no daemon restart. It needs the Allow Setting Updates toggle, and toolset tools always stay registered so you can never lock yourself out.
+- Apply in the WebGUI restarts the daemon; IDE-side toolset_set changes apply live with no restart. Disabled tools cannot be called — keep the domains your workflows actually use.
 - Token economics: skills and memories cost zero standing tokens (they only cost when fetched). Tool schemas are the standing cost — domain toggles are the lever.
 
 ## Agent Skills

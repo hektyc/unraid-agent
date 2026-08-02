@@ -95,6 +95,9 @@ var toolPermissions = map[string][]string{
 	"skills_delete": {"ALLOW_SKILLS_WRITE"},
 	"memory_write":  {"ALLOW_MEMORY_WRITE"},
 	"memory_delete": {"ALLOW_MEMORY_WRITE"},
+
+	// Toolset management
+	"toolset_set": {"ALLOW_SETTING_UPDATES"},
 }
 
 // isMutationTool reports whether executing this tool changes state.
