@@ -54,6 +54,21 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Warning: could not load config: %v\n", err)
 	}
 
+	logLevel := os.Getenv("UNRAID_MCP_LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+	logger.Init(logLevel, "json")
+
+	// Auto-detect API URL from Unraid's var.ini if not explicitly configured.
+	// This runs in the binary itself (not just the shell wrapper) so the
+	// daemon works regardless of how it was started.
+	if os.Getenv("UNRAID_API_URL") == "" {
+		if url := autoDetectAPIURL(); url != "" {
+			os.Setenv("UNRAID_API_URL", url)
+		}
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Configuration error: %s\n", err.Error())
@@ -75,14 +90,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	logLevel := os.Getenv("UNRAID_MCP_LOG_LEVEL")
-	if logLevel == "" {
-		logLevel = "info"
-	}
-	logger.Init(logLevel, "json")
-
 	logger.Get().Infof("Starting unraid-agent %s (Go)", version)
 	logger.Get().Infof("Transport: %s, Read-only: %v", transport, cfg.ReadOnly)
+	if cfg.APIURL != "" {
+		logger.Get().Infof("Unraid API URL: %s", cfg.APIURL)
+	} else {
+		logger.Get().Warn("UNRAID_API_URL is empty — set it in config.cfg or ensure var.ini is accessible")
+	}
 
 	server := mcp.NewServer(cfg)
 	configDir := filepath.Dir(*configPath)
@@ -172,4 +186,67 @@ func loadDotEnv(path string) error {
 		}
 	}
 	return nil
+}
+
+// autoDetectAPIURL reads /var/local/emhttp/var.ini (Unraid's webGUI config)
+// and constructs the GraphQL endpoint URL. Handles both quoted and unquoted
+// values, and supports USE_SSL/USESSL variable naming variations.
+func autoDetectAPIURL() string {
+	iniPath := "/var/local/emhttp/var.ini"
+	data, err := os.ReadFile(iniPath)
+	if err != nil {
+		return ""
+	}
+
+	vars := map[string]string{}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.Trim(strings.TrimSpace(parts[1]), `"'`)
+			vars[key] = value
+		}
+	}
+
+	ip := vars["IPADDR"]
+	useSSL := vars["USE_SSL"]
+	if useSSL == "" {
+		useSSL = vars["USESSL"]
+	}
+	port := vars["PORT"]
+	portSSL := vars["PORTSSL"]
+	if portSSL == "" {
+		portSSL = vars["PORT_SSL"]
+	}
+
+	proto := "http"
+	localPort := "80"
+	sslLower := strings.ToLower(useSSL)
+	if sslLower == "yes" || sslLower == "true" || sslLower == "1" {
+		proto = "https"
+		localPort = "443"
+		if portSSL != "" {
+			localPort = portSSL
+		}
+	} else if port != "" {
+		localPort = port
+	}
+
+	if ip == "" || ip == "0.0.0.0" {
+		ip = "127.0.0.1"
+	}
+
+	var url string
+	if localPort == "80" || localPort == "443" {
+		url = fmt.Sprintf("%s://%s/graphql", proto, ip)
+	} else {
+		url = fmt.Sprintf("%s://%s:%s/graphql", proto, ip, localPort)
+	}
+
+	logger.Get().Infof("Auto-detected Unraid API URL: %s", url)
+	return url
 }
