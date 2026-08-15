@@ -14,27 +14,15 @@
 
 <DESCRIPTION>Unraid MCP Server (named 'unraid-agent' to avoid conflicts) - Feature-rich MCP server for Unraid with safety controls and AI agent integration</DESCRIPTION>
 <CHANGES>
-### 0.0.38
-- Renamed binary from unraid-mcp to unraid-agent for consistency with plugin name
-- Added Start MCP Server and Stop MCP Server buttons to WebGUI
-- Removed symlink workaround — binary built with correct config path
-
-### 0.0.40
-- Removed WebGUI restart message from post-install (not needed in Unraid)
-- Renamed binary from unraid-mcp to unraid-agent for consistency
-- Added Start MCP Server and Stop MCP Server buttons to WebGUI
-- Removed symlink workaround — binary built with correct config path
-
-### 0.0.37
-- Added Start MCP Server and Stop MCP Server buttons to the WebGUI settings page
-- Added Service Status section with RUNNING/STOPPED display and interactive buttons
-- Removed symlink workaround — binary now rebuilt with correct config path
-
-### 0.0.36
-- Fix: create symlink for legacy config path so binary can find config at /boot/config/plugins/unraid-agent/config.cfg
+### 2026.08.02.2304
+- Fix: download/verify-then-clear install flow prevents plugin disappearance on failed updates
+- Fix: variable naming consistency in download error handling ($TMP_FILE)
+- Fix: post-install version now reads actual version from .plg entity instead of hardcoded v0.0.34
+- Added: post-extraction verification of critical files (page file, binary, PHP scripts)
+- Added: install.sh config defaults synced with current config.cfg
 </CHANGES>
 
-<!-- Pre-install: create directories, copy icons, and clean old files -->
+ <!-- Pre-install: create directories and clean legacy files only (do NOT clear yet) -->
 <FILE Run="/bin/bash">
 <INLINE>
 <![CDATA[
@@ -43,10 +31,8 @@ PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
-mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/memory" "$INSTALL_DIR/images"
-rm -rf "$INSTALL_DIR"/* 2>/dev/null
-mkdir -p "$INSTALL_DIR/images"
-# Clean up old plugin (unraid-agent) files
+mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/memory" "$INSTALL_DIR/images" "$INSTALL_DIR/php" "$INSTALL_DIR/icons"
+# Clean up old/legacy files from prior versions
 rm -f "$CONFIG_DIR/webgui/unraid-agent.settings.page" 2>/dev/null
 rm -f "$INSTALL_DIR/webgui/unraid-agent.settings.page" 2>/dev/null
 rm -f "$CONFIG_DIR/unraid-agent.cfg" 2>/dev/null
@@ -55,46 +41,79 @@ echo "Pre-install complete for ${PLUGIN_NAME}"
 </INLINE>
 </FILE>
 
-<!-- Download and extract plugin package -->
+<!-- Download, verify, then clear and extract plugin package -->
 <FILE Run="/bin/bash">
 <INLINE>
 <![CDATA[
 #!/bin/bash
 PLUGIN_NAME="unraid-agent"
+INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 PKG_URL="https://github.com/hektyc/unraid-agent/releases/latest/download/unraid-agent.tar"
-TMP_FILE="/tmp/unraid-agent.tar"
+PKG_TMP="/tmp/unraid-agent.tar"
 
+# Try local package first, then download
 if [ -f "$CONFIG_DIR/unraid-agent.tar" ]; then
   echo "Using local package file"
-  TMP_FILE="$CONFIG_DIR/unraid-agent.tar"
+  PKG_TMP="$CONFIG_DIR/unraid-agent.tar"
 else
   echo "Downloading package from $PKG_URL ..."
-  curl -fsSL "$PKG_URL" -o "$TMP_FILE"
+  curl -fsSL "$PKG_URL" -o "$PKG_TMP"
   CURL_EXIT=$?
-  if [ $CURL_EXIT -ne 0 ] || [ ! -s "$TMP_FILE" ]; then
+  if [ "$CURL_EXIT" -ne 0 ] || [ ! -s "$PKG_TMP" ]; then
     echo "ERROR: Download failed (curl exit: $CURL_EXIT)"
-    rm -f "$TMP_FILE"
+    rm -f "$PKG_TMP"
     exit 1
   fi
 fi
 
-echo "Extracting package ..."
-echo "File size: $(stat -c%s "$TMP_FILE" 2>&1 || stat -f%z "$TMP_FILE" 2>&1) bytes"
+echo "Package size: $(stat -c%s "$PKG_TMP" 2>&1 || stat -f%z "$PKG_TMP" 2>&1) bytes"
 echo "---"
 
-echo "Extracting with tar --no-same-owner -xf ..."
-tar --no-same-owner -xf "$TMP_FILE" -C / 2>&1
-TAR_EXIT=$?
-if [ $TAR_EXIT -eq 0 ]; then
-  echo "Extraction succeeded"
-  rm -f "$TMP_FILE"
-  echo "Package extracted successfully."
-  exit 0
+# Verify the tarball is valid before clearing anything
+echo "Verifying tarball integrity..."
+if ! tar -tf "$PKG_TMP" >/dev/null 2>&1; then
+  echo "ERROR: Tarball is corrupt or not a valid tar archive"
+  rm -f "$PKG_TMP"
+  exit 1
 fi
-echo "Primary extraction failed (exit $TAR_EXIT)"
-rm -f "$TMP_FILE"
-exit 1
+
+# Download/verify succeeded — now safe to clear old install files
+echo "Clearing old installation files..."
+rm -rf "${INSTALL_DIR:?}/"* 2>/dev/null || true
+
+# Extract the package
+echo "Extracting package..."
+tar --no-same-owner -xf "$PKG_TMP" -C / 2>&1
+TAR_EXIT=$?
+rm -f "$PKG_TMP"
+
+if [ "$TAR_EXIT" -ne 0 ]; then
+  echo "ERROR: Extraction failed (tar exit: $TAR_EXIT)"
+  exit 1
+fi
+
+# Verify critical files were extracted
+MISSING=0
+for f in \
+  "$INSTALL_DIR/unraid-agent.page" \
+  "$INSTALL_DIR/bin/unraid-agent" \
+  "$INSTALL_DIR/php/common.php" \
+  "$INSTALL_DIR/scripts/start.sh" \
+  "$INSTALL_DIR/scripts/stop.sh"; do
+  if [ ! -e "$f" ]; then
+    echo "WARNING: Expected file missing after extraction: $f"
+    MISSING=$((MISSING + 1))
+  fi
+done
+
+if [ "$MISSING" -gt 0 ]; then
+  echo "ERROR: $MISSING critical file(s) missing after extraction — plugin may be broken"
+  exit 1
+fi
+
+echo "Package extracted and verified successfully."
+exit 0
 ]]>
 </INLINE>
 </FILE>
@@ -110,8 +129,12 @@ INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 
 if [ ! -f "$CONFIG_DIR/config.cfg" ]; then
   mkdir -p "$CONFIG_DIR"
-  cp "$INSTALL_DIR/default.cfg" "$CONFIG_DIR/config.cfg"
-  chmod 600 "$CONFIG_DIR/config.cfg"
+  if [ -f "$INSTALL_DIR/default.cfg" ]; then
+    cp "$INSTALL_DIR/default.cfg" "$CONFIG_DIR/config.cfg"
+  else
+    echo "WARNING: default.cfg not found — config.cfg not created"
+  fi
+  chmod 600 "$CONFIG_DIR/config.cfg" 2>/dev/null || true
   echo "Created default config.cfg"
 else
   echo "Existing config.cfg preserved"
@@ -129,12 +152,16 @@ PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
+VERSION=$(grep '<!ENTITY version' "$CONFIG_DIR/unraid-agent.plg" 2>/dev/null | grep -o '"[^"]*"' | tail -1 | tr -d '"')
+if [ -z "$VERSION" ]; then
+  VERSION=$(grep '<!ENTITY version' "$INSTALL_DIR/unraid-agent.plg" 2>/dev/null | grep -o '"[^"]*"' | tail -1 | tr -d '"')
+fi
+
 chmod +x "$INSTALL_DIR/bin/unraid-agent" "$INSTALL_DIR/scripts/"*.sh 2>/dev/null
-chmod 644 "$INSTALL_DIR/images/"*.png 2>/dev/null
-chmod 600 "$CONFIG_DIR/config.cfg" 2>/dev/null
+chmod 644 "$INSTALL_DIR/images/"*.png "$INSTALL_DIR/icons/"*.png "$INSTALL_DIR/unraid-agent.png" 2>/dev/null
 
 echo "-----------------------------------------------------------"
-echo " ${PLUGIN_NAME} v0.0.34 installed successfully."
+echo " ${PLUGIN_NAME} v${VERSION} installed successfully."
 echo " Settings: Settings → User Utilities → Unraid Agent"
 echo " Set UNRAID_API_KEY in: $CONFIG_DIR/config.cfg"
 echo " Start daemon: $INSTALL_DIR/scripts/start.sh"
@@ -143,7 +170,7 @@ echo "-----------------------------------------------------------"
 </INLINE>
 </FILE>
 
-<!-- Update: stop service and clean old files before re-install -->
+<!-- Update: stop service before re-install (extraction clears old files) -->
 <FILE Run="/bin/bash" Method="update">
 <INLINE>
 <![CDATA[
@@ -160,7 +187,6 @@ if [ -f "$PIDFILE" ]; then
   rm -f "$PIDFILE"
 fi
 
-rm -rf "/usr/local/emhttp/plugins/${PLUGIN_NAME}"/* 2>/dev/null
 echo "Pre-update cleanup complete"
 ]]>
 </INLINE>

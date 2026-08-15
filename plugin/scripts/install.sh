@@ -3,18 +3,27 @@ PLUGIN_NAME="unraid-agent"
 INSTALL_DIR="/usr/local/emhttp/plugins/${PLUGIN_NAME}"
 CONFIG_DIR="/boot/config/plugins/${PLUGIN_NAME}"
 
-mkdir -p "$INSTALL_DIR" "$CONFIG_DIR"
+mkdir -p "$INSTALL_DIR" "$CONFIG_DIR" "$INSTALL_DIR/bin" "$INSTALL_DIR/scripts" "$INSTALL_DIR/memory" "$INSTALL_DIR/images" "$INSTALL_DIR/php" "$INSTALL_DIR/icons"
 
-cp -r "$ROOT/"* "$INSTALL_DIR/" 2>/dev/null || true
-mkdir -p "$INSTALL_DIR/bin"
+if [ -f "$INSTALL_DIR/default.cfg" ]; then
+  cp "$INSTALL_DIR/default.cfg" "$INSTALL_DIR/config.cfg" 2>/dev/null || cp -r "$ROOT/"* "$INSTALL_DIR/" 2>/dev/null || true
+else
+  cp -r "$ROOT/"* "$INSTALL_DIR/" 2>/dev/null || true
+  mkdir -p "$INSTALL_DIR/bin" "$INSTALL_DIR/images" "$INSTALL_DIR/php" "$INSTALL_DIR/icons"
+fi
 
-chmod +x "$INSTALL_DIR/scripts/"*.sh
+chmod +x "$INSTALL_DIR/scripts/"*.sh 2>/dev/null
+chmod +x "$INSTALL_DIR/bin/unraid-agent" 2>/dev/null
 
 if [ ! -f "$CONFIG_DIR/config.cfg" ]; then
+  if [ -f "$INSTALL_DIR/default.cfg" ]; then
+    cp "$INSTALL_DIR/default.cfg" "$CONFIG_DIR/config.cfg"
+  else
     cat > "$CONFIG_DIR/config.cfg" << 'ENVEOF'
 UNRAID_API_URL=""
 UNRAID_API_KEY=""
-TRANSPORT="stdio"
+TRANSPORT="streamable-http"
+UNRAID_MCP_ENABLE_STDIO="false"
 UNRAID_MCP_HOST="127.0.0.1"
 UNRAID_MCP_PORT="6970"
 READ_ONLY="true"
@@ -23,12 +32,24 @@ ALLOW_ARRAY_START="false"
 ALLOW_ARRAY_ADD_DISK="false"
 ALLOW_ARRAY_REMOVE_DISK="false"
 ALLOW_ARRAY_CLEAR_STATS="false"
+ALLOW_DOCKER_ACTIONS="false"
+ALLOW_VM_ACTIONS="false"
+ALLOW_ARRAY_ACTIONS="false"
+ALLOW_DESTRUCTIVE="false"
+ALLOW_CONTAINER_START="false"
 ALLOW_CONTAINER_STOP="false"
 ALLOW_CONTAINER_REMOVE="false"
 ALLOW_CONTAINER_RESTART="false"
-ALLOW_VM_FORCE_STOP="false"
-ALLOW_VM_RESET="false"
+ALLOW_CONTAINER_PAUSE="false"
+ALLOW_CONTAINER_UNPAUSE="false"
+ALLOW_CONTAINER_UPDATE="false"
+ALLOW_VM_START="false"
 ALLOW_VM_STOP="false"
+ALLOW_VM_PAUSE="false"
+ALLOW_VM_RESUME="false"
+ALLOW_VM_FORCE_STOP="false"
+ALLOW_VM_REBOOT="false"
+ALLOW_VM_RESET="false"
 ALLOW_PLUGIN_INSTALL="false"
 ALLOW_PLUGIN_REMOVE="false"
 ALLOW_SETTING_UPDATES="false"
@@ -41,17 +62,36 @@ ALLOW_FLASH_BACKUP="false"
 ALLOW_RCLONE_OPERATIONS="false"
 ALLOW_CONNECT_ACTIONS="false"
 ALLOW_ONBOARDING_ACTIONS="false"
-ALLOW_DOCKER_ACTIONS="false"
-ALLOW_VM_ACTIONS="false"
-ALLOW_ARRAY_ACTIONS="false"
-ALLOW_DESTRUCTIVE="false"
+ALLOW_SKILLS_WRITE="false"
+ALLOW_MEMORY_WRITE="false"
+ANONYMIZE_LOGS="false"
 UNRAID_MCP_LOG_LEVEL="info"
 UNRAID_VERIFY_SSL="true"
 UNRAID_ALLOW_INSECURE_TLS="false"
 UNRAID_MCP_BEARER_TOKEN=""
 UNRAID_MCP_DISABLE_HTTP_AUTH="false"
+UNRAID_MCP_DOMAIN_ARRAY="true"
+UNRAID_MCP_DOMAIN_CONNECT="true"
+UNRAID_MCP_DOMAIN_CUSTOMIZATION="true"
+UNRAID_MCP_DOMAIN_DOCKER="true"
+UNRAID_MCP_DOMAIN_HEALTH="true"
+UNRAID_MCP_DOMAIN_HELP="true"
+UNRAID_MCP_DOMAIN_KEY="true"
+UNRAID_MCP_DOMAIN_LIVE="true"
+UNRAID_MCP_DOMAIN_LOGS="true"
+UNRAID_MCP_DOMAIN_NOTIFICATION="true"
+UNRAID_MCP_DOMAIN_OIDC="true"
+UNRAID_MCP_DOMAIN_ONBOARDING="true"
+UNRAID_MCP_DOMAIN_PLUGIN="true"
+UNRAID_MCP_DOMAIN_RCLONE="true"
+UNRAID_MCP_DOMAIN_SETTING="true"
+UNRAID_MCP_DOMAIN_SYSTEM="true"
+UNRAID_MCP_DOMAIN_USER="true"
+UNRAID_MCP_DOMAIN_VM="true"
+UNRAID_MCP_DOMAIN_AGENTCONTENT="true"
 ENVEOF
-    chmod 600 "$CONFIG_DIR/config.cfg"
+  fi
+  chmod 600 "$CONFIG_DIR/config.cfg"
 fi
 
 echo "Install complete."
