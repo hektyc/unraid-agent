@@ -64,9 +64,15 @@ func main() {
 	// This runs in the binary itself (not just the shell wrapper) so the
 	// daemon works regardless of how it was started.
 	if os.Getenv("UNRAID_API_URL") == "" {
+		logger.Get().Infof("UNRAID_API_URL not set — attempting auto-detection from var.ini")
 		if url := autoDetectAPIURL(); url != "" {
 			os.Setenv("UNRAID_API_URL", url)
+			logger.Get().Infof("Auto-detected Unraid API URL: %s", url)
+		} else {
+			logger.Get().Warn("Could not auto-detect UNRAID_API_URL — var.ini not found or IP not configured; set it manually in config.cfg")
 		}
+	} else {
+		logger.Get().Infof("UNRAID_API_URL set explicitly: %s", os.Getenv("UNRAID_API_URL"))
 	}
 
 	cfg, err := config.Load()
@@ -213,14 +219,26 @@ func autoDetectAPIURL() string {
 	}
 
 	ip := vars["IPADDR"]
+	if ip == "" {
+		ip = vars["LOCAL_IP"]
+	}
+	if ip == "" {
+		ip = vars["IP_ADDRESS"]
+	}
 	useSSL := vars["USE_SSL"]
 	if useSSL == "" {
 		useSSL = vars["USESSL"]
 	}
 	port := vars["PORT"]
+	if port == "" {
+		port = vars["HTTP_PORT"]
+	}
 	portSSL := vars["PORTSSL"]
 	if portSSL == "" {
 		portSSL = vars["PORT_SSL"]
+	}
+	if portSSL == "" {
+		portSSL = vars["HTTPS_PORT"]
 	}
 
 	proto := "http"
@@ -247,6 +265,5 @@ func autoDetectAPIURL() string {
 		url = fmt.Sprintf("%s://%s:%s/graphql", proto, ip, localPort)
 	}
 
-	logger.Get().Infof("Auto-detected Unraid API URL: %s", url)
 	return url
 }

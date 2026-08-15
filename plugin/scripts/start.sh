@@ -35,11 +35,14 @@ if [ -z "${UNRAID_API_URL:-}" ]; then
         # strip quotes from var.ini values (some setups quote them)
         strip_quotes() { echo "$1" | sed 's/^"//;s/"$//;s/^'\''//;s/'\''$//'; }
         LOCAL_IP=$(strip_quotes "$(grep '^IPADDR=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
+        [ -z "$LOCAL_IP" ] && LOCAL_IP=$(strip_quotes "$(grep '^LOCAL_IP=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
         USE_SSL=$(strip_quotes "$(grep '^USE_SSL=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
         [ -z "$USE_SSL" ] && USE_SSL=$(strip_quotes "$(grep '^USESSL=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
         PORT=$(strip_quotes "$(grep '^PORT=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
+        [ -z "$PORT" ] && PORT=$(strip_quotes "$(grep '^HTTP_PORT=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
         PORTSSL=$(strip_quotes "$(grep '^PORTSSL=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
         [ -z "$PORTSSL" ] && PORTSSL=$(strip_quotes "$(grep '^PORT_SSL=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
+        [ -z "$PORTSSL" ] && PORTSSL=$(strip_quotes "$(grep '^HTTPS_PORT=' "$INI_FILE" | head -1 | cut -d'=' -f2-)")
 
         if [ "$USE_SSL" = "yes" ] || [ "$USE_SSL" = "true" ] || [ "$USE_SSL" = "1" ]; then
             PROTO="https"

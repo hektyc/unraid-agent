@@ -40,8 +40,11 @@ if (!empty($_SERVER['HTTP_HOST'])) {
     $serverHost = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']);
 }
 if ($serverHost === '') {
-    $serverHost = 'HPS.lan';
+    $serverHost = $_SERVER['SERVER_NAME'] ?? 'localhost';
 }
+
+// Detect protocol from the webGUI request (HTTPS when SSL is on).
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 
 // Build the paste-ready client configuration snippet.
 if ($stdioMode) {
@@ -80,7 +83,7 @@ if ($stdioMode) {
     $authDisabled = ($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH', 'false') === 'true');
     $server = [
         "type"    => "remote",
-        "url"     => "http://$serverHost:$mcpPort/mcp",
+        "url"     => "{$protocol}://{$serverHost}:{$mcpPort}/mcp",
         "enabled" => true
     ];
     if ($bearer !== '' && !$authDisabled) {
