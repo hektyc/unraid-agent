@@ -68,7 +68,7 @@ func Load() (*Config, error) {
 		APIURL:    getEnv("UNRAID_API_URL", ""),
 		APIKey:    getEnv("UNRAID_API_KEY", ""),
 		Transport: getEnv("TRANSPORT", "streamable-http"),
-		Host:      getEnv("UNRAID_MCP_HOST", "127.0.0.1"),
+		Host:      getEnv("UNRAID_MCP_HOST", "0.0.0.0"),
 		Port:      getEnvInt("UNRAID_MCP_PORT", 6970),
 		ReadOnly:  getEnvBool("READ_ONLY", true),
 		VerifySSL: getEnvBool("UNRAID_VERIFY_SSL", true),

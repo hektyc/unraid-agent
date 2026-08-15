@@ -313,7 +313,7 @@ func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		logger.Get().Infof("MCP server listening on http://%s/mcp", addr)
+		logger.Get().Infof("MCP server listening on %s/mcp", addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errCh <- err
 			return
