@@ -33,18 +33,29 @@ $stdioMode   = ($transport === 'stdio');
 $stdioEnable = ($cfg('UNRAID_MCP_ENABLE_STDIO', 'false') === 'true');
 $mcpPort     = $cfg('UNRAID_MCP_PORT', '6970');
 
-// Best-guess reachable address for client configs: the host this WebGUI is
-// being browsed on (the IDE can reach the server the same way).
+// Determine the hostname + protocol for client configs:
+// Prefer the user's manually-set UNRAID_API_URL hostname (e.g. a reverse-proxy URL),
+// falling back to the WebGUI request host (how the browser is browsing the server).
+$apiUrl = $cfg('UNRAID_API_URL');
 $serverHost = '';
-if (!empty($_SERVER['HTTP_HOST'])) {
-    $serverHost = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']);
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+if (!empty($apiUrl)) {
+    $parsed = parse_url($apiUrl);
+    if (!empty($parsed['host'])) {
+        $serverHost = $parsed['host'];
+    }
+    if (!empty($parsed['scheme'])) {
+        $protocol = $parsed['scheme'];
+    }
 }
 if ($serverHost === '') {
-    $serverHost = $_SERVER['SERVER_NAME'] ?? 'localhost';
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $serverHost = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']);
+    }
+    if ($serverHost === '') {
+        $serverHost = $_SERVER['SERVER_NAME'] ?? 'localhost';
+    }
 }
-
-// Detect protocol from the webGUI request (HTTPS when SSL is on).
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 
 // Build the paste-ready client configuration snippet.
 if ($stdioMode) {
@@ -124,7 +135,10 @@ _(Unraid API URL)_:
 : <input type="text" name="UNRAID_API_URL" value="<?=htmlspecialchars($cfg('UNRAID_API_URL'))?>">
 
 <blockquote class="inline_help">
-Leave blank to auto-detect from Unraid var.ini.
+Set your reverse-proxy or SSL URL here if var.ini doesn't match how you reach the server.
+Leave blank to auto-detect from Unraid var.ini. Your manually-set URL takes priority
+over auto-detection and is used for both the agent connection and the auto-generated
+MCP client config below.
 </blockquote>
 
 _(API Key)_:
