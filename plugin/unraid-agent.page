@@ -153,12 +153,16 @@ even if launched manually or via SSH. Enable only while you need it.
 
 <?php if (!$stdioMode): ?>
 _(Bind Host)_:
-: <input type="text" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '127.0.0.1'))?>">
+: <input type="text" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '0.0.0.0'))?>">
+<blockquote class="inline_help">
+Bind address for the MCP HTTP server. 0.0.0.0 allows remote clients (e.g. VS Code on another machine);
+127.0.0.1 restricts to localhost. Use a bearer token for remote access.
+</blockquote>
 
 _(Port)_:
 : <input type="number" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>" min="1024" max="65535">
 <?php else: ?>
-<input type="hidden" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '127.0.0.1'))?>">
+<input type="hidden" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '0.0.0.0'))?>">
 <input type="hidden" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>">
 <?php endif; ?>
 
