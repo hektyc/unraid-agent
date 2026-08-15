@@ -199,6 +199,17 @@ proxy that terminates TLS or rewrites the path — the auto-generated client
 config will use this URL instead of the bind host + port. Leave blank to
 auto-derive from the Unraid API URL or browser host.
 </blockquote>
+<blockquote class="inline_help">
+Reverse proxy setup: your proxy must forward <code>/mcp</code> (and optionally <code>/health</code>)
+to your Unraid server on port <b><?=$mcpPort?></b>. Example nginx config:
+<pre style="background:#0d1117;border-radius:4px;padding:8px;font-size:11px;">location /mcp {
+    proxy_pass http://unraid-local-ip:<?=$mcpPort?>(/mcp);
+    proxy_set_header Host $host;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_buffering off;
+}</pre>
+</blockquote>
 <?php else: ?>
 <input type="hidden" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '0.0.0.0'))?>">
 <input type="hidden" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>">

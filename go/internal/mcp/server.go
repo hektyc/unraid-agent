@@ -302,6 +302,7 @@ func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handleMCP)
 	mux.HandleFunc("/mcp", s.handleMCP)
+	mux.HandleFunc("/health", s.handleHealth)
 
 	addr := fmt.Sprintf("%s:%d", host, port)
 	httpServer := &http.Server{
@@ -355,8 +356,23 @@ func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, resp)
 
 	case http.MethodGet:
-		// SSE listener not supported
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		// Some MCP clients try GET first (SSE or session establishment).
+		// Return JSON metadata so the client knows this is a Streamable HTTP
+		// server and should use POST for actual requests.
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"jsonrpc": "2.0",
+			"result": map[string]interface{}{
+				"protocolVersion": protocolVersion,
+				"capabilities": map[string]interface{}{
+					"tools":     map[string]interface{}{},
+					"resources": map[string]interface{}{},
+				},
+				"serverInfo": map[string]interface{}{
+					"name":    "unraid-agent",
+					"version": ServerVersion,
+				},
+			},
+		})
 
 	default:
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -378,6 +394,14 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
+}
+
+// handleHealth returns a simple 200 OK for reverse proxy health checks.
+// Does not require auth so load balancers can probe the endpoint directly.
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ok"))
 }
 
 // ServeStdio runs the MCP stdio transport (newline-delimited JSON-RPC).
