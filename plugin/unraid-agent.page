@@ -33,12 +33,15 @@ $stdioMode   = ($transport === 'stdio');
 $stdioEnable = ($cfg('UNRAID_MCP_ENABLE_STDIO', 'false') === 'true');
 $mcpPort     = $cfg('UNRAID_MCP_PORT', '6970');
 
-// Determine the hostname + protocol for client configs:
-// Prefer the user's manually-set UNRAID_API_URL hostname (e.g. a reverse-proxy URL),
-// falling back to the WebGUI request host (how the browser is browsing the server).
-$apiUrl = $cfg('UNRAID_API_URL');
+// Determine the MCP server URL for client configs:
+// 1. UNRAID_MCP_ENDPOINT overrides everything (set this for reverse proxy setups)
+// 2. Otherwise derive hostname + protocol from UNRAID_API_URL (the user's API URL)
+// 3. Fall back to the WebGUI request host (how the browser is browsing the server)
+$mcpEndpoint = $cfg('UNRAID_MCP_ENDPOINT');
+$apiUrl   = $cfg('UNRAID_API_URL');
 $serverHost = '';
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$protocol  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+
 if (!empty($apiUrl)) {
     $parsed = parse_url($apiUrl);
     if (!empty($parsed['host'])) {
@@ -92,9 +95,12 @@ if ($stdioMode) {
 } else {
     $bearer = $cfg('UNRAID_MCP_BEARER_TOKEN');
     $authDisabled = ($cfg('UNRAID_MCP_DISABLE_HTTP_AUTH', 'false') === 'true');
+    $mcpUrl = $mcpEndpoint !== ''
+        ? $mcpEndpoint
+        : "{$protocol}://{$serverHost}:{$mcpPort}/mcp";
     $server = [
         "type"    => "remote",
-        "url"     => "{$protocol}://{$serverHost}:{$mcpPort}/mcp",
+        "url"     => $mcpUrl,
         "enabled" => true
     ];
     if ($bearer !== '' && !$authDisabled) {
@@ -178,9 +184,25 @@ Bind address for the MCP HTTP server. 0.0.0.0 allows remote clients (e.g. VS Cod
 
 _(Port)_:
 : <input type="number" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>" min="1024" max="65535">
+<blockquote class="inline_help">
+TCP port the MCP HTTP server listens on. This is the bind port — the port
+the server listens on locally. If you expose it through a reverse proxy on
+a different port, set that in <b>MCP Endpoint URL</b> below.
+</blockquote>
+
+_(MCP Endpoint URL)_:
+: <input type="text" name="UNRAID_MCP_ENDPOINT" value="<?=htmlspecialchars($cfg('UNRAID_MCP_ENDPOINT'))?>">
+<blockquote class="inline_help">
+Full URL clients use to reach the MCP server (e.g.
+<code>https://your-domain.com/mcp</code>). Set this when using a reverse
+proxy that terminates TLS or rewrites the path — the auto-generated client
+config will use this URL instead of the bind host + port. Leave blank to
+auto-derive from the Unraid API URL or browser host.
+</blockquote>
 <?php else: ?>
 <input type="hidden" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '0.0.0.0'))?>">
 <input type="hidden" name="UNRAID_MCP_PORT" value="<?=htmlspecialchars($mcpPort)?>">
+<input type="hidden" name="UNRAID_MCP_ENDPOINT" value="<?=htmlspecialchars($cfg('UNRAID_MCP_ENDPOINT'))?>">
 <?php endif; ?>
 
 <div style="text-align:center;margin-top:18px;">

@@ -12,6 +12,7 @@ type Config struct {
 	Transport             string
 	Host                  string
 	Port                  int
+	MCPEndpoint           string
 	ReadOnly              bool
 	VerifySSL             bool
 	AllowArrayStop        bool
@@ -70,6 +71,7 @@ func Load() (*Config, error) {
 		Transport: getEnv("TRANSPORT", "streamable-http"),
 		Host:      getEnv("UNRAID_MCP_HOST", "0.0.0.0"),
 		Port:      getEnvInt("UNRAID_MCP_PORT", 6970),
+		MCPEndpoint: getEnv("UNRAID_MCP_ENDPOINT", ""),
 		ReadOnly:  getEnvBool("READ_ONLY", true),
 		VerifySSL: getEnvBool("UNRAID_VERIFY_SSL", true),
 	}
