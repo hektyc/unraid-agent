@@ -193,22 +193,27 @@ a different port, set that in <b>MCP Endpoint URL</b> below.
 _(MCP Endpoint URL)_:
 : <input type="text" name="UNRAID_MCP_ENDPOINT" value="<?=htmlspecialchars($cfg('UNRAID_MCP_ENDPOINT'))?>">
 <blockquote class="inline_help">
-Full URL clients use to reach the MCP server (e.g.
-<code>https://your-domain.com/mcp</code>). Set this when using a reverse
-proxy that terminates TLS or rewrites the path — the auto-generated client
-config will use this URL instead of the bind host + port. Leave blank to
-auto-derive from the Unraid API URL or browser host.
+Full URL your MCP client (IDE/LM Studio) should use to reach the MCP server.
+When set, this URL is used directly in the auto-generated client config below.
+The path in this URL must be forwarded by your reverse proxy to the MCP server.
+Leave blank to auto-derive from the Unraid API URL host + browser port.
 </blockquote>
 <blockquote class="inline_help">
-Reverse proxy setup: your proxy must forward <code>/mcp</code> (and optionally <code>/health</code>)
-to your Unraid server on port <b><?=$mcpPort?></b>. Example nginx config:
-<pre style="background:#0d1117;border-radius:4px;padding:8px;font-size:11px;">location /mcp {
-    proxy_pass http://unraid-local-ip:<?=$mcpPort?>(/mcp);
+<b>Reverse proxy setup:</b> your proxy must forward the path from your MCP Endpoint URL
+to your Unraid server on port <b><?=$mcpPort?></b>. The MCP server handles any path
+via its catch-all handler, so the path in your endpoint URL can be anything —
+just make sure your proxy forwards it. Example nginx config for path
+<code>/ua-mcp</code>:
+<pre style="background:#0d1117;border-radius:4px;padding:8px;font-size:11px;">location /ua-mcp {
+    proxy_pass http://unraid-local-ip:<?=$mcpPort?>;
     proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
     proxy_http_version 1.1;
     proxy_set_header Connection "";
     proxy_buffering off;
 }</pre>
+If your endpoint URL uses a non-standard path (e.g. <code>/ua-mcp</code>),
+make sure your proxy forwards that <i>exact path</i> — not just <code>/mcp</code>.
 </blockquote>
 <?php else: ?>
 <input type="hidden" name="UNRAID_MCP_HOST" value="<?=htmlspecialchars($cfg('UNRAID_MCP_HOST', '0.0.0.0'))?>">
