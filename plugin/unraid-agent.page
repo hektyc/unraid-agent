@@ -117,6 +117,10 @@ if ($stdioMode) {
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 }
 ?>
+<link rel="stylesheet" href="/plugins/unraid-agent/css/ua-style.css">
+<script>window.UA_CSRF = <?=json_encode($var['csrf_token'] ?? '')?></script>
+<script src="/plugins/unraid-agent/js/ua-script.js"></script>
+
 <div class="title"><span class="left"><i class="title fa fa-plug"></i>Service Status</span></div>
 
 <?php if ($stdioMode): ?>
