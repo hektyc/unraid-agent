@@ -7,6 +7,12 @@ and this project adheres to Calendar Versioning (YYYY.MM.DD), the Unraid plugin 
 
 ## [Unreleased]
 
+### Fixed
+- Nested tabs (Permissions, Content) now work correctly: inline CSS `<style>` blocks restored in both child pages with the missing `.ua-subtab` styling added to the Content page
+- Inline `<script>` blocks restored in both child pages (event handlers bound directly to elements which are present on AJAX load)
+- Removed CSS/JS file verification from `.plg` install script — the external CSS/JS files are optional fallbacks only, not required for core UI
+- Removed external `ua-script.js` `<script src>` from parent page to prevent duplicate event handlers conflicting with child page inline JS
+
 ## [0.0.1] - 2026-07-23
 
 ### Added

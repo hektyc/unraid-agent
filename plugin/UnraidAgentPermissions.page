@@ -110,6 +110,50 @@ $chips = function($entityPerms, $actions) {
     return $out;
 };
 ?>
+<style>
+.ua-subtabs { display:flex; flex-wrap:wrap; border-bottom:1px solid #555; margin-bottom:16px; }
+.ua-subtab { padding:10px 22px; font-size:14px; cursor:pointer; border-bottom:2px solid transparent; user-select:none; }
+.ua-subtab:hover { opacity:0.8; }
+.ua-subtab.active { border-bottom-color:#ff8c2f; font-weight:bold; }
+.ua-subtab .fa { font-size:17px; margin-right:7px; vertical-align:-1px; }
+.ua-pane { display:none; }
+.ua-pane.active { display:block; }
+
+.ua-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-top:12px; }
+.ua-card { border:1px solid rgba(128,128,128,0.35); border-radius:10px; padding:12px 14px; cursor:pointer;
+           background:rgba(128,128,128,0.06); transition:border-color .15s, transform .1s; }
+.ua-card:hover { border-color:#ff8c2f; transform:translateY(-1px); }
+.ua-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.ua-card-icon { width:40px; height:40px; object-fit:contain; border-radius:6px; }
+.ua-card-icon-fa { font-size:36px; line-height:40px; }
+.ua-dot { display:inline-block; width:11px; height:11px; border-radius:50%; }
+.ua-card-name { font-weight:bold; font-size:14px; margin-bottom:2px; word-break:break-all; }
+.ua-card-image { font-size:11px; opacity:0.65; word-break:break-all; margin-bottom:4px; }
+.ua-card-status { font-size:11px; opacity:0.8; margin-bottom:8px; }
+.ua-card-chips { display:flex; flex-wrap:wrap; gap:4px; }
+.ua-chip { font-size:10px; border:1px solid; border-radius:4px; padding:1px 5px; }
+.ua-chip-global { border-color:#95a5a6; color:#95a5a6; }
+
+.ua-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999;
+                    display:flex; align-items:center; justify-content:center; }
+.ua-modal { background:#222; color:#eee; border:1px solid #555; border-radius:10px;
+            width:480px; max-width:92vw; max-height:85vh; overflow-y:auto; padding:18px 20px; }
+.ua-modal-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.ua-modal-head img { width:44px; height:44px; object-fit:contain; }
+.ua-modal-head .fa { font-size:40px; }
+.ua-modal-name { font-size:16px; font-weight:bold; word-break:break-all; }
+.ua-perm-row { display:flex; justify-content:center; padding:3px 0; }
+.ua-perm-pair { display:flex; align-items:center; gap:14px; padding:7px 2px 9px;
+                border-bottom:1px solid rgba(128,128,128,0.25); }
+.ua-perm-row:last-of-type .ua-perm-pair { border-bottom:none; }
+.ua-perm-label { width:80px; text-align:right; font-size:13px; flex:none; }
+.ua-perm-select { width:auto !important; min-width:150px; max-width:180px; flex:none; }
+.ua-modal-foot { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+.ua-btn { padding:6px 16px; border-radius:5px; border:1px solid #777; background:#333; color:#eee; cursor:pointer; }
+.ua-btn:hover { border-color:#ff8c2f; }
+.ua-btn-primary { background:#ff8c2f; border-color:#ff8c2f; color:#1a1a1a; font-weight:bold; }
+.ua-modal-err { color:#e74c3c; font-size:12px; margin-top:8px; min-height:14px; }
+</style>
 
 <div class="ua-subtabs">
   <div class="ua-subtab active" data-uatab="master"><i class="fa fa-shield" style="color:#ff8c2f;"></i> Master Switch</div>
@@ -446,7 +490,21 @@ foreach ($toolGroups as $gid => $ginfo):
 <?php $formClose(); ?>
 </div>
 <?php endforeach; ?>
- </div>
+</div>
+
+<style>
+.ua-tools-wrap { width:45%; min-width:460px; margin:0 auto; }
+.ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
+.ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
+.ua-domain-head:hover { background:rgba(128,128,128,0.08); }
+.ua-domain-title { font-weight:bold; font-size:13px; }
+.ua-domain-count { font-size:11px; opacity:0.65; margin-left:8px; }
+.ua-domain-caret { margin-right:8px; opacity:0.7; }
+.ua-domain-tools { display:none; padding:4px 12px 10px; border-top:1px solid rgba(128,128,128,0.2); }
+.ua-tool-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed rgba(128,128,128,0.15); }
+.ua-tool-row:last-child { border-bottom:none; }
+.ua-tool-name { font-family:monospace; font-size:12px; }
+</style>
 
 <div class="ua-modal-overlay" id="ua-modal" style="display:none;">
   <div class="ua-modal">
@@ -464,4 +522,153 @@ foreach ($toolGroups as $gid => $ginfo):
   </div>
 </div>
 
+<script>
+$(function() {
+    var KEY = 'unraid-agent-perms-tab';
+    var TGKEY = 'unraid-agent-toolset-tab';
+    function activate(t) {
+        $('.ua-subtab:not([data-uatab^="tg-"])').removeClass('active');
+        $('.ua-pane[data-uatab]:not([data-uatab^="tg-"])').removeClass('active');
+        $('.ua-subtab[data-uatab="' + t + '"]').addClass('active');
+        $('.ua-pane[data-uatab="' + t + '"]').addClass('active');
+        if (t === 'tools') { ensureTg(); }
+    }
+    function activateTg(t) {
+        $('.ua-subtab[data-uatab^="tg-"]').removeClass('active');
+        $('.ua-pane[data-uatab^="tg-"]').removeClass('active');
+        $('.ua-subtab[data-uatab="' + t + '"]').addClass('active');
+        $('.ua-pane[data-uatab="' + t + '"]').addClass('active');
+    }
+    function ensureTg() {
+        var saved = localStorage.getItem(TGKEY);
+        if (!saved || !$('.ua-subtab[data-uatab="' + saved + '"]').length) { saved = 'tg-core'; }
+        activateTg(saved);
+    }
+    var saved = localStorage.getItem(KEY);
+    if (saved && $('.ua-subtab[data-uatab="' + saved + '"]').length) {
+        activate(saved);
+    }
+    // Guarantee Master Switch shows if no pane ended up active
+    if (!$('.ua-pane.active').length) {
+        activate('master');
+    }
+    $('.ua-subtab:not([data-uatab^="tg-"])').on('click', function() {
+        var t = $(this).data('uatab');
+        activate(t);
+        localStorage.setItem(KEY, t);
+    });
+    $('.ua-subtab[data-uatab^="tg-"]').on('click', function() {
+        var t = $(this).data('uatab');
+        activateTg(t);
+        localStorage.setItem(TGKEY, t);
+    });
 
+    // Expand/collapse tool domains
+    $(document).on('click', '.ua-domain-head', function() {
+        var tools = $(this).next('.ua-domain-tools');
+        tools.toggle();
+        $(this).find('.ua-domain-caret').text(tools.is(':visible') ? '▾' : '▸');
+    });
+
+    var ACTIONS = {
+        containers: [['start','Start'],['stop','Stop'],['restart','Restart'],['pause','Pause'],['unpause','Unpause'],['remove','Remove'],['update','Update']],
+        vms: [['start','Start'],['stop','Stop'],['pause','Pause'],['resume','Resume'],['force_stop','Force Stop'],['reboot','Reboot'],['reset','Reset']],
+        plugins: [['remove','Remove']]
+    };
+    var SELF_PROTECTED = 'unraid-agent';
+    var cur = null;
+
+    function openModal(card) {
+        var entity = card.data('entity');
+        if (!entity) { return; } // never open an empty modal
+        cur = {
+            type: card.data('type'),
+            entity: entity,
+            icon: card.data('icon'),
+            perms: card.data('perms') || {}
+        };
+        var isSelf = (cur.type === 'plugins' && cur.entity === SELF_PROTECTED);
+        $('#ua-modal-name').text(cur.entity);
+        $('#ua-modal-icon').html(cur.icon
+            ? '<img src="' + cur.icon + '" style="width:44px;height:44px;object-fit:contain;">'
+            : '<i class="fa ' + (cur.type === 'vms' ? 'fa-desktop' : (cur.type === 'plugins' ? 'fa-plug' : 'fa-cubes')) + '" style="font-size:40px;color:' + (cur.type === 'vms' ? '#9b59b6' : (cur.type === 'plugins' ? '#2ecc71' : '#0db7ed')) + ';"></i>');
+
+        if (isSelf) {
+            $('#ua-modal-rows').html(
+                '<div style="padding:12px 4px;line-height:1.6;">' +
+                '<b>Protected plugin.</b><br>' +
+                'unraid-agent can never be removed through the MCP server — that would shut down ' +
+                'this very channel. If removal is ever intended, use the Unraid WebGUI Plugins page.' +
+                '</div>');
+            $('#ua-modal-save').hide();
+            $('#ua-modal-clear').hide();
+        } else {
+            var rows = '';
+            $.each(ACTIONS[cur.type], function(i, pair) {
+                var action = pair[0], label = pair[1];
+                var val = cur.perms[action] || 'inherit';
+                rows += '<div class="ua-perm-row"><div class="ua-perm-pair">' +
+                    '<span class="ua-perm-label">' + label + '</span>' +
+                    '<select class="ua-perm-select" data-action="' + action + '">' +
+                    '<option value="inherit"' + (val === 'inherit' ? ' selected' : '') + '>Use Global</option>' +
+                    '<option value="allow"' + (val === 'allow' ? ' selected' : '') + '>Allow</option>' +
+                    '<option value="deny"' + (val === 'deny' ? ' selected' : '') + '>Deny</option>' +
+                    '</select></div></div>';
+            });
+            $('#ua-modal-rows').html(rows);
+            $('#ua-modal-save').show();
+            $('#ua-modal-clear').show();
+        }
+        $('#ua-modal-err').text('');
+        $('#ua-modal').fadeIn(120);
+    }
+
+    function closeModal() { $('#ua-modal').fadeOut(120); cur = null; }
+
+    function collectPerms(allInherit) {
+        var perms = {};
+        $('.ua-perm-select').each(function() {
+            perms[$(this).data('action')] = allInherit ? 'inherit' : $(this).val();
+        });
+        return perms;
+    }
+
+    function save(allInherit) {
+        if (!cur) return;
+        $('#ua-modal-err').text('Saving…');
+        $.ajax({
+            url: '/plugins/unraid-agent/php/save-perms.php',
+            method: 'POST',
+            data: {
+                csrf_token: '<?=$var['csrf_token']?>',
+                entity_type: cur.type,
+                entity: cur.entity,
+                perms: JSON.stringify(collectPerms(allInherit))
+            },
+            success: function(resp) {
+                if (resp && resp.ok) {
+                    location.reload();
+                } else {
+                    $('#ua-modal-err').text((resp && resp.error) ? resp.error : 'Save failed');
+                }
+            },
+            error: function(xhr) {
+                var msg = 'Save failed (' + xhr.status + ')';
+                try { var r = JSON.parse(xhr.responseText); if (r.error) msg = r.error; } catch(e) {}
+                $('#ua-modal-err').text(msg);
+            }
+        });
+    }
+
+    $(document).on('click', '.ua-card', function(e) {
+        var card = $(this);
+        if (!card.data('entity')) { return; } // ignore clicks that carry no entity data
+        e.stopPropagation();
+        openModal(card);
+    });
+    $('#ua-modal-cancel').on('click', closeModal);
+    $('#ua-modal-save').on('click', function() { save(false); });
+    $('#ua-modal-clear').on('click', function() { save(true); });
+    $('#ua-modal').on('click', function(e) { if (e.target === this) closeModal(); });
+});
+</script>
