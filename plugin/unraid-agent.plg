@@ -100,7 +100,9 @@ for f in \
   "$INSTALL_DIR/bin/unraid-agent" \
   "$INSTALL_DIR/php/common.php" \
   "$INSTALL_DIR/scripts/start.sh" \
-  "$INSTALL_DIR/scripts/stop.sh"; do
+  "$INSTALL_DIR/scripts/stop.sh" \
+  "$INSTALL_DIR/css/ua-style.css" \
+  "$INSTALL_DIR/js/ua-script.js"; do
   if [ ! -e "$f" ]; then
     echo "WARNING: Expected file missing after extraction: $f"
     MISSING=$((MISSING + 1))
