@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -16,6 +17,9 @@ import (
 	"github.com/hektyc/unraid-mcp-server/internal/config"
 	"github.com/hektyc/unraid-mcp-server/internal/logger"
 )
+
+// SSEContentType is the MIME type for Server-Sent Events.
+const SSEContentType = "text/event-stream"
 
 const protocolVersion = "2024-11-05"
 
@@ -56,13 +60,19 @@ type Server struct {
 
 	// ToolEnabled, when set, decides per-tool registration. Nil = all tools.
 	ToolEnabled func(name string) bool
+
+	// sseMu protects sseSessions.
+	sseMu sync.RWMutex
+	// sseSessions tracks active SSE connections by session ID.
+	sseSessions map[string]chan *JSONRPCResponse
 }
 
 func NewServer(cfg *config.Config) *Server {
 	s := &Server{
-		config:   cfg,
-		tools:    make(map[string]*ToolDef),
-		handlers: make(map[string]ToolHandler),
+		config:      cfg,
+		tools:       make(map[string]*ToolDef),
+		handlers:    make(map[string]ToolHandler),
+		sseSessions: make(map[string]chan *JSONRPCResponse),
 	}
 	s.gql = client.New(cfg)
 	return s
@@ -298,10 +308,12 @@ func (s *Server) readResource(id interface{}, uri string) *JSONRPCResponse {
 }
 
 // ServeHTTP starts the MCP streamable-http transport.
+// Supports both Streamable HTTP (POST) and SSE (GET with Accept: text/event-stream).
 func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handleMCP)
 	mux.HandleFunc("/mcp", s.handleMCP)
+	mux.HandleFunc("/sse", s.handleMCP)
 	mux.HandleFunc("/health", s.handleHealth)
 
 	addr := fmt.Sprintf("%s:%d", host, port)
@@ -314,7 +326,7 @@ func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		logger.Get().Infof("MCP server listening on %s/mcp", addr)
+		logger.Get().Infof("MCP server listening on %s (SSE + Streamable HTTP)", addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errCh <- err
 			return
@@ -333,7 +345,22 @@ func (s *Server) ServeHTTP(ctx context.Context, host string, port int) error {
 	}
 }
 
+func setCommonHeaders(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Mcp-Session-Id, Last-Event-ID")
+	w.Header().Set("Access-Control-Expose-Headers", "Mcp-Session-Id")
+}
+
 func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
+	setCommonHeaders(w)
+
+	// Handle CORS preflight
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	if !s.authorized(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -347,6 +374,15 @@ func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Echo Mcp-Session-Id if provided (SSE session association)
+		sessionID := r.URL.Query().Get("sessionId")
+		if sessionID == "" {
+			sessionID = r.Header.Get("Mcp-Session-Id")
+		}
+		if sessionID != "" {
+			w.Header().Set("Mcp-Session-Id", sessionID)
+		}
+
 		resp := s.dispatch(r.Context(), &req)
 		if resp == nil {
 			// Notification — accepted, no response body
@@ -356,27 +392,115 @@ func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, resp)
 
 	case http.MethodGet:
-		// Some MCP clients try GET first (SSE or session establishment).
-		// Return JSON metadata so the client knows this is a Streamable HTTP
-		// server and should use POST for actual requests.
-		writeJSON(w, http.StatusOK, map[string]interface{}{
-			"jsonrpc": "2.0",
-			"result": map[string]interface{}{
-				"protocolVersion": protocolVersion,
-				"capabilities": map[string]interface{}{
-					"tools":     map[string]interface{}{},
-					"resources": map[string]interface{}{},
+		accept := r.Header.Get("Accept")
+		if strings.Contains(accept, SSEContentType) {
+			s.handleSSE(w, r)
+		} else {
+			// Non-SSE GET: return JSON metadata
+			writeJSON(w, http.StatusOK, map[string]interface{}{
+				"jsonrpc": "2.0",
+				"result": map[string]interface{}{
+					"protocolVersion": protocolVersion,
+					"capabilities": map[string]interface{}{
+						"tools":     map[string]interface{}{},
+						"resources": map[string]interface{}{},
+					},
+					"serverInfo": map[string]interface{}{
+						"name":    "unraid-agent",
+						"version": ServerVersion,
+					},
 				},
-				"serverInfo": map[string]interface{}{
-					"name":    "unraid-agent",
-					"version": ServerVersion,
-				},
-			},
-		})
+			})
+		}
 
 	default:
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+// handleSSE establishes an SSE connection for MCP clients that support SSE.
+// Sends an endpoint event with the POST URL, then keeps the connection alive
+// to forward any session-bound notifications. The client sends POST requests
+// to the endpoint URL and receives synchronous responses.
+func (s *Server) handleSSE(w http.ResponseWriter, r *http.Request) {
+	// Generate session ID
+	sessionID := fmt.Sprintf("session-%d", time.Now().UnixNano())
+
+	// Create a channel for this session's SSE messages
+	sessCh := make(chan *JSONRPCResponse, 16)
+	s.sseMu.Lock()
+	s.sseSessions[sessionID] = sessCh
+	s.sseMu.Unlock()
+
+	// Clean up on disconnect
+	defer func() {
+		s.sseMu.Lock()
+		delete(s.sseSessions, sessionID)
+		s.sseMu.Unlock()
+	}()
+
+	// Set SSE headers
+	w.Header().Set("Content-Type", SSEContentType)
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	setCommonHeaders(w)
+	w.WriteHeader(http.StatusOK)
+
+	// Send endpoint event with the POST URL
+	endpointURL := s.endpointURL(r, sessionID)
+	fmt.Fprintf(w, "event: endpoint\ndata: %s\n\n", endpointURL)
+
+	flusher, ok := w.(http.Flusher)
+	if ok {
+		flusher.Flush()
+	}
+
+	logger.Get().Infof("SSE session started: %s (endpoint: %s)", sessionID, endpointURL)
+
+	// Block until client disconnects or context is done
+	<-r.Context().Done()
+	logger.Get().Infof("SSE session closed: %s", sessionID)
+}
+
+// endpointURL reconstructs the full URL for POST requests based on
+// the original request and proxy headers. If UNRAID_MCP_ENDPOINT is set
+// in config, uses that; otherwise reconstructs from X-Forwarded headers.
+func (s *Server) endpointURL(r *http.Request, sessionID string) string {
+	if s.config.MCPEndpoint != "" {
+		return s.config.MCPEndpoint + "?sessionId=" + sessionID
+	}
+
+	scheme := r.Header.Get("X-Forwarded-Proto")
+	if scheme == "" {
+		if r.TLS != nil {
+			scheme = "https"
+		} else {
+			scheme = "http"
+		}
+	}
+
+	host := r.Header.Get("X-Forwarded-Host")
+	if host == "" {
+		host = r.Host
+	}
+
+	port := r.Header.Get("X-Forwarded-Port")
+	if port == "" {
+		// Check if the port is in the Host header
+		if h, _, err := net.SplitHostPort(host); err == nil {
+			host = h
+			port = r.URL.Port()
+		}
+	}
+
+	var url string
+	if port != "" && port != "80" && port != "443" {
+		url = fmt.Sprintf("%s://%s:%s%s?sessionId=%s", scheme, host, port, r.URL.Path, sessionID)
+	} else {
+		url = fmt.Sprintf("%s://%s%s?sessionId=%s", scheme, host, r.URL.Path, sessionID)
+	}
+
+	return url
 }
 
 func (s *Server) authorized(r *http.Request) bool {
@@ -391,6 +515,7 @@ func (s *Server) authorized(r *http.Request) bool {
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
+	setCommonHeaders(w)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
@@ -399,6 +524,7 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 // handleHealth returns a simple 200 OK for reverse proxy health checks.
 // Does not require auth so load balancers can probe the endpoint directly.
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	setCommonHeaders(w)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
