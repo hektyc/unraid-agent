@@ -72,15 +72,20 @@
 .ac-name-input { width:280px; }
 .ac-desc-input { width:100%; box-sizing:border-box; }
 
-/* --- Tool Access sub-tabs (within Permissions) --- */
-.ua-tools-wrap { width:45%; min-width:460px; margin:0 auto; }
-.ua-domain { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:8px; }
+/* --- Accordion sections (Tool Access within Permissions) --- */
+.ua-acc-section { border:1px solid rgba(128,128,128,0.3); border-radius:8px; margin-bottom:10px; }
+.ua-acc-header { display:flex; align-items:center; padding:10px 14px; cursor:pointer; user-select:none; }
+.ua-acc-header:hover { background:rgba(128,128,128,0.08); }
+.ua-acc-title { font-size:14px; font-weight:bold; }
+.ua-acc-caret { display:inline-block; font-size:16px; transition:transform .15s; }
+.ua-acc-body { display:none; padding:0 12px 12px; }
+.ua-domain { margin-bottom:8px; }
 .ua-domain-head { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; user-select:none; }
 .ua-domain-head:hover { background:rgba(128,128,128,0.08); }
 .ua-domain-title { font-weight:bold; font-size:13px; }
 .ua-domain-count { font-size:11px; opacity:0.65; margin-left:8px; }
 .ua-domain-caret { margin-right:8px; opacity:0.7; }
-.ua-domain-tools { display:none; padding:4px 12px 10px; border-top:1px solid rgba(128,128,128,0.2); }
+.ua-domain-tools { display:none; padding:4px 12px 10px; }
 .ua-tool-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed rgba(128,128,128,0.15); }
 .ua-tool-row:last-child { border-bottom:none; }
 .ua-tool-name { font-family:monospace; font-size:12px; }

@@ -8,10 +8,8 @@ and this project adheres to Calendar Versioning (YYYY.MM.DD), the Unraid plugin 
 ## [Unreleased]
 
 ### Fixed
-- Nested tabs (Permissions, Content) now work correctly: inline CSS `<style>` blocks restored in both child pages with the missing `.ua-subtab` styling added to the Content page
-- Inline `<script>` blocks restored in both child pages (event handlers bound directly to elements which are present on AJAX load)
-- Removed CSS/JS file verification from `.plg` install script — the external CSS/JS files are optional fallbacks only, not required for core UI
-- Removed external `ua-script.js` `<script src>` from parent page to prevent duplicate event handlers conflicting with child page inline JS
+- Root cause of raw HTML rendering: Unraid's markdown parser processes `.page` file content before PHP execution. Inline `<style>` blocks in the HTML body are not recognized as block-level HTML by the parser, causing subsequent HTML (including `<div class="ua-pane" data-uatab="tools">`) to be rendered as visible text instead of DOM elements. All CSS moved to `common.php`'s PHP `echo` `<style>` block, which executes after markdown parsing.
+- Replaced nested sub→sub tabs in Permissions > Tool Access with a clean accordion layout (no nested `<div class="ua-pane" data-uatab="tg-...">` elements). Uses `ua-acc-section`/`ua-acc-header`/`ua-acc-body` with a single form, eliminating the nested HTML structure that triggered the markdown parser issue.
 
 ## [0.0.1] - 2026-07-23
 
