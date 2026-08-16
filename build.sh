@@ -27,6 +27,9 @@ mkdir -p "$CONFIG_DIR"
 
 echo "==> Assembling package files..."
 cp go/bin/unraid-agent "$INSTALL_DIR/bin/unraid-agent"
+mkdir -p "$INSTALL_DIR/css" "$INSTALL_DIR/js"
+cp plugin/css/ua-style.css "$INSTALL_DIR/css/ua-style.css"
+cp plugin/js/ua-script.js "$INSTALL_DIR/js/ua-script.js"
 cp plugin/scripts/install.sh "$INSTALL_DIR/scripts/install.sh"
 cp plugin/scripts/start.sh "$INSTALL_DIR/scripts/start.sh"
 cp plugin/scripts/stop.sh "$INSTALL_DIR/scripts/stop.sh"
@@ -49,6 +52,7 @@ cp plugin/php/icon.php "$INSTALL_DIR/php/icon.php"
 cp plugin/php/read-content.php "$INSTALL_DIR/php/read-content.php"
 cp plugin/php/save-content.php "$INSTALL_DIR/php/save-content.php"
 cp plugin/php/export-content.php "$INSTALL_DIR/php/export-content.php"
+cp plugin/php/mcp-proxy.php "$INSTALL_DIR/php/mcp-proxy.php"
 
 # default.cfg goes in plugin root as a fallback default
 # NOTE: config.cfg is intentionally NOT packaged — it is created on first
@@ -69,6 +73,7 @@ cp memory/AGENT-MEMORY.md "$INSTALL_DIR/memory/AGENT-MEMORY.md"
 cp plugin/unraid-agent.plg "$INSTALL_DIR/unraid-agent.plg"
 cp plugin/unraid-agent.plg "$CONFIG_DIR/unraid-agent.plg"
 chmod +x "$INSTALL_DIR/scripts/"*.sh
+chmod 644 "$INSTALL_DIR/css/"*.css "$INSTALL_DIR/js/"*.js 2>/dev/null || true
 chmod 644 "$CONFIG_DIR/unraid-agent.plg"
 chmod 644 "$INSTALL_DIR/images/"*.png "$INSTALL_DIR/icons/"*.png "$INSTALL_DIR/unraid-agent.png"
 
